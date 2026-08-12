@@ -1,0 +1,161 @@
+{
+  "version": 1,
+  "authority": "docs/decisions/ADR-021-dataset-curation-decisions.md (approved 2026-08-12)",
+  "note": "Machine-readable form of the approved curation decisions. Every rule carries the decision it implements and the reason it exists, so a reader of datasets/manifest.json can trace any excluded image back to a human decision. Rules exclude images from SPLITS; they never modify or delete anything under datasets/raw/.",
+
+  "seed": 42,
+  "split_fractions": { "train": 0.7, "val": 0.15, "test": 0.15 },
+
+  "min_test_images_per_class": 50,
+  "max_test_fraction": 0.4,
+  "min_test_rule_note": "Acceptance gate: every class needs >=50 test images. Where 15% falls short, the TEST FRACTION for that class is raised (capped at max_test_fraction) rather than the gate being lowered. This is ADR-021 decision 7 generalised: fix the allocation, never the bar. Classes that still cannot reach 50 are reported as gate failures, not silently accepted.",
+
+  "dataset_roles": {
+    "plantvillage": "trainval",
+    "chilli_primary": "trainval",
+    "chilli_secondary": "trainval",
+    "cotton_sarcld2024": "trainval",
+    "rice_odisha": "trainval",
+    "rice_healthy_diu": "trainval",
+    "plantdoc": "fieldtest"
+  },
+  "dataset_role_reasons": {
+    "plantdoc": "ADR-021 decision 5. Held out entirely as the field-realism benchmark and NEVER trained on. Its own train/test split is discarded, which dissolves the 11 duplicate groups and 8 label contradictions that crossed it rather than patching them."
+  },
+
+  "excluded_groups": [
+    {
+      "dataset": "cotton_sarcld2024",
+      "group": "augmented",
+      "decision": "ADR-021 decision 1 / raw-only rule",
+      "reason": "Publisher-derived augmentations of the original split. 1,398 duplicate clusters were measured spanning the boundary; they must never reach val/test."
+    },
+    {
+      "dataset": "rice_healthy_diu",
+      "group": "augmented",
+      "decision": "ADR-021 decision 2 / raw-only rule",
+      "reason": "Publisher states these are derived from the raw images. The audit detected ZERO duplicate clusters spanning the boundary — a demonstration of the rotation/mirror blind spot, NOT evidence of independence. Exclusion is enforced by construction, never by trusting a dedup result."
+    }
+  ],
+
+  "excluded_classes": [
+    {
+      "code": "COTTON_LEAF_VARIEGATION",
+      "decision": "ADR-021 decision 1",
+      "reason": "116 post-dedup images, below the pre-registered 150 floor. Excluded rather than shipping a class that fails a criterion we set before seeing the data. Largely genetic/physiological, so farmer impact is minimal and the abstain path covers the residue. Images retained in raw for a later revisit."
+    },
+    {
+      "code": "BACKGROUND_NO_LEAF",
+      "decision": "ADR-021 decision 3",
+      "reason": "PlantVillage's Background_without_leaves is Western stock/tourist photography (streets, boats, churches, a parrot). It would teach 'not-a-leaf = European holiday photo' while failing to reject soil, hands, walls or fruit, and its 1,135 trivially separable images would inflate accuracy for no product benefit. Non-crop rejection is handled by the confidence/abstain path."
+    }
+  ],
+
+  "duplicate_collapse": {
+    "action": "keep_one_representative_per_cluster",
+    "representative": "lexicographically smallest path in the cluster (deterministic)",
+    "decision": "ADR-021 decision 6",
+    "reason": "Near-duplicate clusters collapse to a single image everywhere, so the manifest counts unique information rather than files. Keeping copies would silently up-weight whichever dataset happens to be most redundant (rice_odisha is 59% redundant; plantvillage is 0.07%) and would let a test set score the same photograph several times. This is what makes the approved 'rice = 2,446 usable' figure true of the splits and not just of a report."
+  },
+
+  "unmapped_class_policy": {
+    "action": "exclude",
+    "reason": "A raw class directory with no entry in the audit's CLASS_MAP has no agreed meaning in our label space (other crops in PlantVillage/PlantDoc; the DIU 'Rice' whole-plant category). Excluded and counted, never guessed into a code."
+  },
+
+  "quarantine": {
+    "stock_provenance_filename_patterns": [
+      "alamy",
+      "shutterstock",
+      "gettyimages",
+      "istockphoto",
+      "istock",
+      "depositphotos",
+      "dreamstime",
+      "123rf",
+      "adobestock",
+      "fotolia",
+      "bigstock",
+      "canstockphoto",
+      "stockphoto",
+      "stock-photo"
+    ],
+    "stock_provenance_reason": "ADR-021 decision 5, as approved: quarantine only images whose stock/watermark origin is objectively evidenced. A filename carrying a stock agency's name and asset ID is objective, checkable evidence. Quarantined images are excluded from the evaluation set and recorded with their reason; the raw files are untouched.",
+    "stock_provenance_limitation": "NECESSARY BUT NOT SUFFICIENT. Filename matching cannot see a watermark burned into pixels whose filename is neutral, and the audit found such cases visually (Getty/Alamy/Shutterstock marks, plus a screenshot of a web factsheet and a photograph of chopped herbs). Those require the human review queue this script emits. Absence of a filename match is not evidence that an image is clean.",
+    "label_contradiction_rule": {
+      "action": "quarantine_all_copies",
+      "reason": "ADR-021 decision 5. A file the publisher filed under two different diseases cannot serve as ground truth for either. Every copy is quarantined, not just one side."
+    }
+  },
+
+  "manual_quarantine_file": "scripts/ml/manual-quarantine.json",
+  "manual_quarantine_note": "Images excluded after direct visual inspection, where no objective rule could catch them (pixel-burned watermarks with neutral filenames, screenshots, non-leaf subjects). Each entry names its reviewer and reason and points at an exact path, so any entry can be checked or reversed. Content judgements only — no agronomic relabelling.",
+
+  "source_stratified_splits": {
+    "enabled": true,
+    "reason": "The confound probe measured that source datasets are separable from background alone (chilli 0.91, rice 0.96, tomato 0.96). A split that happened to align with source would let a model score by recognising capture style rather than disease. Each (class, source) stratum is therefore split independently, so every split carries the same source mix."
+  },
+
+  "known_confounds": [
+    {
+      "id": "chilli_source_disjoint_classes",
+      "crop": "CHILLI",
+      "evidence": "datasets/confound-report.json — chilli_primary vs chilli_secondary separable at 0.91 accuracy from a single background statistic (a lower bound; a model does better). CHILLI_ANTHRACNOSE exists ONLY in chilli_secondary; CHILLI_BACTERIAL_SPOT, CHILLI_NUTRIENT_DEFICIENCY and CHILLI_POWDERY_MILDEW exist ONLY in chilli_primary. Those three class pairs are decidable by capture style alone.",
+      "mitigations_applied": [
+        "source-stratified splits (no split aligns with source)",
+        "per-class source composition recorded in the manifest",
+        "chilli held at GENERAL tier — no field-robustness claim"
+      ],
+      "evaluation_gate": "Metrics for CHILLI_ANTHRACNOSE, CHILLI_BACTERIAL_SPOT, CHILLI_NUTRIENT_DEFICIENCY and CHILLI_POWDERY_MILDEW MUST be reported with this confound stated, and MUST NOT be presented as evidence of disease-discrimination ability. The Grad-CAM background-reliance probe in docs/ml/error-analysis.md is REQUIRED for chilli before any chilli accuracy figure is published.",
+      "residual_risk": "Not removed, only contained. The only complete fix is chilli imagery of the same classes from a second capture style — no such data exists in the corpus.",
+      "open_option_requiring_approval": "Excluding CHILLI_ANTHRACNOSE (323 unique images, the sole chilli_secondary-only class) would remove all three source-disjoint pairs outright. It costs a real disease class, so it is a product decision and is NOT applied here."
+    },
+    {
+      "id": "rice_healthy_brownspot_source_disjoint",
+      "crop": "RICE",
+      "evidence": "datasets/confound-report.json — rice_healthy_diu vs rice_odisha separable at 0.96. RICE_NORMAL comes only from the studio source; RICE_BROWN_SPOT only from the field source. Healthy-vs-brown-spot is therefore decidable by background alone.",
+      "mitigations_applied": [
+        "source-stratified splits",
+        "per-class source composition recorded in the manifest",
+        "rice held at GENERAL tier",
+        "healthy-rice field performance declared unvalidated"
+      ],
+      "evaluation_gate": "The RICE_NORMAL <-> RICE_BROWN_SPOT confusion cell MUST be reported explicitly in the evaluation battery, not folded into macro-F1 alone. RICE_NORMAL recall MUST NOT be quoted as field performance. If RICE_NORMAL recall exceeds RICE_BROWN_SPOT recall by a wide margin, treat it as evidence of the shortcut, not of skill.",
+      "residual_risk": "Cannot be removed with the data on hand: no field-realistic healthy rice imagery exists in the corpus. The complete fix is field-realistic healthy rice data used FOR TRAINING, which ADR-021 decision 2 (option c) reserves for separate approval.",
+      "open_option_requiring_approval": "Acquire a field-realistic healthy rice dataset for TRAINING (not evaluation-only). This is the only measure that removes the confound rather than containing it."
+    }
+  ],
+
+  "pre_training_checks_required": [
+    {
+      "id": "chilli_source_separability",
+      "decision": "ADR-021 decision 4",
+      "reason": "CHILLI_HEALTHY and CHILLI_CERCOSPORA_LEAF_SPOT draw from both chilli sources while ANTHRACNOSE comes only from the paper-background set and POWDERY_MILDEW / NUTRIENT_DEFICIENCY / BACTERIAL_SPOT only from the cut-out set. Both sources are studio imagery separable by capture style, so a model can score well by reading the background. The merged chilli label space must not be trusted until a probe shows source is not trivially predictable.",
+      "blocking": "chilli claims only, not the training run"
+    },
+    {
+      "id": "rice_healthy_field_validation",
+      "decision": "ADR-021 decision 2 (option c, approved)",
+      "reason": "RICE_NORMAL is 100% studio imagery (582 images, leaves on white paper); no field-realistic healthy rice exists in the corpus. Healthy-rice field performance is UNVALIDATED and must not be claimed. Any field-realistic healthy rice data obtained later is EVALUATION-ONLY unless separately approved for training.",
+      "blocking": "healthy-rice field claims only"
+    }
+  ],
+
+  "support_tiers": {
+    "COTTON": {
+      "tier": "SPECIALIZED",
+      "decision": "ADR-021 decision 1",
+      "note": "6 classes. Ships only once each has a KB entry (en+hi) and the agronomist items (a)-(c) are signed off."
+    },
+    "CHILLI": {
+      "tier": "GENERAL",
+      "decision": "ADR-021 decision 4",
+      "note": "Trainable, but no field-robustness claim: both sources are studio imagery and no field-realistic chilli evaluation set exists yet."
+    },
+    "RICE": {
+      "tier": "GENERAL",
+      "decision": "ADR-021 decision 2 (option c)",
+      "note": "Healthy-rice field-condition performance is unvalidated. Do not claim field robustness for healthy-rice classification."
+    }
+  }
+}

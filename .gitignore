@@ -24,8 +24,12 @@ datasets/*
 !datasets/README.md
 !datasets/manifest.json
 !datasets/manifest-raw.json
+!datasets/audit-report.json
+!datasets/confound-report.json
 !datasets/licenses/
 !datasets/lookup/
+# datasets/audit/ (contact sheets + hash cache) stays ignored: derived image
+# data, regenerable from the raw sets by scripts/ml/audit-datasets.py.
 *.onnx
 *.pt
 *.pth

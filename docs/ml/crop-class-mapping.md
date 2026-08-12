@@ -2,6 +2,8 @@
 
 Codes are language-neutral (`CROP_CONDITION`); i18n names in shared/i18n; registry lists per-crop `mlClassCodes`.
 
+> **Status after the P0-5 audit (2026-08-12): this file is not yet reconciled with the data, deliberately.** The audit measured what actually exists — 36 codes with data, per-class counts in `docs/ml/dataset-audit.md` — and found three mismatches with the list below: the RICE section still describes the **rejected** Paddy Doctor set (only 4 rice codes have data, and `RICE_NORMAL` is not among them); COTTON has **7** classes, not 8; and the chilli `?` codes are all present. Merge/drop/rename decisions are the team's and are listed in the audit report; this file is updated when they are made, not before.
+
 ## RICE (Paddy Doctor, 10 competition classes; +3 if full 13-set obtained)
 RICE_NORMAL · RICE_BACTERIAL_LEAF_BLIGHT · RICE_BACTERIAL_LEAF_STREAK · RICE_BACTERIAL_PANICLE_BLIGHT · RICE_BLAST · RICE_BROWN_SPOT · RICE_DEAD_HEART · RICE_DOWNY_MILDEW · RICE_HISPA · RICE_TUNGRO
 ## TOMATO (PlantVillage 10)

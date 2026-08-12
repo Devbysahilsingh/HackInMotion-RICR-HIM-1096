@@ -1,0 +1,358 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-12T18:35:06+00:00",
+  "method": {
+    "feature": "mean and std of the outer 8px ring of the 64x64 grayscale thumbnail",
+    "classifier": "exhaustive single-threshold sweep — deterministic measurement, no model is trained",
+    "interpretation": "a LOWER BOUND on how easily a model can identify the source dataset; a learned model would do at least as well",
+    "separable_at": 0.9
+  },
+  "crops": {
+    "CHILLI": {
+      "images": 10332,
+      "sources": {
+        "chilli_primary": 8817,
+        "chilli_secondary": 1515
+      },
+      "class_source_composition": {
+        "CHILLI_ANTHRACNOSE": {
+          "chilli_secondary": 347
+        },
+        "CHILLI_BACTERIAL_SPOT": {
+          "chilli_primary": 1629
+        },
+        "CHILLI_CERCOSPORA_LEAF_SPOT": {
+          "chilli_primary": 1898,
+          "chilli_secondary": 367
+        },
+        "CHILLI_HEALTHY": {
+          "chilli_primary": 1647,
+          "chilli_secondary": 432
+        },
+        "CHILLI_LEAF_CURL_VIRUS": {
+          "chilli_primary": 1590,
+          "chilli_secondary": 369
+        },
+        "CHILLI_NUTRIENT_DEFICIENCY": {
+          "chilli_primary": 1207
+        },
+        "CHILLI_POWDERY_MILDEW": {
+          "chilli_primary": 846
+        }
+      },
+      "source_separability": {
+        "chilli_primary|chilli_secondary": {
+          "border_mean": {
+            "accuracy": 0.9129,
+            "threshold": 210.8
+          },
+          "border_std": {
+            "accuracy": 0.8534,
+            "threshold": 89.04
+          },
+          "best_accuracy": 0.9129,
+          "verdict": "SEPARABLE — source is a usable shortcut"
+        }
+      },
+      "source_disjoint_class_pairs": [
+        {
+          "classes": [
+            "CHILLI_ANTHRACNOSE",
+            "CHILLI_BACTERIAL_SPOT"
+          ],
+          "sources": [
+            [
+              "chilli_secondary"
+            ],
+            [
+              "chilli_primary"
+            ]
+          ]
+        },
+        {
+          "classes": [
+            "CHILLI_ANTHRACNOSE",
+            "CHILLI_NUTRIENT_DEFICIENCY"
+          ],
+          "sources": [
+            [
+              "chilli_secondary"
+            ],
+            [
+              "chilli_primary"
+            ]
+          ]
+        },
+        {
+          "classes": [
+            "CHILLI_ANTHRACNOSE",
+            "CHILLI_POWDERY_MILDEW"
+          ],
+          "sources": [
+            [
+              "chilli_secondary"
+            ],
+            [
+              "chilli_primary"
+            ]
+          ]
+        }
+      ],
+      "single_source_classes": [
+        "CHILLI_ANTHRACNOSE",
+        "CHILLI_BACTERIAL_SPOT",
+        "CHILLI_NUTRIENT_DEFICIENCY",
+        "CHILLI_POWDERY_MILDEW"
+      ],
+      "confounded": true
+    },
+    "COTTON": {
+      "images": 2021,
+      "sources": {
+        "cotton_sarcld2024": 2021
+      },
+      "class_source_composition": {
+        "COTTON_BACTERIAL_BLIGHT": {
+          "cotton_sarcld2024": 250
+        },
+        "COTTON_CURL_VIRUS": {
+          "cotton_sarcld2024": 431
+        },
+        "COTTON_HEALTHY": {
+          "cotton_sarcld2024": 257
+        },
+        "COTTON_HERBICIDE_DAMAGE": {
+          "cotton_sarcld2024": 280
+        },
+        "COTTON_LEAF_HOPPER_JASSIDS": {
+          "cotton_sarcld2024": 225
+        },
+        "COTTON_LEAF_REDDENING": {
+          "cotton_sarcld2024": 578
+        }
+      },
+      "source_separability": {},
+      "source_disjoint_class_pairs": [],
+      "single_source_classes": [
+        "COTTON_BACTERIAL_BLIGHT",
+        "COTTON_CURL_VIRUS",
+        "COTTON_HEALTHY",
+        "COTTON_HERBICIDE_DAMAGE",
+        "COTTON_LEAF_HOPPER_JASSIDS",
+        "COTTON_LEAF_REDDENING"
+      ],
+      "confounded": false
+    },
+    "MAIZE": {
+      "images": 4227,
+      "sources": {
+        "plantdoc": 375,
+        "plantvillage": 3852
+      },
+      "class_source_composition": {
+        "MAIZE_COMMON_RUST": {
+          "plantdoc": 116,
+          "plantvillage": 1192
+        },
+        "MAIZE_GRAY_LEAF_SPOT": {
+          "plantdoc": 68,
+          "plantvillage": 513
+        },
+        "MAIZE_HEALTHY": {
+          "plantvillage": 1162
+        },
+        "MAIZE_NORTHERN_LEAF_BLIGHT": {
+          "plantdoc": 191,
+          "plantvillage": 985
+        }
+      },
+      "source_separability": {
+        "plantdoc|plantvillage": {
+          "border_mean": {
+            "accuracy": 0.9115,
+            "threshold": 213.53
+          },
+          "border_std": {
+            "accuracy": 0.9113,
+            "threshold": 97.72
+          },
+          "best_accuracy": 0.9115,
+          "verdict": "SEPARABLE — source is a usable shortcut"
+        }
+      },
+      "source_disjoint_class_pairs": [],
+      "single_source_classes": [
+        "MAIZE_HEALTHY"
+      ],
+      "confounded": false
+    },
+    "POTATO": {
+      "images": 2373,
+      "sources": {
+        "plantdoc": 221,
+        "plantvillage": 2152
+      },
+      "class_source_composition": {
+        "POTATO_EARLY_BLIGHT": {
+          "plantdoc": 116,
+          "plantvillage": 1000
+        },
+        "POTATO_HEALTHY": {
+          "plantvillage": 152
+        },
+        "POTATO_LATE_BLIGHT": {
+          "plantdoc": 105,
+          "plantvillage": 1000
+        }
+      },
+      "source_separability": {
+        "plantdoc|plantvillage": {
+          "border_mean": {
+            "accuracy": 0.9452,
+            "threshold": 98.37
+          },
+          "border_std": {
+            "accuracy": 0.9174,
+            "threshold": 64.61
+          },
+          "best_accuracy": 0.9452,
+          "verdict": "SEPARABLE — source is a usable shortcut"
+        }
+      },
+      "source_disjoint_class_pairs": [],
+      "single_source_classes": [
+        "POTATO_HEALTHY"
+      ],
+      "confounded": false
+    },
+    "RICE": {
+      "images": 7855,
+      "sources": {
+        "rice_healthy_diu": 1923,
+        "rice_odisha": 5932
+      },
+      "class_source_composition": {
+        "RICE_BACTERIAL_LEAF_BLIGHT": {
+          "rice_healthy_diu": 262,
+          "rice_odisha": 1584
+        },
+        "RICE_BLAST": {
+          "rice_healthy_diu": 592,
+          "rice_odisha": 1440
+        },
+        "RICE_BROWN_SPOT": {
+          "rice_odisha": 1600
+        },
+        "RICE_NORMAL": {
+          "rice_healthy_diu": 771
+        },
+        "RICE_TUNGRO": {
+          "rice_healthy_diu": 298,
+          "rice_odisha": 1308
+        }
+      },
+      "source_separability": {
+        "rice_healthy_diu|rice_odisha": {
+          "border_mean": {
+            "accuracy": 0.9609,
+            "threshold": 157.83
+          },
+          "border_std": {
+            "accuracy": 0.7736,
+            "threshold": 22.44
+          },
+          "best_accuracy": 0.9609,
+          "verdict": "SEPARABLE — source is a usable shortcut"
+        }
+      },
+      "source_disjoint_class_pairs": [
+        {
+          "classes": [
+            "RICE_BROWN_SPOT",
+            "RICE_NORMAL"
+          ],
+          "sources": [
+            [
+              "rice_odisha"
+            ],
+            [
+              "rice_healthy_diu"
+            ]
+          ]
+        }
+      ],
+      "single_source_classes": [
+        "RICE_BROWN_SPOT",
+        "RICE_NORMAL"
+      ],
+      "confounded": true
+    },
+    "TOMATO": {
+      "images": 18906,
+      "sources": {
+        "plantdoc": 746,
+        "plantvillage": 18160
+      },
+      "class_source_composition": {
+        "TOMATO_BACTERIAL_SPOT": {
+          "plantdoc": 110,
+          "plantvillage": 2127
+        },
+        "TOMATO_EARLY_BLIGHT": {
+          "plantdoc": 88,
+          "plantvillage": 1000
+        },
+        "TOMATO_HEALTHY": {
+          "plantdoc": 63,
+          "plantvillage": 1591
+        },
+        "TOMATO_LATE_BLIGHT": {
+          "plantdoc": 111,
+          "plantvillage": 1909
+        },
+        "TOMATO_LEAF_MOLD": {
+          "plantdoc": 91,
+          "plantvillage": 952
+        },
+        "TOMATO_MOSAIC_VIRUS": {
+          "plantdoc": 54,
+          "plantvillage": 373
+        },
+        "TOMATO_SEPTORIA_LEAF_SPOT": {
+          "plantdoc": 151,
+          "plantvillage": 1771
+        },
+        "TOMATO_SPIDER_MITES": {
+          "plantdoc": 2,
+          "plantvillage": 1676
+        },
+        "TOMATO_TARGET_SPOT": {
+          "plantvillage": 1404
+        },
+        "TOMATO_YELLOW_LEAF_CURL_VIRUS": {
+          "plantdoc": 76,
+          "plantvillage": 5357
+        }
+      },
+      "source_separability": {
+        "plantdoc|plantvillage": {
+          "border_mean": {
+            "accuracy": 0.9627,
+            "threshold": 199.55
+          },
+          "border_std": {
+            "accuracy": 0.9614,
+            "threshold": 74.11
+          },
+          "best_accuracy": 0.9627,
+          "verdict": "SEPARABLE — source is a usable shortcut"
+        }
+      },
+      "source_disjoint_class_pairs": [],
+      "single_source_classes": [
+        "TOMATO_TARGET_SPOT"
+      ],
+      "confounded": false
+    }
+  }
+}

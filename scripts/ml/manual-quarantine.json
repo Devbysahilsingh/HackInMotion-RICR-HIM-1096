@@ -1,0 +1,384 @@
+{
+  "version": 1,
+  "review_coverage": {
+    "MAIZE_COMMON_RUST": {
+      "images": 114,
+      "reviewed": 0,
+      "remaining": 114,
+      "complete": false
+    },
+    "MAIZE_GRAY_LEAF_SPOT": {
+      "images": 65,
+      "reviewed": 30,
+      "remaining": 35,
+      "complete": false
+    },
+    "MAIZE_NORTHERN_LEAF_BLIGHT": {
+      "images": 179,
+      "reviewed": 0,
+      "remaining": 179,
+      "complete": false
+    },
+    "POTATO_EARLY_BLIGHT": {
+      "images": 111,
+      "reviewed": 30,
+      "remaining": 81,
+      "complete": false
+    },
+    "POTATO_LATE_BLIGHT": {
+      "images": 96,
+      "reviewed": 0,
+      "remaining": 96,
+      "complete": false
+    },
+    "TOMATO_BACTERIAL_SPOT": {
+      "images": 104,
+      "reviewed": 0,
+      "remaining": 104,
+      "complete": false
+    },
+    "TOMATO_EARLY_BLIGHT": {
+      "images": 80,
+      "reviewed": 0,
+      "remaining": 80,
+      "complete": false
+    },
+    "TOMATO_HEALTHY": {
+      "images": 57,
+      "reviewed": 57,
+      "remaining": 0,
+      "complete": true
+    },
+    "TOMATO_LATE_BLIGHT": {
+      "images": 100,
+      "reviewed": 0,
+      "remaining": 100,
+      "complete": false
+    },
+    "TOMATO_LEAF_MOLD": {
+      "images": 90,
+      "reviewed": 30,
+      "remaining": 60,
+      "complete": false
+    },
+    "TOMATO_MOSAIC_VIRUS": {
+      "images": 52,
+      "reviewed": 30,
+      "remaining": 22,
+      "complete": false
+    },
+    "TOMATO_SEPTORIA_LEAF_SPOT": {
+      "images": 141,
+      "reviewed": 30,
+      "remaining": 111,
+      "complete": false
+    },
+    "TOMATO_SPIDER_MITES": {
+      "images": 2,
+      "reviewed": 2,
+      "remaining": 0,
+      "complete": true
+    },
+    "TOMATO_YELLOW_LEAF_CURL_VIRUS": {
+      "images": 73,
+      "reviewed": 0,
+      "remaining": 73,
+      "complete": false
+    }
+  },
+  "review_coverage_totals": {
+    "images": 1264,
+    "reviewed": 209,
+    "remaining": 1055
+  },
+  "review_method": "Contact sheets rendered by scripts/ml/review-fieldtest.py, 30 images per sheet, ordered by path, each cell numbered and resolvable through index.json. Sheets were inspected visually. Sheet 00 of a class means its first 30 images by path, NOT a random sample.",
+  "note": "Field-test images excluded after direct visual inspection, where no objective filename rule could catch them. Each entry names the evidence visible in the image, the reviewer, and the contact-sheet cell it was seen on, so any entry can be re-checked or reversed. Raw files are untouched. No label is changed: these images are removed from the evaluation set, not reassigned to another class.",
+  "categories": {
+    "stock_watermark": "burned-in stock-agency or image-host watermark",
+    "not_a_photograph": "screenshot, slide, infographic or illustration rather than a photograph of a plant",
+    "composite_figure": "multi-panel figure; often shows several different diseases in one image",
+    "not_a_plant_leaf": "subject is not a leaf on a plant",
+    "caption_names_other_disease": "burned-in caption in the image names a disease different from the folder label — flagged for human confirmation, NOT relabelled"
+  },
+  "entries": [
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/test/Potato leaf early blight/early-blight-alternaria-alternata-leaf-spotting-on-potato-leaf-X91XJE.jpg",
+      "code": "POTATO_EARLY_BLIGHT",
+      "category": "stock_watermark",
+      "reason": "burned-in \"alamy stock photo\" banner",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "POTATO_EARLY_BLIGHT/001"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/test/Potato leaf early blight/early-blight-or-target-spot-alternaria-solani-lesions-on-a-tomato-AXK6AY.jpg",
+      "code": "POTATO_EARLY_BLIGHT",
+      "category": "stock_watermark",
+      "reason": "burned-in \"alamy stock photo\" banner",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "POTATO_EARLY_BLIGHT/002"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/test/Potato leaf early blight/potato-blight-phytophthora-infestans-close-up-of-upper-surface-of-BMMRXC.jpg",
+      "code": "POTATO_EARLY_BLIGHT",
+      "category": "stock_watermark",
+      "reason": "burned-in \"alamy stock photo\" banner",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "POTATO_EARLY_BLIGHT/004"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/test/Potato leaf early blight/potato-early-blight-alternaria-alternata-lesion-on-a-potato-leaf-a1w1em.jpg",
+      "code": "POTATO_EARLY_BLIGHT",
+      "category": "stock_watermark",
+      "reason": "burned-in \"alamy stock photo\" banner",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "POTATO_EARLY_BLIGHT/005"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/test/Tomato Septoria leaf spot/0.jpg",
+      "code": "TOMATO_SEPTORIA_LEAF_SPOT",
+      "category": "not_a_photograph",
+      "reason": "screenshot of a Missouri Botanical Garden web factsheet, including title and URL text",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_SEPTORIA_LEAF_SPOT/000"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/test/Tomato leaf mosaic virus/ill-tomato-of-tomato-mosaic-virus-DBE17N.jpg",
+      "code": "TOMATO_MOSAIC_VIRUS",
+      "category": "stock_watermark",
+      "reason": "burned-in \"alamy stock photo\" banner",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_MOSAIC_VIRUS/003"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/test/Tomato leaf mosaic virus/page_2.jpg",
+      "code": "TOMATO_MOSAIC_VIRUS",
+      "category": "composite_figure",
+      "reason": "multi-panel figure titled \"Mosaic virusleri\" showing several subjects",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_MOSAIC_VIRUS/004"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/test/Tomato leaf/2013-08-20-06.jpg",
+      "code": "TOMATO_HEALTHY",
+      "category": "not_a_plant_leaf",
+      "reason": "photograph of chopped herbs on a cutting board",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_HEALTHY/001"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/test/Tomato mold leaf/BIGSD.jpg",
+      "code": "TOMATO_LEAF_MOLD",
+      "category": "not_a_photograph",
+      "reason": "conference-poster title slide \"Tomato leaf mold in the midwest\" with author list",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_LEAF_MOLD/002"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/train/Corn Gray leaf spot/FJ_010_F17220_B00010.jpg",
+      "code": "MAIZE_GRAY_LEAF_SPOT",
+      "category": "composite_figure",
+      "reason": "four-panel figure captioned Gray Leaf Spot / Frogeye Leaf Spot / Northern Corn Leaf Blight / White Mold",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "MAIZE_GRAY_LEAF_SPOT/018"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/train/Corn Gray leaf spot/Figure%201%20Gray%20leaf%20spot%20and%20Northern%20corn%20leaf%20blight.jpg",
+      "code": "MAIZE_GRAY_LEAF_SPOT",
+      "category": "composite_figure",
+      "reason": "two-panel figure captioned \"Gray leaf spot (left) and Northern corn leaf blight (right)\"",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "MAIZE_GRAY_LEAF_SPOT/021"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/train/Corn Gray leaf spot/GetFile.aspx_guid=fb78e057-33b3-4901-b836-e08e45889f6f.jpg",
+      "code": "MAIZE_GRAY_LEAF_SPOT",
+      "category": "composite_figure",
+      "reason": "five-panel strip figure captioned with five different diseases",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "MAIZE_GRAY_LEAF_SPOT/026"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/train/Potato leaf early blight/80109626.jpg",
+      "code": "POTATO_EARLY_BLIGHT",
+      "category": "stock_watermark",
+      "reason": "burned-in \"Minden Pictures / FLPA\" agency credit",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "POTATO_EARLY_BLIGHT/028"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/train/Tomato Septoria leaf spot/3-septoria-leaf-blight-n.jpg",
+      "code": "TOMATO_SEPTORIA_LEAF_SPOT",
+      "category": "not_a_photograph",
+      "reason": "slide/infographic titled \"#3 Septoria Leaf Blight\" with bullet-point text",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_SEPTORIA_LEAF_SPOT/020"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/train/Tomato Septoria leaf spot/46-Septoria-leaf-spot.jpg",
+      "code": "TOMATO_SEPTORIA_LEAF_SPOT",
+      "category": "not_a_photograph",
+      "reason": "black-and-white line illustration, not a photograph",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_SEPTORIA_LEAF_SPOT/023"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/train/Tomato leaf mosaic virus/Tomato-brown-rugose-fruit-virus-ToBRFV-infected-tomato-Solanum-lycopersicum-plants_Q320.jpg",
+      "code": "TOMATO_MOSAIC_VIRUS",
+      "category": "composite_figure",
+      "reason": "multi-panel figure with panel label (b)",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_MOSAIC_VIRUS/019"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/train/Tomato leaf/17371378-tomato-leaf.jpg",
+      "code": "TOMATO_HEALTHY",
+      "category": "stock_watermark",
+      "reason": "burned-in \"Colourbox\" watermark across the leaf",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_HEALTHY/014"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/train/Tomato leaf/9bfac1dea7f401e3b379dab33f535bb4.jpg",
+      "code": "TOMATO_HEALTHY",
+      "category": "composite_figure",
+      "reason": "multi-panel plate of many labelled leaf thumbnails, not a single photograph",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_HEALTHY/021"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/train/Tomato leaf/stock-vector-set-of-vector-elements-for-your-design-red-ripe-tomatoes-with-water-drops-tomato-leaves-and-tomato-203297116.jpg",
+      "code": "TOMATO_HEALTHY",
+      "category": "stock_watermark",
+      "reason": "burned-in \"shutterstock\" watermark; composite of fruit, flowers and leaves",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_HEALTHY/045"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/train/Tomato leaf/tomato-leaf-20728368.jpg",
+      "code": "TOMATO_HEALTHY",
+      "category": "stock_watermark",
+      "reason": "burned-in \"Dreamstime.com\" download strip",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_HEALTHY/046"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/train/Tomato leaf/tomato-leaf-26180166.jpg",
+      "code": "TOMATO_HEALTHY",
+      "category": "stock_watermark",
+      "reason": "burned-in \"Dreamstime.com\" download strip",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_HEALTHY/047"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/train/Tomato leaf/tomato-leaf-6291945.jpg",
+      "code": "TOMATO_HEALTHY",
+      "category": "stock_watermark",
+      "reason": "burned-in \"Dreamstime.com\" download strip",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_HEALTHY/048"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/train/Tomato leaf/tomato-leaf-6424287.jpg",
+      "code": "TOMATO_HEALTHY",
+      "category": "stock_watermark",
+      "reason": "burned-in \"Dreamstime.com\" download strip",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_HEALTHY/049"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/train/Tomato leaf/tomato-leaf-isolated-white-34309524.jpg",
+      "code": "TOMATO_HEALTHY",
+      "category": "stock_watermark",
+      "reason": "burned-in \"Dreamstime.com\" download strip",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_HEALTHY/051"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/train/Tomato leaf/tomato-leaf.jpg",
+      "code": "TOMATO_HEALTHY",
+      "category": "stock_watermark",
+      "reason": "burned-in \"Dreamstime.com\" download strip",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_HEALTHY/052"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/train/Tomato leaf/tomato-leaves-17427786.jpg",
+      "code": "TOMATO_HEALTHY",
+      "category": "stock_watermark",
+      "reason": "burned-in \"Dreamstime.com\" download strip",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_HEALTHY/053"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/train/Tomato leaf/tomato-leaves-9025906.jpg",
+      "code": "TOMATO_HEALTHY",
+      "category": "stock_watermark",
+      "reason": "burned-in \"Dreamstime.com\" download strip",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_HEALTHY/054"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/train/Tomato leaf/tomato-vine-ripe-leaves-isolated-against-white-34863029.jpg",
+      "code": "TOMATO_HEALTHY",
+      "category": "stock_watermark",
+      "reason": "burned-in \"Dreamstime.com\" download strip",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_HEALTHY/056"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/train/Tomato mold leaf/DSCN2697.jpg",
+      "code": "TOMATO_LEAF_MOLD",
+      "category": "stock_watermark",
+      "reason": "burned-in \"proudly hosted at photobucket\" watermark",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_LEAF_MOLD/023"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/train/Tomato two spotted spider mites leaf/SpotSpeckBlightMite-1l4v879.jpg",
+      "code": "TOMATO_SPIDER_MITES",
+      "category": "composite_figure",
+      "reason": "four-panel comparison figure with burned-in captions \"Bacterial Spot\", \"Bacterial Speck\", \"Early Blight\", \"Mite Damage\" — three of the four panels are other diseases",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_SPIDER_MITES/000"
+    },
+    {
+      "path": "plantdoc/PlantDoc-Dataset-master/train/Tomato two spotted spider mites leaf/comparing-diseases-4-canker-tomato-1y51ejs.jpg",
+      "code": "TOMATO_SPIDER_MITES",
+      "category": "composite_figure",
+      "reason": "multi-panel disease-comparison figure; filename \"comparing-diseases-4-canker-tomato\" corroborates",
+      "evidence": "visible in the image itself",
+      "reviewer": "Claude (visual review of datasets/audit/fieldtest-review sheets, 2026-08-13)",
+      "sheet_cell": "TOMATO_SPIDER_MITES/001"
+    }
+  ]
+}

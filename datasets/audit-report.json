@@ -1,0 +1,3276 @@
+{
+  "schema_version": 1,
+  "todo": "P0-5",
+  "generated_at": "2026-08-12T18:15:49+00:00",
+  "method": {
+    "phash": "DCT-II 32x32, top-left 8x8, DC excluded, median threshold, 63 bits",
+    "near_dup_threshold_hamming": 8,
+    "pair_search": "exact all-pairs (no approximate index)",
+    "verification": "16x16 grayscale z-normalised cross-correlation >= 0.95; pHash supplies candidates only, because low-texture leaf images collide in hash space and union-find then chains unrelated crops into one cluster",
+    "verification_calibration": {
+      "positive_control_byte_identical_pairs": 2000,
+      "positive_control_min_ncc": 1.0,
+      "positive_control_mean_ncc": 1.0,
+      "negative_control_random_pairs": 20000,
+      "negative_control_mean_ncc": 0.0884,
+      "negative_control_p99_ncc": 0.6148,
+      "negative_control_max_ncc": 0.8069,
+      "negative_control_fraction_above_cut": 0.0,
+      "negative_control_note": "Random pairs are not guaranteed non-duplicates — these corpora contain genuine duplicates, so the maximum can legitimately reach 1.0. Read the mean and p99, not the max."
+    },
+    "candidate_pairs": 106532,
+    "verified_pairs": 16760,
+    "rejected_by_verification": 89772,
+    "candidate_ncc_histogram": {
+      "-0.1": 5,
+      "-0.2": 1,
+      "-0.4": 4,
+      "0.0": 22,
+      "0.1": 53,
+      "0.2": 153,
+      "0.3": 634,
+      "0.4": 1893,
+      "0.5": 6198,
+      "0.6": 17106,
+      "0.7": 35005,
+      "0.8": 24431,
+      "0.9": 21027
+    },
+    "known_limitation": "Rotated/flipped/heavily-recoloured copies are not detected: pHash is not rotation-invariant, so augmented variants of an image may score as unrelated. Cotton's augmented split must therefore be excluded from val/test wholesale rather than relied on being caught here.",
+    "clustering": "union-find over verified pairs",
+    "sample_seed": 20260812,
+    "sample_per_class": 30
+  },
+  "totals": {
+    "images_audited": 94187,
+    "decode_failures": 0,
+    "datasets": 7
+  },
+  "census": {
+    "plantvillage": {
+      "crops": [
+        "tomato",
+        "potato",
+        "maize",
+        "other"
+      ],
+      "images": 55448,
+      "groups": {
+        "all": {
+          "images": 55448,
+          "classes": [
+            {
+              "raw_class": "Apple___Apple_scab",
+              "code": null,
+              "in_scope": false,
+              "count": 630,
+              "formats": {
+                "JPEG": 630
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 8.4
+            },
+            {
+              "raw_class": "Apple___Black_rot",
+              "code": null,
+              "in_scope": false,
+              "count": 621,
+              "formats": {
+                "JPEG": 621
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 11.1
+            },
+            {
+              "raw_class": "Apple___Cedar_apple_rust",
+              "code": null,
+              "in_scope": false,
+              "count": 275,
+              "formats": {
+                "JPEG": 275
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 2.7
+            },
+            {
+              "raw_class": "Apple___healthy",
+              "code": null,
+              "in_scope": false,
+              "count": 1645,
+              "formats": {
+                "JPEG": 1645
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 22.7
+            },
+            {
+              "raw_class": "Background_without_leaves",
+              "code": "BACKGROUND_NO_LEAF",
+              "in_scope": true,
+              "count": 1143,
+              "formats": {
+                "JPEG": 1143
+              },
+              "median_width": 256,
+              "median_height": 192,
+              "min_side": 192,
+              "megabytes": 10.2
+            },
+            {
+              "raw_class": "Blueberry___healthy",
+              "code": null,
+              "in_scope": false,
+              "count": 1502,
+              "formats": {
+                "JPEG": 1502
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 25.3
+            },
+            {
+              "raw_class": "Cherry___Powdery_mildew",
+              "code": null,
+              "in_scope": false,
+              "count": 1052,
+              "formats": {
+                "JPEG": 1052
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 10.8
+            },
+            {
+              "raw_class": "Cherry___healthy",
+              "code": null,
+              "in_scope": false,
+              "count": 854,
+              "formats": {
+                "JPEG": 854
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 13.4
+            },
+            {
+              "raw_class": "Corn___Cercospora_leaf_spot Gray_leaf_spot",
+              "code": "MAIZE_GRAY_LEAF_SPOT",
+              "in_scope": true,
+              "count": 513,
+              "formats": {
+                "JPEG": 513
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 7.9
+            },
+            {
+              "raw_class": "Corn___Common_rust",
+              "code": "MAIZE_COMMON_RUST",
+              "in_scope": true,
+              "count": 1192,
+              "formats": {
+                "JPEG": 1192
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 16.1
+            },
+            {
+              "raw_class": "Corn___Northern_Leaf_Blight",
+              "code": "MAIZE_NORTHERN_LEAF_BLIGHT",
+              "in_scope": true,
+              "count": 985,
+              "formats": {
+                "JPEG": 985
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 13.1
+            },
+            {
+              "raw_class": "Corn___healthy",
+              "code": "MAIZE_HEALTHY",
+              "in_scope": true,
+              "count": 1162,
+              "formats": {
+                "JPEG": 1162
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 12.7
+            },
+            {
+              "raw_class": "Grape___Black_rot",
+              "code": null,
+              "in_scope": false,
+              "count": 1180,
+              "formats": {
+                "JPEG": 1180
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 18.5
+            },
+            {
+              "raw_class": "Grape___Esca_(Black_Measles)",
+              "code": null,
+              "in_scope": false,
+              "count": 1383,
+              "formats": {
+                "JPEG": 1383
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 25.9
+            },
+            {
+              "raw_class": "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
+              "code": null,
+              "in_scope": false,
+              "count": 1076,
+              "formats": {
+                "JPEG": 1076
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 18.9
+            },
+            {
+              "raw_class": "Grape___healthy",
+              "code": null,
+              "in_scope": false,
+              "count": 423,
+              "formats": {
+                "JPEG": 423
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 6.0
+            },
+            {
+              "raw_class": "Orange___Haunglongbing_(Citrus_greening)",
+              "code": null,
+              "in_scope": false,
+              "count": 5507,
+              "formats": {
+                "JPEG": 5507
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 58.2
+            },
+            {
+              "raw_class": "Peach___Bacterial_spot",
+              "code": null,
+              "in_scope": false,
+              "count": 2297,
+              "formats": {
+                "JPEG": 2297
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 28.4
+            },
+            {
+              "raw_class": "Peach___healthy",
+              "code": null,
+              "in_scope": false,
+              "count": 360,
+              "formats": {
+                "JPEG": 360
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 5.5
+            },
+            {
+              "raw_class": "Pepper,_bell___Bacterial_spot",
+              "code": null,
+              "in_scope": false,
+              "count": 997,
+              "formats": {
+                "JPEG": 997
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 17.2
+            },
+            {
+              "raw_class": "Pepper,_bell___healthy",
+              "code": null,
+              "in_scope": false,
+              "count": 1478,
+              "formats": {
+                "JPEG": 1477,
+                "PNG": 1
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 23.6
+            },
+            {
+              "raw_class": "Potato___Early_blight",
+              "code": "POTATO_EARLY_BLIGHT",
+              "in_scope": true,
+              "count": 1000,
+              "formats": {
+                "JPEG": 1000
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 19.0
+            },
+            {
+              "raw_class": "Potato___Late_blight",
+              "code": "POTATO_LATE_BLIGHT",
+              "in_scope": true,
+              "count": 1000,
+              "formats": {
+                "JPEG": 1000
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 15.7
+            },
+            {
+              "raw_class": "Potato___healthy",
+              "code": "POTATO_HEALTHY",
+              "in_scope": true,
+              "count": 152,
+              "formats": {
+                "JPEG": 152
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 2.9
+            },
+            {
+              "raw_class": "Raspberry___healthy",
+              "code": null,
+              "in_scope": false,
+              "count": 371,
+              "formats": {
+                "JPEG": 371
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 6.6
+            },
+            {
+              "raw_class": "Soybean___healthy",
+              "code": null,
+              "in_scope": false,
+              "count": 5090,
+              "formats": {
+                "JPEG": 5090
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 87.4
+            },
+            {
+              "raw_class": "Squash___Powdery_mildew",
+              "code": null,
+              "in_scope": false,
+              "count": 1835,
+              "formats": {
+                "JPEG": 1835
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 30.1
+            },
+            {
+              "raw_class": "Strawberry___Leaf_scorch",
+              "code": null,
+              "in_scope": false,
+              "count": 1109,
+              "formats": {
+                "JPEG": 1109
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 20.1
+            },
+            {
+              "raw_class": "Strawberry___healthy",
+              "code": null,
+              "in_scope": false,
+              "count": 456,
+              "formats": {
+                "JPEG": 456
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 8.5
+            },
+            {
+              "raw_class": "Tomato___Bacterial_spot",
+              "code": "TOMATO_BACTERIAL_SPOT",
+              "in_scope": true,
+              "count": 2127,
+              "formats": {
+                "JPEG": 2127
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 26.1
+            },
+            {
+              "raw_class": "Tomato___Early_blight",
+              "code": "TOMATO_EARLY_BLIGHT",
+              "in_scope": true,
+              "count": 1000,
+              "formats": {
+                "JPEG": 1000
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 14.5
+            },
+            {
+              "raw_class": "Tomato___Late_blight",
+              "code": "TOMATO_LATE_BLIGHT",
+              "in_scope": true,
+              "count": 1909,
+              "formats": {
+                "JPEG": 1909
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 24.5
+            },
+            {
+              "raw_class": "Tomato___Leaf_Mold",
+              "code": "TOMATO_LEAF_MOLD",
+              "in_scope": true,
+              "count": 952,
+              "formats": {
+                "JPEG": 952
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 14.3
+            },
+            {
+              "raw_class": "Tomato___Septoria_leaf_spot",
+              "code": "TOMATO_SEPTORIA_LEAF_SPOT",
+              "in_scope": true,
+              "count": 1771,
+              "formats": {
+                "JPEG": 1771
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 29.5
+            },
+            {
+              "raw_class": "Tomato___Spider_mites Two-spotted_spider_mite",
+              "code": "TOMATO_SPIDER_MITES",
+              "in_scope": true,
+              "count": 1676,
+              "formats": {
+                "JPEG": 1676
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 31.7
+            },
+            {
+              "raw_class": "Tomato___Target_Spot",
+              "code": "TOMATO_TARGET_SPOT",
+              "in_scope": true,
+              "count": 1404,
+              "formats": {
+                "JPEG": 1404
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 27.2
+            },
+            {
+              "raw_class": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+              "code": "TOMATO_YELLOW_LEAF_CURL_VIRUS",
+              "in_scope": true,
+              "count": 5357,
+              "formats": {
+                "JPEG": 5357
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 66.4
+            },
+            {
+              "raw_class": "Tomato___Tomato_mosaic_virus",
+              "code": "TOMATO_MOSAIC_VIRUS",
+              "in_scope": true,
+              "count": 373,
+              "formats": {
+                "JPEG": 373
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 6.8
+            },
+            {
+              "raw_class": "Tomato___healthy",
+              "code": "TOMATO_HEALTHY",
+              "in_scope": true,
+              "count": 1591,
+              "formats": {
+                "JPEG": 1591
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 33.7
+            }
+          ],
+          "class_count": 39,
+          "imbalance_ratio": 36.2
+        }
+      },
+      "notes": {
+        "stray_files": [],
+        "skipped_metadata": 0
+      }
+    },
+    "plantdoc": {
+      "crops": [
+        "tomato",
+        "potato",
+        "maize",
+        "other"
+      ],
+      "images": 2572,
+      "groups": {
+        "train": {
+          "images": 2336,
+          "classes": [
+            {
+              "raw_class": "Apple Scab Leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 83,
+              "formats": {
+                "JPEG": 83
+              },
+              "median_width": 612,
+              "median_height": 459,
+              "min_side": 119,
+              "megabytes": 22.6
+            },
+            {
+              "raw_class": "Apple leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 82,
+              "formats": {
+                "JPEG": 82
+              },
+              "median_width": 927,
+              "median_height": 782,
+              "min_side": 300,
+              "megabytes": 25.3
+            },
+            {
+              "raw_class": "Apple rust leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 78,
+              "formats": {
+                "JPEG": 78
+              },
+              "median_width": 743,
+              "median_height": 600,
+              "min_side": 150,
+              "megabytes": 35.4
+            },
+            {
+              "raw_class": "Bell_pepper leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 53,
+              "formats": {
+                "JPEG": 53
+              },
+              "median_width": 800,
+              "median_height": 756,
+              "min_side": 230,
+              "megabytes": 16.2
+            },
+            {
+              "raw_class": "Bell_pepper leaf spot",
+              "code": null,
+              "in_scope": false,
+              "count": 62,
+              "formats": {
+                "JPEG": 62
+              },
+              "median_width": 800,
+              "median_height": 629,
+              "min_side": 180,
+              "megabytes": 19.9
+            },
+            {
+              "raw_class": "Blueberry leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 104,
+              "formats": {
+                "JPEG": 104
+              },
+              "median_width": 1240,
+              "median_height": 958,
+              "min_side": 300,
+              "megabytes": 55.4
+            },
+            {
+              "raw_class": "Cherry leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 47,
+              "formats": {
+                "JPEG": 47
+              },
+              "median_width": 1056,
+              "median_height": 1024,
+              "min_side": 300,
+              "megabytes": 28.0
+            },
+            {
+              "raw_class": "Corn Gray leaf spot",
+              "code": "MAIZE_GRAY_LEAF_SPOT",
+              "in_scope": true,
+              "count": 64,
+              "formats": {
+                "JPEG": 63,
+                "PNG": 1
+              },
+              "median_width": 524,
+              "median_height": 394,
+              "min_side": 191,
+              "megabytes": 14.0
+            },
+            {
+              "raw_class": "Corn leaf blight",
+              "code": "MAIZE_NORTHERN_LEAF_BLIGHT",
+              "in_scope": true,
+              "count": 179,
+              "formats": {
+                "JPEG": 179
+              },
+              "median_width": 640,
+              "median_height": 512,
+              "min_side": 185,
+              "megabytes": 59.6
+            },
+            {
+              "raw_class": "Corn rust leaf",
+              "code": "MAIZE_COMMON_RUST",
+              "in_scope": true,
+              "count": 106,
+              "formats": {
+                "JPEG": 102,
+                "PNG": 3,
+                "MPO": 1
+              },
+              "median_width": 769,
+              "median_height": 650,
+              "min_side": 200,
+              "megabytes": 43.6
+            },
+            {
+              "raw_class": "Peach leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 102,
+              "formats": {
+                "JPEG": 102
+              },
+              "median_width": 1200,
+              "median_height": 1049,
+              "min_side": 363,
+              "megabytes": 36.4
+            },
+            {
+              "raw_class": "Potato leaf early blight",
+              "code": "POTATO_EARLY_BLIGHT",
+              "in_scope": true,
+              "count": 108,
+              "formats": {
+                "JPEG": 108
+              },
+              "median_width": 671,
+              "median_height": 505,
+              "min_side": 197,
+              "megabytes": 26.7
+            },
+            {
+              "raw_class": "Potato leaf late blight",
+              "code": "POTATO_LATE_BLIGHT",
+              "in_scope": true,
+              "count": 97,
+              "formats": {
+                "JPEG": 96,
+                "MPO": 1
+              },
+              "median_width": 802,
+              "median_height": 559,
+              "min_side": 195,
+              "megabytes": 28.8
+            },
+            {
+              "raw_class": "Raspberry leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 112,
+              "formats": {
+                "JPEG": 112
+              },
+              "median_width": 1200,
+              "median_height": 1016,
+              "min_side": 333,
+              "megabytes": 41.2
+            },
+            {
+              "raw_class": "Soyabean leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 57,
+              "formats": {
+                "JPEG": 57
+              },
+              "median_width": 960,
+              "median_height": 680,
+              "min_side": 329,
+              "megabytes": 33.1
+            },
+            {
+              "raw_class": "Squash Powdery mildew leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 124,
+              "formats": {
+                "JPEG": 124
+              },
+              "median_width": 800,
+              "median_height": 640,
+              "min_side": 189,
+              "megabytes": 62.3
+            },
+            {
+              "raw_class": "Strawberry leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 88,
+              "formats": {
+                "JPEG": 88
+              },
+              "median_width": 1080,
+              "median_height": 955,
+              "min_side": 335,
+              "megabytes": 52.4
+            },
+            {
+              "raw_class": "Tomato Early blight leaf",
+              "code": "TOMATO_EARLY_BLIGHT",
+              "in_scope": true,
+              "count": 79,
+              "formats": {
+                "JPEG": 79
+              },
+              "median_width": 567,
+              "median_height": 450,
+              "min_side": 150,
+              "megabytes": 21.4
+            },
+            {
+              "raw_class": "Tomato Septoria leaf spot",
+              "code": "TOMATO_SEPTORIA_LEAF_SPOT",
+              "in_scope": true,
+              "count": 140,
+              "formats": {
+                "JPEG": 139,
+                "PNG": 1
+              },
+              "median_width": 600,
+              "median_height": 519,
+              "min_side": 137,
+              "megabytes": 49.1
+            },
+            {
+              "raw_class": "Tomato leaf",
+              "code": "TOMATO_HEALTHY",
+              "in_scope": true,
+              "count": 55,
+              "formats": {
+                "JPEG": 55
+              },
+              "median_width": 1200,
+              "median_height": 1125,
+              "min_side": 273,
+              "megabytes": 36.6
+            },
+            {
+              "raw_class": "Tomato leaf bacterial spot",
+              "code": "TOMATO_BACTERIAL_SPOT",
+              "in_scope": true,
+              "count": 101,
+              "formats": {
+                "JPEG": 101
+              },
+              "median_width": 600,
+              "median_height": 480,
+              "min_side": 150,
+              "megabytes": 25.3
+            },
+            {
+              "raw_class": "Tomato leaf late blight",
+              "code": "TOMATO_LATE_BLIGHT",
+              "in_scope": true,
+              "count": 101,
+              "formats": {
+                "JPEG": 101
+              },
+              "median_width": 900,
+              "median_height": 675,
+              "min_side": 154,
+              "megabytes": 38.3
+            },
+            {
+              "raw_class": "Tomato leaf mosaic virus",
+              "code": "TOMATO_MOSAIC_VIRUS",
+              "in_scope": true,
+              "count": 44,
+              "formats": {
+                "JPEG": 44
+              },
+              "median_width": 388,
+              "median_height": 320,
+              "min_side": 138,
+              "megabytes": 4.9
+            },
+            {
+              "raw_class": "Tomato leaf yellow virus",
+              "code": "TOMATO_YELLOW_LEAF_CURL_VIRUS",
+              "in_scope": true,
+              "count": 70,
+              "formats": {
+                "JPEG": 70
+              },
+              "median_width": 638,
+              "median_height": 516,
+              "min_side": 115,
+              "megabytes": 15.6
+            },
+            {
+              "raw_class": "Tomato mold leaf",
+              "code": "TOMATO_LEAF_MOLD",
+              "in_scope": true,
+              "count": 85,
+              "formats": {
+                "JPEG": 85
+              },
+              "median_width": 800,
+              "median_height": 605,
+              "min_side": 85,
+              "megabytes": 18.1
+            },
+            {
+              "raw_class": "Tomato two spotted spider mites leaf",
+              "code": "TOMATO_SPIDER_MITES",
+              "in_scope": true,
+              "count": 2,
+              "formats": {
+                "JPEG": 2
+              },
+              "median_width": 960,
+              "median_height": 720,
+              "min_side": 720,
+              "megabytes": 0.2
+            },
+            {
+              "raw_class": "grape leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 57,
+              "formats": {
+                "JPEG": 57
+              },
+              "median_width": 1300,
+              "median_height": 1080,
+              "min_side": 400,
+              "megabytes": 45.4
+            },
+            {
+              "raw_class": "grape leaf black rot",
+              "code": null,
+              "in_scope": false,
+              "count": 56,
+              "formats": {
+                "JPEG": 56
+              },
+              "median_width": 800,
+              "median_height": 600,
+              "min_side": 150,
+              "megabytes": 23.4
+            }
+          ],
+          "class_count": 28,
+          "imbalance_ratio": 89.5
+        },
+        "test": {
+          "images": 236,
+          "classes": [
+            {
+              "raw_class": "Apple Scab Leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 10,
+              "formats": {
+                "JPEG": 10
+              },
+              "median_width": 493,
+              "median_height": 383,
+              "min_side": 85,
+              "megabytes": 1.4
+            },
+            {
+              "raw_class": "Apple leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 9,
+              "formats": {
+                "JPEG": 9
+              },
+              "median_width": 1300,
+              "median_height": 1174,
+              "min_side": 594,
+              "megabytes": 7.7
+            },
+            {
+              "raw_class": "Apple rust leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 10,
+              "formats": {
+                "JPEG": 10
+              },
+              "median_width": 537,
+              "median_height": 415,
+              "min_side": 155,
+              "megabytes": 8.5
+            },
+            {
+              "raw_class": "Bell_pepper leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 8,
+              "formats": {
+                "JPEG": 8
+              },
+              "median_width": 720,
+              "median_height": 600,
+              "min_side": 300,
+              "megabytes": 1.0
+            },
+            {
+              "raw_class": "Bell_pepper leaf spot",
+              "code": null,
+              "in_scope": false,
+              "count": 9,
+              "formats": {
+                "JPEG": 9
+              },
+              "median_width": 638,
+              "median_height": 479,
+              "min_side": 166,
+              "megabytes": 1.1
+            },
+            {
+              "raw_class": "Blueberry leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 11,
+              "formats": {
+                "JPEG": 11
+              },
+              "median_width": 1012,
+              "median_height": 1148,
+              "min_side": 320,
+              "megabytes": 4.2
+            },
+            {
+              "raw_class": "Cherry leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 10,
+              "formats": {
+                "JPEG": 10
+              },
+              "median_width": 1056,
+              "median_height": 1260,
+              "min_side": 751,
+              "megabytes": 3.0
+            },
+            {
+              "raw_class": "Corn Gray leaf spot",
+              "code": "MAIZE_GRAY_LEAF_SPOT",
+              "in_scope": true,
+              "count": 4,
+              "formats": {
+                "JPEG": 4
+              },
+              "median_width": 450,
+              "median_height": 349,
+              "min_side": 230,
+              "megabytes": 1.7
+            },
+            {
+              "raw_class": "Corn leaf blight",
+              "code": "MAIZE_NORTHERN_LEAF_BLIGHT",
+              "in_scope": true,
+              "count": 12,
+              "formats": {
+                "JPEG": 12
+              },
+              "median_width": 817,
+              "median_height": 536,
+              "min_side": 188,
+              "megabytes": 4.5
+            },
+            {
+              "raw_class": "Corn rust leaf",
+              "code": "MAIZE_COMMON_RUST",
+              "in_scope": true,
+              "count": 10,
+              "formats": {
+                "JPEG": 10
+              },
+              "median_width": 432,
+              "median_height": 406,
+              "min_side": 185,
+              "megabytes": 1.1
+            },
+            {
+              "raw_class": "Peach leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 9,
+              "formats": {
+                "JPEG": 9
+              },
+              "median_width": 1056,
+              "median_height": 1000,
+              "min_side": 500,
+              "megabytes": 1.2
+            },
+            {
+              "raw_class": "Potato leaf early blight",
+              "code": "POTATO_EARLY_BLIGHT",
+              "in_scope": true,
+              "count": 8,
+              "formats": {
+                "JPEG": 8
+              },
+              "median_width": 1162,
+              "median_height": 862,
+              "min_side": 150,
+              "megabytes": 2.2
+            },
+            {
+              "raw_class": "Potato leaf late blight",
+              "code": "POTATO_LATE_BLIGHT",
+              "in_scope": true,
+              "count": 8,
+              "formats": {
+                "JPEG": 8
+              },
+              "median_width": 495,
+              "median_height": 455,
+              "min_side": 233,
+              "megabytes": 0.5
+            },
+            {
+              "raw_class": "Raspberry leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 7,
+              "formats": {
+                "JPEG": 7
+              },
+              "median_width": 1101,
+              "median_height": 1024,
+              "min_side": 768,
+              "megabytes": 1.0
+            },
+            {
+              "raw_class": "Soyabean leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 8,
+              "formats": {
+                "JPEG": 8
+              },
+              "median_width": 851,
+              "median_height": 773,
+              "min_side": 280,
+              "megabytes": 2.4
+            },
+            {
+              "raw_class": "Squash Powdery mildew leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 6,
+              "formats": {
+                "JPEG": 6
+              },
+              "median_width": 546,
+              "median_height": 486,
+              "min_side": 320,
+              "megabytes": 3.2
+            },
+            {
+              "raw_class": "Strawberry leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 8,
+              "formats": {
+                "JPEG": 8
+              },
+              "median_width": 1300,
+              "median_height": 1165,
+              "min_side": 571,
+              "megabytes": 1.3
+            },
+            {
+              "raw_class": "Tomato Early blight leaf",
+              "code": "TOMATO_EARLY_BLIGHT",
+              "in_scope": true,
+              "count": 9,
+              "formats": {
+                "JPEG": 9
+              },
+              "median_width": 638,
+              "median_height": 479,
+              "min_side": 150,
+              "megabytes": 3.2
+            },
+            {
+              "raw_class": "Tomato Septoria leaf spot",
+              "code": "TOMATO_SEPTORIA_LEAF_SPOT",
+              "in_scope": true,
+              "count": 11,
+              "formats": {
+                "JPEG": 11
+              },
+              "median_width": 534,
+              "median_height": 640,
+              "min_side": 290,
+              "megabytes": 3.2
+            },
+            {
+              "raw_class": "Tomato leaf",
+              "code": "TOMATO_HEALTHY",
+              "in_scope": true,
+              "count": 8,
+              "formats": {
+                "JPEG": 8
+              },
+              "median_width": 1600,
+              "median_height": 1200,
+              "min_side": 462,
+              "megabytes": 3.2
+            },
+            {
+              "raw_class": "Tomato leaf bacterial spot",
+              "code": "TOMATO_BACTERIAL_SPOT",
+              "in_scope": true,
+              "count": 9,
+              "formats": {
+                "JPEG": 9
+              },
+              "median_width": 500,
+              "median_height": 300,
+              "min_side": 230,
+              "megabytes": 0.7
+            },
+            {
+              "raw_class": "Tomato leaf late blight",
+              "code": "TOMATO_LATE_BLIGHT",
+              "in_scope": true,
+              "count": 10,
+              "formats": {
+                "JPEG": 10
+              },
+              "median_width": 515,
+              "median_height": 491,
+              "min_side": 255,
+              "megabytes": 3.3
+            },
+            {
+              "raw_class": "Tomato leaf mosaic virus",
+              "code": "TOMATO_MOSAIC_VIRUS",
+              "in_scope": true,
+              "count": 10,
+              "formats": {
+                "JPEG": 10
+              },
+              "median_width": 903,
+              "median_height": 640,
+              "min_side": 69,
+              "megabytes": 4.9
+            },
+            {
+              "raw_class": "Tomato leaf yellow virus",
+              "code": "TOMATO_YELLOW_LEAF_CURL_VIRUS",
+              "in_scope": true,
+              "count": 6,
+              "formats": {
+                "JPEG": 6
+              },
+              "median_width": 703,
+              "median_height": 420,
+              "min_side": 200,
+              "megabytes": 0.7
+            },
+            {
+              "raw_class": "Tomato mold leaf",
+              "code": "TOMATO_LEAF_MOLD",
+              "in_scope": true,
+              "count": 6,
+              "formats": {
+                "JPEG": 6
+              },
+              "median_width": 625,
+              "median_height": 426,
+              "min_side": 137,
+              "megabytes": 0.4
+            },
+            {
+              "raw_class": "grape leaf",
+              "code": null,
+              "in_scope": false,
+              "count": 12,
+              "formats": {
+                "JPEG": 12
+              },
+              "median_width": 1024,
+              "median_height": 906,
+              "min_side": 470,
+              "megabytes": 2.9
+            },
+            {
+              "raw_class": "grape leaf black rot",
+              "code": null,
+              "in_scope": false,
+              "count": 8,
+              "formats": {
+                "JPEG": 8
+              },
+              "median_width": 737,
+              "median_height": 720,
+              "min_side": 263,
+              "megabytes": 1.7
+            }
+          ],
+          "class_count": 27,
+          "imbalance_ratio": 3.0
+        }
+      },
+      "notes": {
+        "stray_files": [
+          "plantdoc/PlantDoc-Dataset-master/PlantDoc_Examples.png"
+        ],
+        "skipped_metadata": 0
+      }
+    },
+    "chilli_primary": {
+      "crops": [
+        "chilli"
+      ],
+      "images": 8817,
+      "groups": {
+        "all": {
+          "images": 8817,
+          "classes": [
+            {
+              "raw_class": "Bacterial_Spot",
+              "code": "CHILLI_BACTERIAL_SPOT",
+              "in_scope": true,
+              "count": 1629,
+              "formats": {
+                "JPEG": 275,
+                "PNG": 1354
+              },
+              "median_width": 1000,
+              "median_height": 1000,
+              "min_side": 278,
+              "megabytes": 902.9
+            },
+            {
+              "raw_class": "Cercospora_Leaf_Spot",
+              "code": "CHILLI_CERCOSPORA_LEAF_SPOT",
+              "in_scope": true,
+              "count": 1898,
+              "formats": {
+                "JPEG": 1898
+              },
+              "median_width": 947,
+              "median_height": 1838,
+              "min_side": 203,
+              "megabytes": 510.5
+            },
+            {
+              "raw_class": "Curl_Virus",
+              "code": "CHILLI_LEAF_CURL_VIRUS",
+              "in_scope": true,
+              "count": 1590,
+              "formats": {
+                "JPEG": 366,
+                "PNG": 1224
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 287.3
+            },
+            {
+              "raw_class": "Healthy_Leaf",
+              "code": "CHILLI_HEALTHY",
+              "in_scope": true,
+              "count": 1647,
+              "formats": {
+                "PNG": 1472,
+                "JPEG": 175
+              },
+              "median_width": 1000,
+              "median_height": 1000,
+              "min_side": 256,
+              "megabytes": 733.9
+            },
+            {
+              "raw_class": "Nutrition_Deficiency",
+              "code": "CHILLI_NUTRIENT_DEFICIENCY",
+              "in_scope": true,
+              "count": 1207,
+              "formats": {
+                "JPEG": 78,
+                "PNG": 1129
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 367.6
+            },
+            {
+              "raw_class": "Powdery_Mildew",
+              "code": "CHILLI_POWDERY_MILDEW",
+              "in_scope": true,
+              "count": 846,
+              "formats": {
+                "JPEG": 1,
+                "PNG": 845
+              },
+              "median_width": 256,
+              "median_height": 256,
+              "min_side": 256,
+              "megabytes": 139.4
+            }
+          ],
+          "class_count": 6,
+          "imbalance_ratio": 2.2
+        }
+      },
+      "notes": {
+        "stray_files": [],
+        "skipped_metadata": 0
+      }
+    },
+    "chilli_secondary": {
+      "crops": [
+        "chilli"
+      ],
+      "images": 1515,
+      "groups": {
+        "all": {
+          "images": 1515,
+          "classes": [
+            {
+              "raw_class": "Anthracnose",
+              "code": "CHILLI_ANTHRACNOSE",
+              "in_scope": true,
+              "count": 347,
+              "formats": {
+                "JPEG": 347
+              },
+              "median_width": 1728,
+              "median_height": 3936,
+              "min_side": 1728,
+              "megabytes": 438.0
+            },
+            {
+              "raw_class": "Cercospora Leaf Spot",
+              "code": "CHILLI_CERCOSPORA_LEAF_SPOT",
+              "in_scope": true,
+              "count": 367,
+              "formats": {
+                "JPEG": 367
+              },
+              "median_width": 4080,
+              "median_height": 3072,
+              "min_side": 3072,
+              "megabytes": 840.2
+            },
+            {
+              "raw_class": "Fresh Leaf",
+              "code": "CHILLI_HEALTHY",
+              "in_scope": true,
+              "count": 432,
+              "formats": {
+                "JPEG": 432
+              },
+              "median_width": 4000,
+              "median_height": 3000,
+              "min_side": 3000,
+              "megabytes": 834.9
+            },
+            {
+              "raw_class": "Leaf Curl Disease",
+              "code": "CHILLI_LEAF_CURL_VIRUS",
+              "in_scope": true,
+              "count": 369,
+              "formats": {
+                "JPEG": 369
+              },
+              "median_width": 4080,
+              "median_height": 3072,
+              "min_side": 3072,
+              "megabytes": 1002.6
+            }
+          ],
+          "class_count": 4,
+          "imbalance_ratio": 1.2
+        }
+      },
+      "notes": {
+        "stray_files": [],
+        "skipped_metadata": 0
+      }
+    },
+    "cotton_sarcld2024": {
+      "crops": [
+        "cotton"
+      ],
+      "images": 9137,
+      "groups": {
+        "original": {
+          "images": 2137,
+          "classes": [
+            {
+              "raw_class": "Bacterial Blight",
+              "code": "COTTON_BACTERIAL_BLIGHT",
+              "in_scope": true,
+              "count": 250,
+              "formats": {
+                "JPEG": 250
+              },
+              "median_width": 800,
+              "median_height": 800,
+              "min_side": 800,
+              "megabytes": 38.0
+            },
+            {
+              "raw_class": "Curl Virus",
+              "code": "COTTON_CURL_VIRUS",
+              "in_scope": true,
+              "count": 431,
+              "formats": {
+                "JPEG": 431
+              },
+              "median_width": 800,
+              "median_height": 800,
+              "min_side": 800,
+              "megabytes": 48.8
+            },
+            {
+              "raw_class": "Healthy Leaf",
+              "code": "COTTON_HEALTHY",
+              "in_scope": true,
+              "count": 257,
+              "formats": {
+                "JPEG": 257
+              },
+              "median_width": 800,
+              "median_height": 800,
+              "min_side": 800,
+              "megabytes": 33.4
+            },
+            {
+              "raw_class": "Herbicide Growth Damage",
+              "code": "COTTON_HERBICIDE_DAMAGE",
+              "in_scope": true,
+              "count": 280,
+              "formats": {
+                "JPEG": 280
+              },
+              "median_width": 800,
+              "median_height": 800,
+              "min_side": 800,
+              "megabytes": 32.0
+            },
+            {
+              "raw_class": "Leaf Hopper Jassids",
+              "code": "COTTON_LEAF_HOPPER_JASSIDS",
+              "in_scope": true,
+              "count": 225,
+              "formats": {
+                "JPEG": 225
+              },
+              "median_width": 800,
+              "median_height": 800,
+              "min_side": 800,
+              "megabytes": 27.5
+            },
+            {
+              "raw_class": "Leaf Redding",
+              "code": "COTTON_LEAF_REDDENING",
+              "in_scope": true,
+              "count": 578,
+              "formats": {
+                "JPEG": 578
+              },
+              "median_width": 800,
+              "median_height": 800,
+              "min_side": 800,
+              "megabytes": 90.1
+            },
+            {
+              "raw_class": "Leaf Variegation",
+              "code": "COTTON_LEAF_VARIEGATION",
+              "in_scope": true,
+              "count": 116,
+              "formats": {
+                "JPEG": 116
+              },
+              "median_width": 800,
+              "median_height": 800,
+              "min_side": 800,
+              "megabytes": 16.5
+            }
+          ],
+          "class_count": 7,
+          "imbalance_ratio": 5.0
+        },
+        "augmented": {
+          "images": 7000,
+          "classes": [
+            {
+              "raw_class": "Bacterial Blight",
+              "code": "COTTON_BACTERIAL_BLIGHT",
+              "in_scope": true,
+              "count": 1000,
+              "formats": {
+                "JPEG": 1000
+              },
+              "median_width": 800,
+              "median_height": 800,
+              "min_side": 800,
+              "megabytes": 191.9
+            },
+            {
+              "raw_class": "Curl Virus",
+              "code": "COTTON_CURL_VIRUS",
+              "in_scope": true,
+              "count": 1000,
+              "formats": {
+                "JPEG": 1000
+              },
+              "median_width": 800,
+              "median_height": 800,
+              "min_side": 800,
+              "megabytes": 168.8
+            },
+            {
+              "raw_class": "Healthy Leaf",
+              "code": "COTTON_HEALTHY",
+              "in_scope": true,
+              "count": 1000,
+              "formats": {
+                "JPEG": 1000
+              },
+              "median_width": 800,
+              "median_height": 800,
+              "min_side": 800,
+              "megabytes": 177.0
+            },
+            {
+              "raw_class": "Herbicide Growth Damage",
+              "code": "COTTON_HERBICIDE_DAMAGE",
+              "in_scope": true,
+              "count": 1000,
+              "formats": {
+                "JPEG": 1000
+              },
+              "median_width": 800,
+              "median_height": 800,
+              "min_side": 800,
+              "megabytes": 145.3
+            },
+            {
+              "raw_class": "Leaf Hopper Jassids",
+              "code": "COTTON_LEAF_HOPPER_JASSIDS",
+              "in_scope": true,
+              "count": 1000,
+              "formats": {
+                "JPEG": 1000
+              },
+              "median_width": 800,
+              "median_height": 800,
+              "min_side": 800,
+              "megabytes": 169.0
+            },
+            {
+              "raw_class": "Leaf Redding",
+              "code": "COTTON_LEAF_REDDENING",
+              "in_scope": true,
+              "count": 1000,
+              "formats": {
+                "JPEG": 1000
+              },
+              "median_width": 800,
+              "median_height": 800,
+              "min_side": 800,
+              "megabytes": 195.2
+            },
+            {
+              "raw_class": "Leaf Variegation",
+              "code": "COTTON_LEAF_VARIEGATION",
+              "in_scope": true,
+              "count": 1000,
+              "formats": {
+                "JPEG": 1000
+              },
+              "median_width": 800,
+              "median_height": 800,
+              "min_side": 800,
+              "megabytes": 192.1
+            }
+          ],
+          "class_count": 7,
+          "imbalance_ratio": 1.0
+        }
+      },
+      "notes": {
+        "stray_files": [],
+        "skipped_metadata": 0
+      }
+    },
+    "rice_odisha": {
+      "crops": [
+        "rice"
+      ],
+      "images": 5932,
+      "groups": {
+        "all": {
+          "images": 5932,
+          "classes": [
+            {
+              "raw_class": "Bacterialblight",
+              "code": "RICE_BACTERIAL_LEAF_BLIGHT",
+              "in_scope": true,
+              "count": 1584,
+              "formats": {
+                "JPEG": 1416,
+                "PNG": 168
+              },
+              "median_width": 300,
+              "median_height": 300,
+              "min_side": 300,
+              "megabytes": 64.3
+            },
+            {
+              "raw_class": "Blast",
+              "code": "RICE_BLAST",
+              "in_scope": true,
+              "count": 1440,
+              "formats": {
+                "JPEG": 1026,
+                "PNG": 414
+              },
+              "median_width": 300,
+              "median_height": 300,
+              "min_side": 300,
+              "megabytes": 82.0
+            },
+            {
+              "raw_class": "Brownspot",
+              "code": "RICE_BROWN_SPOT",
+              "in_scope": true,
+              "count": 1600,
+              "formats": {
+                "JPEG": 1536,
+                "PNG": 64
+              },
+              "median_width": 300,
+              "median_height": 300,
+              "min_side": 300,
+              "megabytes": 27.4
+            },
+            {
+              "raw_class": "Tungro",
+              "code": "RICE_TUNGRO",
+              "in_scope": true,
+              "count": 1308,
+              "formats": {
+                "JPEG": 1308
+              },
+              "median_width": 331,
+              "median_height": 331,
+              "min_side": 209,
+              "megabytes": 24.3
+            }
+          ],
+          "class_count": 4,
+          "imbalance_ratio": 1.2
+        }
+      },
+      "notes": {
+        "stray_files": [],
+        "skipped_metadata": 0
+      }
+    },
+    "rice_healthy_diu": {
+      "crops": [
+        "rice"
+      ],
+      "images": 10766,
+      "groups": {
+        "original": {
+          "images": 2508,
+          "classes": [
+            {
+              "raw_class": "Bacterial Leaf Blight",
+              "code": "RICE_BACTERIAL_LEAF_BLIGHT",
+              "in_scope": true,
+              "count": 262,
+              "formats": {
+                "JPEG": 262
+              },
+              "median_width": 1440,
+              "median_height": 1080,
+              "min_side": 810,
+              "megabytes": 21.4
+            },
+            {
+              "raw_class": "Healthy _leaf",
+              "code": "RICE_NORMAL",
+              "in_scope": true,
+              "count": 771,
+              "formats": {
+                "JPEG": 771
+              },
+              "median_width": 1440,
+              "median_height": 1080,
+              "min_side": 1080,
+              "megabytes": 80.7
+            },
+            {
+              "raw_class": "Rice",
+              "code": null,
+              "in_scope": false,
+              "count": 585,
+              "formats": {
+                "JPEG": 585
+              },
+              "median_width": 810,
+              "median_height": 1080,
+              "min_side": 551,
+              "megabytes": 50.1
+            },
+            {
+              "raw_class": "Rice Blast",
+              "code": "RICE_BLAST",
+              "in_scope": true,
+              "count": 592,
+              "formats": {
+                "JPEG": 592
+              },
+              "median_width": 810,
+              "median_height": 1080,
+              "min_side": 810,
+              "megabytes": 39.8
+            },
+            {
+              "raw_class": "Tungro",
+              "code": "RICE_TUNGRO",
+              "in_scope": true,
+              "count": 298,
+              "formats": {
+                "JPEG": 298
+              },
+              "median_width": 810,
+              "median_height": 1080,
+              "min_side": 810,
+              "megabytes": 22.2
+            }
+          ],
+          "class_count": 5,
+          "imbalance_ratio": 2.9
+        },
+        "augmented": {
+          "images": 8258,
+          "classes": [
+            {
+              "raw_class": "Bacterial Leaf Blight",
+              "code": "RICE_BACTERIAL_LEAF_BLIGHT",
+              "in_scope": true,
+              "count": 716,
+              "formats": {
+                "JPEG": 716
+              },
+              "median_width": 810,
+              "median_height": 1080,
+              "min_side": 810,
+              "megabytes": 57.1
+            },
+            {
+              "raw_class": "Healthy _leaf",
+              "code": "RICE_NORMAL",
+              "in_scope": true,
+              "count": 601,
+              "formats": {
+                "JPEG": 601
+              },
+              "median_width": 1440,
+              "median_height": 1080,
+              "min_side": 1080,
+              "megabytes": 75.1
+            },
+            {
+              "raw_class": "Rice",
+              "code": null,
+              "in_scope": false,
+              "count": 743,
+              "formats": {
+                "JPEG": 743
+              },
+              "median_width": 1440,
+              "median_height": 1080,
+              "min_side": 810,
+              "megabytes": 76.8
+            },
+            {
+              "raw_class": "Rice Blast",
+              "code": "RICE_BLAST",
+              "in_scope": true,
+              "count": 2751,
+              "formats": {
+                "JPEG": 2751
+              },
+              "median_width": 810,
+              "median_height": 1080,
+              "min_side": 810,
+              "megabytes": 239.4
+            },
+            {
+              "raw_class": "Tungro",
+              "code": "RICE_TUNGRO",
+              "in_scope": true,
+              "count": 3447,
+              "formats": {
+                "JPEG": 3447
+              },
+              "median_width": 810,
+              "median_height": 1080,
+              "min_side": 810,
+              "megabytes": 286.1
+            }
+          ],
+          "class_count": 5,
+          "imbalance_ratio": 5.7
+        }
+      },
+      "notes": {
+        "stray_files": [],
+        "skipped_metadata": 0
+      }
+    }
+  },
+  "duplicates": {
+    "exact_byte_identical_groups": 2565,
+    "exact_byte_identical_images": 5458,
+    "exact_redundant_by_dataset": {
+      "chilli_primary": 881,
+      "cotton_sarcld2024": 776,
+      "plantdoc": 12,
+      "plantvillage": 23,
+      "rice_healthy_diu": 63,
+      "rice_odisha": 1138
+    },
+    "exact_groups_spanning_two_classes": 76,
+    "exact_cross_class_examples": [
+      {
+        "codes": [
+          "MAIZE_GRAY_LEAF_SPOT",
+          "MAIZE_NORTHERN_LEAF_BLIGHT"
+        ],
+        "paths": [
+          "plantdoc/PlantDoc-Dataset-master/train/Corn Gray leaf spot/2015070295153021.jpg",
+          "plantdoc/PlantDoc-Dataset-master/test/Corn leaf blight/2015070295153021.jpg"
+        ]
+      },
+      {
+        "codes": [
+          "MAIZE_GRAY_LEAF_SPOT",
+          "MAIZE_NORTHERN_LEAF_BLIGHT"
+        ],
+        "paths": [
+          "plantdoc/PlantDoc-Dataset-master/train/Corn Gray leaf spot/corn-gray-leaf-spot-f4.jpg",
+          "plantdoc/PlantDoc-Dataset-master/test/Corn leaf blight/corn-gray-leaf-spot-f4.jpg"
+        ]
+      },
+      {
+        "codes": [
+          "MAIZE_GRAY_LEAF_SPOT",
+          "MAIZE_NORTHERN_LEAF_BLIGHT"
+        ],
+        "paths": [
+          "plantdoc/PlantDoc-Dataset-master/train/Corn leaf blight/IMG_42231.jpg",
+          "plantdoc/PlantDoc-Dataset-master/test/Corn Gray leaf spot/IMG_42231.jpg"
+        ]
+      },
+      {
+        "codes": [
+          "POTATO_EARLY_BLIGHT",
+          "POTATO_LATE_BLIGHT"
+        ],
+        "paths": [
+          "plantdoc/PlantDoc-Dataset-master/train/Potato leaf early blight/1421_0.jpeg_itok=FMtmgePj.jpg",
+          "plantdoc/PlantDoc-Dataset-master/test/Potato leaf late blight/1421_0.jpeg_itok=FMtmgePj.jpg"
+        ]
+      },
+      {
+        "codes": [
+          "POTATO_EARLY_BLIGHT",
+          "POTATO_LATE_BLIGHT"
+        ],
+        "paths": [
+          "plantdoc/PlantDoc-Dataset-master/train/Potato leaf early blight/18028_1.jpg",
+          "plantdoc/PlantDoc-Dataset-master/train/Potato leaf late blight/24064_1.jpg"
+        ]
+      },
+      {
+        "codes": [
+          "POTATO_EARLY_BLIGHT",
+          "POTATO_LATE_BLIGHT"
+        ],
+        "paths": [
+          "plantdoc/PlantDoc-Dataset-master/train/Potato leaf early blight/5816740026_d42ef24413_Phytophthora-Infestans.jpg",
+          "plantdoc/PlantDoc-Dataset-master/test/Potato leaf late blight/5816740026_d42ef24413_Phytophthora-Infestans.jpg"
+        ]
+      },
+      {
+        "codes": [
+          "POTATO_EARLY_BLIGHT",
+          "POTATO_LATE_BLIGHT"
+        ],
+        "paths": [
+          "plantdoc/PlantDoc-Dataset-master/train/Potato leaf early blight/irish-blight-symptoms-on-potato-leaves-atmf8b.jpg",
+          "plantdoc/PlantDoc-Dataset-master/test/Potato leaf late blight/irish-blight-symptoms-on-potato-leaves-atmf8b.jpg"
+        ]
+      },
+      {
+        "codes": [
+          "POTATO_EARLY_BLIGHT",
+          "POTATO_LATE_BLIGHT"
+        ],
+        "paths": [
+          "plantdoc/PlantDoc-Dataset-master/train/Potato leaf late blight/backus-056-potato-blight.jpg",
+          "plantdoc/PlantDoc-Dataset-master/test/Potato leaf early blight/backus-056-potato-blight.jpg"
+        ]
+      }
+    ],
+    "exact_examples": [
+      [
+        "plantvillage/Plant_leave_diseases_dataset_without_augmentation/Apple___healthy/image (1120).JPG",
+        "plantvillage/Plant_leave_diseases_dataset_without_augmentation/Apple___healthy/image (163).JPG"
+      ],
+      [
+        "plantvillage/Plant_leave_diseases_dataset_without_augmentation/Apple___healthy/image (1272).JPG",
+        "plantvillage/Plant_leave_diseases_dataset_without_augmentation/Apple___healthy/image (908).JPG"
+      ],
+      [
+        "plantvillage/Plant_leave_diseases_dataset_without_augmentation/Apple___healthy/image (1335).JPG",
+        "plantvillage/Plant_leave_diseases_dataset_without_augmentation/Apple___healthy/image (1447).JPG"
+      ],
+      [
+        "plantvillage/Plant_leave_diseases_dataset_without_augmentation/Apple___healthy/image (1552).JPG",
+        "plantvillage/Plant_leave_diseases_dataset_without_augmentation/Apple___healthy/image (1631).JPG"
+      ],
+      [
+        "plantvillage/Plant_leave_diseases_dataset_without_augmentation/Apple___healthy/image (375).JPG",
+        "plantvillage/Plant_leave_diseases_dataset_without_augmentation/Apple___healthy/image (846).JPG"
+      ],
+      [
+        "plantvillage/Plant_leave_diseases_dataset_without_augmentation/Apple___healthy/image (408).JPG",
+        "plantvillage/Plant_leave_diseases_dataset_without_augmentation/Apple___healthy/image (904).JPG"
+      ],
+      [
+        "plantvillage/Plant_leave_diseases_dataset_without_augmentation/Apple___healthy/image (54).JPG",
+        "plantvillage/Plant_leave_diseases_dataset_without_augmentation/Apple___healthy/image (834).JPG"
+      ],
+      [
+        "plantvillage/Plant_leave_diseases_dataset_without_augmentation/Background_without_leaves/image (40).jpg",
+        "plantvillage/Plant_leave_diseases_dataset_without_augmentation/Background_without_leaves/image (60).jpg",
+        "plantvillage/Plant_leave_diseases_dataset_without_augmentation/Background_without_leaves/image (851).jpg"
+      ]
+    ],
+    "near_dup_pairs": 16760,
+    "near_dup_pairs_distance_zero": 10296,
+    "near_dup_clusters": 5236,
+    "cluster_size_histogram": {
+      "2": 3029,
+      "3-5": 2006,
+      "6-20": 200,
+      "21-100": 1
+    },
+    "largest_clusters": [
+      {
+        "size": 47,
+        "datasets": [
+          "chilli_primary"
+        ],
+        "classes": [
+          "CHILLI_BACTERIAL_SPOT"
+        ],
+        "example": "chilli_primary/Chilli Leaf Disease Image Dataset for Classificati/Bacterial_Spot/Bacterial_Spot/Bacterial_Spot_265.png"
+      },
+      {
+        "size": 20,
+        "datasets": [
+          "chilli_primary"
+        ],
+        "classes": [
+          "CHILLI_BACTERIAL_SPOT"
+        ],
+        "example": "chilli_primary/Chilli Leaf Disease Image Dataset for Classificati/Bacterial_Spot/Bacterial_Spot/Bacterial_Spot_274.png"
+      },
+      {
+        "size": 19,
+        "datasets": [
+          "chilli_primary"
+        ],
+        "classes": [
+          "CHILLI_BACTERIAL_SPOT"
+        ],
+        "example": "chilli_primary/Chilli Leaf Disease Image Dataset for Classificati/Bacterial_Spot/Bacterial_Spot/Bacterial_Spot_267.png"
+      },
+      {
+        "size": 19,
+        "datasets": [
+          "chilli_primary"
+        ],
+        "classes": [
+          "CHILLI_BACTERIAL_SPOT"
+        ],
+        "example": "chilli_primary/Chilli Leaf Disease Image Dataset for Classificati/Bacterial_Spot/Bacterial_Spot/Bacterial_Spot_269.png"
+      },
+      {
+        "size": 16,
+        "datasets": [
+          "chilli_primary"
+        ],
+        "classes": [
+          "CHILLI_BACTERIAL_SPOT"
+        ],
+        "example": "chilli_primary/Chilli Leaf Disease Image Dataset for Classificati/Bacterial_Spot/Bacterial_Spot/Bacterial_Spot_188.png"
+      }
+    ],
+    "images_in_near_dup_clusters": 14598,
+    "redundant_images_if_collapsed": 9362,
+    "per_dataset_redundant": {
+      "chilli_primary": 1790,
+      "chilli_secondary": 26,
+      "cotton_sarcld2024": 3611,
+      "plantdoc": 67,
+      "plantvillage": 41,
+      "rice_healthy_diu": 341,
+      "rice_odisha": 3486
+    },
+    "cross_dataset_clusters": 0,
+    "pairs_by_dataset_pair": {
+      "chilli_primary|chilli_primary": 3676,
+      "chilli_secondary|chilli_secondary": 33,
+      "cotton_sarcld2024|cotton_sarcld2024": 6189,
+      "plantdoc|plantdoc": 69,
+      "plantvillage|plantvillage": 42,
+      "rice_healthy_diu|rice_healthy_diu": 540,
+      "rice_odisha|rice_odisha": 6211
+    },
+    "cross_dataset_examples": []
+  },
+  "label_conflicts": {
+    "explanation": "Near-identical images carrying different class codes. Each pair is either a labelling error or a genuinely ambiguous case; both matter for the split strategy.",
+    "pairs_by_code_pair": {
+      "RICE_NORMAL|RICE_TUNGRO": 120,
+      "COTTON_CURL_VIRUS|COTTON_HEALTHY": 39,
+      "POTATO_EARLY_BLIGHT|POTATO_LATE_BLIGHT": 7,
+      "POTATO_EARLY_BLIGHT|TOMATO_EARLY_BLIGHT": 5,
+      "MAIZE_GRAY_LEAF_SPOT|MAIZE_NORTHERN_LEAF_BLIGHT": 4,
+      "POTATO_EARLY_BLIGHT|TOMATO_LATE_BLIGHT": 4,
+      "POTATO_LATE_BLIGHT|TOMATO_LATE_BLIGHT": 3,
+      "TOMATO_BACTERIAL_SPOT|TOMATO_SEPTORIA_LEAF_SPOT": 3,
+      "TOMATO_EARLY_BLIGHT|TOMATO_SEPTORIA_LEAF_SPOT": 2,
+      "RICE_BLAST|RICE_TUNGRO": 2,
+      "TOMATO_SEPTORIA_LEAF_SPOT|plantdoc:Bell_pepper leaf spot": 1,
+      "POTATO_EARLY_BLIGHT|TOMATO_SEPTORIA_LEAF_SPOT": 1,
+      "POTATO_LATE_BLIGHT|TOMATO_EARLY_BLIGHT": 1,
+      "TOMATO_EARLY_BLIGHT|TOMATO_LATE_BLIGHT": 1,
+      "TOMATO_MOSAIC_VIRUS|TOMATO_YELLOW_LEAF_CURL_VIRUS": 1,
+      "TOMATO_LEAF_MOLD|TOMATO_YELLOW_LEAF_CURL_VIRUS": 1
+    },
+    "examples": [
+      {
+        "a": "plantdoc/PlantDoc-Dataset-master/train/Bell_pepper leaf spot/Septoria-leaf-spot.jpg",
+        "a_code": "plantdoc:Bell_pepper leaf spot",
+        "b": "plantdoc/PlantDoc-Dataset-master/train/Tomato Septoria leaf spot/tomato-blight-treatment-blight.jpg",
+        "b_code": "TOMATO_SEPTORIA_LEAF_SPOT",
+        "distance": 2,
+        "ncc": 0.9983999729156494
+      },
+      {
+        "a": "plantdoc/PlantDoc-Dataset-master/train/Corn Gray leaf spot/2015070295153021.jpg",
+        "a_code": "MAIZE_GRAY_LEAF_SPOT",
+        "b": "plantdoc/PlantDoc-Dataset-master/test/Corn leaf blight/2015070295153021.jpg",
+        "b_code": "MAIZE_NORTHERN_LEAF_BLIGHT",
+        "distance": 0,
+        "ncc": 1.0
+      },
+      {
+        "a": "plantdoc/PlantDoc-Dataset-master/train/Corn Gray leaf spot/corn-gray-leaf-spot-f4.jpg",
+        "a_code": "MAIZE_GRAY_LEAF_SPOT",
+        "b": "plantdoc/PlantDoc-Dataset-master/test/Corn leaf blight/corn-gray-leaf-spot-f4.jpg",
+        "b_code": "MAIZE_NORTHERN_LEAF_BLIGHT",
+        "distance": 0,
+        "ncc": 1.0
+      },
+      {
+        "a": "plantdoc/PlantDoc-Dataset-master/train/Corn Gray leaf spot/gls99-anamosa.jpg",
+        "a_code": "MAIZE_GRAY_LEAF_SPOT",
+        "b": "plantdoc/PlantDoc-Dataset-master/train/Corn leaf blight/gls99-anamosa-400x334.jpg",
+        "b_code": "MAIZE_NORTHERN_LEAF_BLIGHT",
+        "distance": 0,
+        "ncc": 0.984499990940094
+      },
+      {
+        "a": "plantdoc/PlantDoc-Dataset-master/train/Corn leaf blight/IMG_42231.jpg",
+        "a_code": "MAIZE_NORTHERN_LEAF_BLIGHT",
+        "b": "plantdoc/PlantDoc-Dataset-master/test/Corn Gray leaf spot/IMG_42231.jpg",
+        "b_code": "MAIZE_GRAY_LEAF_SPOT",
+        "distance": 0,
+        "ncc": 1.0
+      },
+      {
+        "a": "plantdoc/PlantDoc-Dataset-master/train/Potato leaf early blight/1421_0.jpeg_itok=FMtmgePj.jpg",
+        "a_code": "POTATO_EARLY_BLIGHT",
+        "b": "plantdoc/PlantDoc-Dataset-master/test/Potato leaf late blight/1421_0.jpeg_itok=FMtmgePj.jpg",
+        "b_code": "POTATO_LATE_BLIGHT",
+        "distance": 0,
+        "ncc": 1.0
+      },
+      {
+        "a": "plantdoc/PlantDoc-Dataset-master/train/Potato leaf early blight/14321627273_58d893c3e2_potato-plant.jpg",
+        "a_code": "POTATO_EARLY_BLIGHT",
+        "b": "plantdoc/PlantDoc-Dataset-master/train/Potato leaf late blight/14321627273_58d893c3e2_b.jpg",
+        "b_code": "POTATO_LATE_BLIGHT",
+        "distance": 2,
+        "ncc": 0.9976000189781189
+      },
+      {
+        "a": "plantdoc/PlantDoc-Dataset-master/train/Potato leaf early blight/18028_1.jpg",
+        "a_code": "POTATO_EARLY_BLIGHT",
+        "b": "plantdoc/PlantDoc-Dataset-master/train/Potato leaf late blight/24064_1.jpg",
+        "b_code": "POTATO_LATE_BLIGHT",
+        "distance": 0,
+        "ncc": 1.0
+      }
+    ]
+  },
+  "dedup_counts_by_class": {
+    "chilli_primary|all|Bacterial_Spot": 743,
+    "chilli_primary|all|Cercospora_Leaf_Spot": 1631,
+    "chilli_primary|all|Curl_Virus": 1505,
+    "chilli_primary|all|Healthy_Leaf": 1321,
+    "chilli_primary|all|Nutrition_Deficiency": 1006,
+    "chilli_primary|all|Powdery_Mildew": 821,
+    "chilli_secondary|all|Anthracnose": 323,
+    "chilli_secondary|all|Cercospora Leaf Spot": 366,
+    "chilli_secondary|all|Fresh Leaf": 432,
+    "chilli_secondary|all|Leaf Curl Disease": 368,
+    "cotton_sarcld2024|augmented|Bacterial Blight": 504,
+    "cotton_sarcld2024|augmented|Curl Virus": 527,
+    "cotton_sarcld2024|augmented|Healthy Leaf": 471,
+    "cotton_sarcld2024|augmented|Herbicide Growth Damage": 472,
+    "cotton_sarcld2024|augmented|Leaf Hopper Jassids": 482,
+    "cotton_sarcld2024|augmented|Leaf Redding": 549,
+    "cotton_sarcld2024|augmented|Leaf Variegation": 391,
+    "cotton_sarcld2024|original|Bacterial Blight": 250,
+    "cotton_sarcld2024|original|Curl Virus": 431,
+    "cotton_sarcld2024|original|Healthy Leaf": 252,
+    "cotton_sarcld2024|original|Herbicide Growth Damage": 280,
+    "cotton_sarcld2024|original|Leaf Hopper Jassids": 225,
+    "cotton_sarcld2024|original|Leaf Redding": 576,
+    "cotton_sarcld2024|original|Leaf Variegation": 116,
+    "plantdoc|test|Apple Scab Leaf": 10,
+    "plantdoc|test|Apple leaf": 9,
+    "plantdoc|test|Apple rust leaf": 10,
+    "plantdoc|test|Bell_pepper leaf": 8,
+    "plantdoc|test|Bell_pepper leaf spot": 9,
+    "plantdoc|test|Blueberry leaf": 10,
+    "plantdoc|test|Cherry leaf": 10,
+    "plantdoc|test|Corn Gray leaf spot": 3,
+    "plantdoc|test|Corn leaf blight": 10,
+    "plantdoc|test|Corn rust leaf": 10,
+    "plantdoc|test|Peach leaf": 9,
+    "plantdoc|test|Potato leaf early blight": 6,
+    "plantdoc|test|Potato leaf late blight": 5,
+    "plantdoc|test|Raspberry leaf": 7,
+    "plantdoc|test|Soyabean leaf": 8,
+    "plantdoc|test|Squash Powdery mildew leaf": 6,
+    "plantdoc|test|Strawberry leaf": 8,
+    "plantdoc|test|Tomato Early blight leaf": 9,
+    "plantdoc|test|Tomato Septoria leaf spot": 10,
+    "plantdoc|test|Tomato leaf": 8,
+    "plantdoc|test|Tomato leaf bacterial spot": 7,
+    "plantdoc|test|Tomato leaf late blight": 9,
+    "plantdoc|test|Tomato leaf mosaic virus": 10,
+    "plantdoc|test|Tomato leaf yellow virus": 5,
+    "plantdoc|test|Tomato mold leaf": 6,
+    "plantdoc|test|grape leaf": 12,
+    "plantdoc|test|grape leaf black rot": 8,
+    "plantdoc|train|Apple Scab Leaf": 82,
+    "plantdoc|train|Apple leaf": 82,
+    "plantdoc|train|Apple rust leaf": 78,
+    "plantdoc|train|Bell_pepper leaf": 53,
+    "plantdoc|train|Bell_pepper leaf spot": 59,
+    "plantdoc|train|Blueberry leaf": 104,
+    "plantdoc|train|Cherry leaf": 46,
+    "plantdoc|train|Corn Gray leaf spot": 64,
+    "plantdoc|train|Corn leaf blight": 174,
+    "plantdoc|train|Corn rust leaf": 105,
+    "plantdoc|train|Peach leaf": 102,
+    "plantdoc|train|Potato leaf early blight": 108,
+    "plantdoc|train|Potato leaf late blight": 92,
+    "plantdoc|train|Raspberry leaf": 111,
+    "plantdoc|train|Soyabean leaf": 56,
+    "plantdoc|train|Squash Powdery mildew leaf": 122,
+    "plantdoc|train|Strawberry leaf": 88,
+    "plantdoc|train|Tomato Early blight leaf": 72,
+    "plantdoc|train|Tomato Septoria leaf spot": 129,
+    "plantdoc|train|Tomato leaf": 55,
+    "plantdoc|train|Tomato leaf bacterial spot": 100,
+    "plantdoc|train|Tomato leaf late blight": 91,
+    "plantdoc|train|Tomato leaf mosaic virus": 44,
+    "plantdoc|train|Tomato leaf yellow virus": 68,
+    "plantdoc|train|Tomato mold leaf": 84,
+    "plantdoc|train|Tomato two spotted spider mites leaf": 2,
+    "plantdoc|train|grape leaf": 57,
+    "plantdoc|train|grape leaf black rot": 55,
+    "plantvillage|all|Apple___Apple_scab": 630,
+    "plantvillage|all|Apple___Black_rot": 621,
+    "plantvillage|all|Apple___Cedar_apple_rust": 275,
+    "plantvillage|all|Apple___healthy": 1638,
+    "plantvillage|all|Background_without_leaves": 1135,
+    "plantvillage|all|Blueberry___healthy": 1502,
+    "plantvillage|all|Cherry___Powdery_mildew": 1048,
+    "plantvillage|all|Cherry___healthy": 854,
+    "plantvillage|all|Corn___Cercospora_leaf_spot Gray_leaf_spot": 513,
+    "plantvillage|all|Corn___Common_rust": 1192,
+    "plantvillage|all|Corn___Northern_Leaf_Blight": 984,
+    "plantvillage|all|Corn___healthy": 1160,
+    "plantvillage|all|Grape___Black_rot": 1180,
+    "plantvillage|all|Grape___Esca_(Black_Measles)": 1383,
+    "plantvillage|all|Grape___Leaf_blight_(Isariopsis_Leaf_Spot)": 1076,
+    "plantvillage|all|Grape___healthy": 423,
+    "plantvillage|all|Orange___Haunglongbing_(Citrus_greening)": 5506,
+    "plantvillage|all|Peach___Bacterial_spot": 2297,
+    "plantvillage|all|Peach___healthy": 360,
+    "plantvillage|all|Pepper,_bell___Bacterial_spot": 997,
+    "plantvillage|all|Pepper,_bell___healthy": 1477,
+    "plantvillage|all|Potato___Early_blight": 1000,
+    "plantvillage|all|Potato___Late_blight": 1000,
+    "plantvillage|all|Potato___healthy": 152,
+    "plantvillage|all|Raspberry___healthy": 371,
+    "plantvillage|all|Soybean___healthy": 5088,
+    "plantvillage|all|Squash___Powdery_mildew": 1835,
+    "plantvillage|all|Strawberry___Leaf_scorch": 1109,
+    "plantvillage|all|Strawberry___healthy": 456,
+    "plantvillage|all|Tomato___Bacterial_spot": 2127,
+    "plantvillage|all|Tomato___Early_blight": 1000,
+    "plantvillage|all|Tomato___Late_blight": 1901,
+    "plantvillage|all|Tomato___Leaf_Mold": 952,
+    "plantvillage|all|Tomato___Septoria_leaf_spot": 1771,
+    "plantvillage|all|Tomato___Spider_mites Two-spotted_spider_mite": 1676,
+    "plantvillage|all|Tomato___Target_Spot": 1404,
+    "plantvillage|all|Tomato___Tomato_Yellow_Leaf_Curl_Virus": 5357,
+    "plantvillage|all|Tomato___Tomato_mosaic_virus": 373,
+    "plantvillage|all|Tomato___healthy": 1584,
+    "rice_healthy_diu|augmented|Bacterial Leaf Blight": 715,
+    "rice_healthy_diu|augmented|Healthy _leaf": 601,
+    "rice_healthy_diu|augmented|Rice": 743,
+    "rice_healthy_diu|augmented|Rice Blast": 2745,
+    "rice_healthy_diu|augmented|Tungro": 3425,
+    "rice_healthy_diu|original|Bacterial Leaf Blight": 209,
+    "rice_healthy_diu|original|Healthy _leaf": 582,
+    "rice_healthy_diu|original|Rice": 584,
+    "rice_healthy_diu|original|Rice Blast": 590,
+    "rice_healthy_diu|original|Tungro": 231,
+    "rice_odisha|all|Bacterialblight": 514,
+    "rice_odisha|all|Blast": 474,
+    "rice_odisha|all|Brownspot": 606,
+    "rice_odisha|all|Tungro": 852
+  },
+  "class_map_reconciliation": {
+    "mapped_codes_dedup_counts": {
+      "BACKGROUND_NO_LEAF": 1135,
+      "CHILLI_ANTHRACNOSE": 323,
+      "CHILLI_BACTERIAL_SPOT": 743,
+      "CHILLI_CERCOSPORA_LEAF_SPOT": 1997,
+      "CHILLI_HEALTHY": 1753,
+      "CHILLI_LEAF_CURL_VIRUS": 1873,
+      "CHILLI_NUTRIENT_DEFICIENCY": 1006,
+      "CHILLI_POWDERY_MILDEW": 821,
+      "COTTON_BACTERIAL_BLIGHT": 754,
+      "COTTON_CURL_VIRUS": 958,
+      "COTTON_HEALTHY": 723,
+      "COTTON_HERBICIDE_DAMAGE": 752,
+      "COTTON_LEAF_HOPPER_JASSIDS": 707,
+      "COTTON_LEAF_REDDENING": 1125,
+      "COTTON_LEAF_VARIEGATION": 507,
+      "MAIZE_COMMON_RUST": 1307,
+      "MAIZE_GRAY_LEAF_SPOT": 580,
+      "MAIZE_HEALTHY": 1160,
+      "MAIZE_NORTHERN_LEAF_BLIGHT": 1168,
+      "POTATO_EARLY_BLIGHT": 1114,
+      "POTATO_HEALTHY": 152,
+      "POTATO_LATE_BLIGHT": 1097,
+      "RICE_BACTERIAL_LEAF_BLIGHT": 1438,
+      "RICE_BLAST": 3809,
+      "RICE_BROWN_SPOT": 606,
+      "RICE_NORMAL": 1183,
+      "RICE_TUNGRO": 4508,
+      "TOMATO_BACTERIAL_SPOT": 2234,
+      "TOMATO_EARLY_BLIGHT": 1081,
+      "TOMATO_HEALTHY": 1647,
+      "TOMATO_LATE_BLIGHT": 2001,
+      "TOMATO_LEAF_MOLD": 1042,
+      "TOMATO_MOSAIC_VIRUS": 427,
+      "TOMATO_SEPTORIA_LEAF_SPOT": 1910,
+      "TOMATO_SPIDER_MITES": 1678,
+      "TOMATO_TARGET_SPOT": 1404,
+      "TOMATO_YELLOW_LEAF_CURL_VIRUS": 5430
+    },
+    "unmapped_raw_classes": [
+      "plantdoc:Apple Scab Leaf",
+      "plantdoc:Apple leaf",
+      "plantdoc:Apple rust leaf",
+      "plantdoc:Bell_pepper leaf",
+      "plantdoc:Bell_pepper leaf spot",
+      "plantdoc:Blueberry leaf",
+      "plantdoc:Cherry leaf",
+      "plantdoc:Peach leaf",
+      "plantdoc:Raspberry leaf",
+      "plantdoc:Soyabean leaf",
+      "plantdoc:Squash Powdery mildew leaf",
+      "plantdoc:Strawberry leaf",
+      "plantdoc:grape leaf",
+      "plantdoc:grape leaf black rot",
+      "plantvillage:Apple___Apple_scab",
+      "plantvillage:Apple___Black_rot",
+      "plantvillage:Apple___Cedar_apple_rust",
+      "plantvillage:Apple___healthy",
+      "plantvillage:Blueberry___healthy",
+      "plantvillage:Cherry___Powdery_mildew",
+      "plantvillage:Cherry___healthy",
+      "plantvillage:Grape___Black_rot",
+      "plantvillage:Grape___Esca_(Black_Measles)",
+      "plantvillage:Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
+      "plantvillage:Grape___healthy",
+      "plantvillage:Orange___Haunglongbing_(Citrus_greening)",
+      "plantvillage:Peach___Bacterial_spot",
+      "plantvillage:Peach___healthy",
+      "plantvillage:Pepper,_bell___Bacterial_spot",
+      "plantvillage:Pepper,_bell___healthy",
+      "plantvillage:Raspberry___healthy",
+      "plantvillage:Soybean___healthy",
+      "plantvillage:Squash___Powdery_mildew",
+      "plantvillage:Strawberry___Leaf_scorch",
+      "plantvillage:Strawberry___healthy",
+      "rice_healthy_diu:Rice"
+    ],
+    "rice_planned_codes_with_no_data": [
+      "RICE_BACTERIAL_LEAF_STREAK",
+      "RICE_BACTERIAL_PANICLE_BLIGHT",
+      "RICE_DEAD_HEART",
+      "RICE_DOWNY_MILDEW",
+      "RICE_HISPA"
+    ]
+  },
+  "publisher_split_leakage": {
+    "plantdoc": {
+      "groups": [
+        "train",
+        "test"
+      ],
+      "near_dup_clusters_spanning_groups": 14,
+      "images_in_spanning_clusters": 29,
+      "byte_identical_groups_spanning_groups": 11,
+      "byte_identical_spanning_with_conflicting_labels": 8,
+      "conflicting_examples": [
+        {
+          "paths": [
+            "plantdoc/PlantDoc-Dataset-master/train/Corn Gray leaf spot/2015070295153021.jpg",
+            "plantdoc/PlantDoc-Dataset-master/test/Corn leaf blight/2015070295153021.jpg"
+          ],
+          "classes": [
+            "Corn Gray leaf spot",
+            "Corn leaf blight"
+          ]
+        },
+        {
+          "paths": [
+            "plantdoc/PlantDoc-Dataset-master/train/Corn Gray leaf spot/corn-gray-leaf-spot-f4.jpg",
+            "plantdoc/PlantDoc-Dataset-master/test/Corn leaf blight/corn-gray-leaf-spot-f4.jpg"
+          ],
+          "classes": [
+            "Corn Gray leaf spot",
+            "Corn leaf blight"
+          ]
+        },
+        {
+          "paths": [
+            "plantdoc/PlantDoc-Dataset-master/train/Corn leaf blight/IMG_42231.jpg",
+            "plantdoc/PlantDoc-Dataset-master/test/Corn Gray leaf spot/IMG_42231.jpg"
+          ],
+          "classes": [
+            "Corn Gray leaf spot",
+            "Corn leaf blight"
+          ]
+        },
+        {
+          "paths": [
+            "plantdoc/PlantDoc-Dataset-master/train/Potato leaf early blight/1421_0.jpeg_itok=FMtmgePj.jpg",
+            "plantdoc/PlantDoc-Dataset-master/test/Potato leaf late blight/1421_0.jpeg_itok=FMtmgePj.jpg"
+          ],
+          "classes": [
+            "Potato leaf early blight",
+            "Potato leaf late blight"
+          ]
+        },
+        {
+          "paths": [
+            "plantdoc/PlantDoc-Dataset-master/train/Potato leaf early blight/5816740026_d42ef24413_Phytophthora-Infestans.jpg",
+            "plantdoc/PlantDoc-Dataset-master/test/Potato leaf late blight/5816740026_d42ef24413_Phytophthora-Infestans.jpg"
+          ],
+          "classes": [
+            "Potato leaf early blight",
+            "Potato leaf late blight"
+          ]
+        },
+        {
+          "paths": [
+            "plantdoc/PlantDoc-Dataset-master/train/Potato leaf early blight/irish-blight-symptoms-on-potato-leaves-atmf8b.jpg",
+            "plantdoc/PlantDoc-Dataset-master/test/Potato leaf late blight/irish-blight-symptoms-on-potato-leaves-atmf8b.jpg"
+          ],
+          "classes": [
+            "Potato leaf early blight",
+            "Potato leaf late blight"
+          ]
+        },
+        {
+          "paths": [
+            "plantdoc/PlantDoc-Dataset-master/train/Potato leaf late blight/backus-056-potato-blight.jpg",
+            "plantdoc/PlantDoc-Dataset-master/test/Potato leaf early blight/backus-056-potato-blight.jpg"
+          ],
+          "classes": [
+            "Potato leaf early blight",
+            "Potato leaf late blight"
+          ]
+        },
+        {
+          "paths": [
+            "plantdoc/PlantDoc-Dataset-master/train/Tomato Septoria leaf spot/tomato_V8.jpg",
+            "plantdoc/PlantDoc-Dataset-master/test/Tomato leaf bacterial spot/tomato_V8.jpg"
+          ],
+          "classes": [
+            "Tomato Septoria leaf spot",
+            "Tomato leaf bacterial spot"
+          ]
+        }
+      ]
+    },
+    "cotton_sarcld2024": {
+      "groups": [
+        "original",
+        "augmented"
+      ],
+      "near_dup_clusters_spanning_groups": 1398,
+      "images_in_spanning_clusters": 4114,
+      "byte_identical_groups_spanning_groups": 0,
+      "byte_identical_spanning_with_conflicting_labels": 0,
+      "conflicting_examples": []
+    },
+    "rice_healthy_diu": {
+      "groups": [
+        "original",
+        "augmented"
+      ],
+      "near_dup_clusters_spanning_groups": 0,
+      "images_in_spanning_clusters": 0,
+      "byte_identical_groups_spanning_groups": 0,
+      "byte_identical_spanning_with_conflicting_labels": 0,
+      "conflicting_examples": []
+    }
+  },
+  "cotton_od1_gate": {
+    "criteria": {
+      "min_images_per_class": 150,
+      "min_classes_passing": 6,
+      "max_near_dup_inflation_pct": 30.0,
+      "max_label_error_pct": 10.0
+    },
+    "classes_found": 7,
+    "classes_expected_by_plan": 8,
+    "raw_counts": {
+      "Bacterial Blight": 250,
+      "Curl Virus": 431,
+      "Healthy Leaf": 257,
+      "Herbicide Growth Damage": 280,
+      "Leaf Hopper Jassids": 225,
+      "Leaf Redding": 578,
+      "Leaf Variegation": 116
+    },
+    "dedup_counts": {
+      "Bacterial Blight": 250,
+      "Curl Virus": 431,
+      "Healthy Leaf": 252,
+      "Herbicide Growth Damage": 280,
+      "Leaf Hopper Jassids": 225,
+      "Leaf Redding": 576,
+      "Leaf Variegation": 116
+    },
+    "classes_passing_min": [
+      "Bacterial Blight",
+      "Curl Virus",
+      "Healthy Leaf",
+      "Herbicide Growth Damage",
+      "Leaf Hopper Jassids",
+      "Leaf Redding"
+    ],
+    "classes_passing_count": 6,
+    "near_dup_inflation_pct": 0.3,
+    "augmented_images_linked_to_originals": 2709,
+    "mechanical_verdict": "PASS",
+    "note": "Label-error rate is a human judgement from the contact sheets and is NOT measured here. The mechanical verdict covers count and near-duplicate criteria only; the team owns the OD-1 decision."
+  },
+  "decode_failures": [],
+  "contact_sheets": {
+    "count": 81,
+    "directory": "datasets/audit/contact-sheets",
+    "committed": false,
+    "sheets": [
+      {
+        "dataset": "chilli_primary",
+        "group": "all",
+        "raw_class": "Bacterial_Spot",
+        "code": "CHILLI_BACTERIAL_SPOT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/chilli_primary/all__Bacterial_Spot.jpg"
+      },
+      {
+        "dataset": "chilli_primary",
+        "group": "all",
+        "raw_class": "Cercospora_Leaf_Spot",
+        "code": "CHILLI_CERCOSPORA_LEAF_SPOT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/chilli_primary/all__Cercospora_Leaf_Spot.jpg"
+      },
+      {
+        "dataset": "chilli_primary",
+        "group": "all",
+        "raw_class": "Curl_Virus",
+        "code": "CHILLI_LEAF_CURL_VIRUS",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/chilli_primary/all__Curl_Virus.jpg"
+      },
+      {
+        "dataset": "chilli_primary",
+        "group": "all",
+        "raw_class": "Healthy_Leaf",
+        "code": "CHILLI_HEALTHY",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/chilli_primary/all__Healthy_Leaf.jpg"
+      },
+      {
+        "dataset": "chilli_primary",
+        "group": "all",
+        "raw_class": "Nutrition_Deficiency",
+        "code": "CHILLI_NUTRIENT_DEFICIENCY",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/chilli_primary/all__Nutrition_Deficiency.jpg"
+      },
+      {
+        "dataset": "chilli_primary",
+        "group": "all",
+        "raw_class": "Powdery_Mildew",
+        "code": "CHILLI_POWDERY_MILDEW",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/chilli_primary/all__Powdery_Mildew.jpg"
+      },
+      {
+        "dataset": "chilli_secondary",
+        "group": "all",
+        "raw_class": "Anthracnose",
+        "code": "CHILLI_ANTHRACNOSE",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/chilli_secondary/all__Anthracnose.jpg"
+      },
+      {
+        "dataset": "chilli_secondary",
+        "group": "all",
+        "raw_class": "Cercospora Leaf Spot",
+        "code": "CHILLI_CERCOSPORA_LEAF_SPOT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/chilli_secondary/all__Cercospora_Leaf_Spot.jpg"
+      },
+      {
+        "dataset": "chilli_secondary",
+        "group": "all",
+        "raw_class": "Fresh Leaf",
+        "code": "CHILLI_HEALTHY",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/chilli_secondary/all__Fresh_Leaf.jpg"
+      },
+      {
+        "dataset": "chilli_secondary",
+        "group": "all",
+        "raw_class": "Leaf Curl Disease",
+        "code": "CHILLI_LEAF_CURL_VIRUS",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/chilli_secondary/all__Leaf_Curl_Disease.jpg"
+      },
+      {
+        "dataset": "cotton_sarcld2024",
+        "group": "augmented",
+        "raw_class": "Bacterial Blight",
+        "code": "COTTON_BACTERIAL_BLIGHT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/cotton_sarcld2024/augmented__Bacterial_Blight.jpg"
+      },
+      {
+        "dataset": "cotton_sarcld2024",
+        "group": "augmented",
+        "raw_class": "Curl Virus",
+        "code": "COTTON_CURL_VIRUS",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/cotton_sarcld2024/augmented__Curl_Virus.jpg"
+      },
+      {
+        "dataset": "cotton_sarcld2024",
+        "group": "augmented",
+        "raw_class": "Healthy Leaf",
+        "code": "COTTON_HEALTHY",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/cotton_sarcld2024/augmented__Healthy_Leaf.jpg"
+      },
+      {
+        "dataset": "cotton_sarcld2024",
+        "group": "augmented",
+        "raw_class": "Herbicide Growth Damage",
+        "code": "COTTON_HERBICIDE_DAMAGE",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/cotton_sarcld2024/augmented__Herbicide_Growth_Damage.jpg"
+      },
+      {
+        "dataset": "cotton_sarcld2024",
+        "group": "augmented",
+        "raw_class": "Leaf Hopper Jassids",
+        "code": "COTTON_LEAF_HOPPER_JASSIDS",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/cotton_sarcld2024/augmented__Leaf_Hopper_Jassids.jpg"
+      },
+      {
+        "dataset": "cotton_sarcld2024",
+        "group": "augmented",
+        "raw_class": "Leaf Redding",
+        "code": "COTTON_LEAF_REDDENING",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/cotton_sarcld2024/augmented__Leaf_Redding.jpg"
+      },
+      {
+        "dataset": "cotton_sarcld2024",
+        "group": "augmented",
+        "raw_class": "Leaf Variegation",
+        "code": "COTTON_LEAF_VARIEGATION",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/cotton_sarcld2024/augmented__Leaf_Variegation.jpg"
+      },
+      {
+        "dataset": "cotton_sarcld2024",
+        "group": "original",
+        "raw_class": "Bacterial Blight",
+        "code": "COTTON_BACTERIAL_BLIGHT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/cotton_sarcld2024/original__Bacterial_Blight.jpg"
+      },
+      {
+        "dataset": "cotton_sarcld2024",
+        "group": "original",
+        "raw_class": "Curl Virus",
+        "code": "COTTON_CURL_VIRUS",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/cotton_sarcld2024/original__Curl_Virus.jpg"
+      },
+      {
+        "dataset": "cotton_sarcld2024",
+        "group": "original",
+        "raw_class": "Healthy Leaf",
+        "code": "COTTON_HEALTHY",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/cotton_sarcld2024/original__Healthy_Leaf.jpg"
+      },
+      {
+        "dataset": "cotton_sarcld2024",
+        "group": "original",
+        "raw_class": "Herbicide Growth Damage",
+        "code": "COTTON_HERBICIDE_DAMAGE",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/cotton_sarcld2024/original__Herbicide_Growth_Damage.jpg"
+      },
+      {
+        "dataset": "cotton_sarcld2024",
+        "group": "original",
+        "raw_class": "Leaf Hopper Jassids",
+        "code": "COTTON_LEAF_HOPPER_JASSIDS",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/cotton_sarcld2024/original__Leaf_Hopper_Jassids.jpg"
+      },
+      {
+        "dataset": "cotton_sarcld2024",
+        "group": "original",
+        "raw_class": "Leaf Redding",
+        "code": "COTTON_LEAF_REDDENING",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/cotton_sarcld2024/original__Leaf_Redding.jpg"
+      },
+      {
+        "dataset": "cotton_sarcld2024",
+        "group": "original",
+        "raw_class": "Leaf Variegation",
+        "code": "COTTON_LEAF_VARIEGATION",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/cotton_sarcld2024/original__Leaf_Variegation.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "test",
+        "raw_class": "Corn Gray leaf spot",
+        "code": "MAIZE_GRAY_LEAF_SPOT",
+        "sampled": 4,
+        "path": "datasets/audit/contact-sheets/plantdoc/test__Corn_Gray_leaf_spot.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "test",
+        "raw_class": "Corn leaf blight",
+        "code": "MAIZE_NORTHERN_LEAF_BLIGHT",
+        "sampled": 12,
+        "path": "datasets/audit/contact-sheets/plantdoc/test__Corn_leaf_blight.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "test",
+        "raw_class": "Corn rust leaf",
+        "code": "MAIZE_COMMON_RUST",
+        "sampled": 10,
+        "path": "datasets/audit/contact-sheets/plantdoc/test__Corn_rust_leaf.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "test",
+        "raw_class": "Potato leaf early blight",
+        "code": "POTATO_EARLY_BLIGHT",
+        "sampled": 8,
+        "path": "datasets/audit/contact-sheets/plantdoc/test__Potato_leaf_early_blight.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "test",
+        "raw_class": "Potato leaf late blight",
+        "code": "POTATO_LATE_BLIGHT",
+        "sampled": 8,
+        "path": "datasets/audit/contact-sheets/plantdoc/test__Potato_leaf_late_blight.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "test",
+        "raw_class": "Tomato Early blight leaf",
+        "code": "TOMATO_EARLY_BLIGHT",
+        "sampled": 9,
+        "path": "datasets/audit/contact-sheets/plantdoc/test__Tomato_Early_blight_leaf.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "test",
+        "raw_class": "Tomato Septoria leaf spot",
+        "code": "TOMATO_SEPTORIA_LEAF_SPOT",
+        "sampled": 11,
+        "path": "datasets/audit/contact-sheets/plantdoc/test__Tomato_Septoria_leaf_spot.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "test",
+        "raw_class": "Tomato leaf",
+        "code": "TOMATO_HEALTHY",
+        "sampled": 8,
+        "path": "datasets/audit/contact-sheets/plantdoc/test__Tomato_leaf.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "test",
+        "raw_class": "Tomato leaf bacterial spot",
+        "code": "TOMATO_BACTERIAL_SPOT",
+        "sampled": 9,
+        "path": "datasets/audit/contact-sheets/plantdoc/test__Tomato_leaf_bacterial_spot.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "test",
+        "raw_class": "Tomato leaf late blight",
+        "code": "TOMATO_LATE_BLIGHT",
+        "sampled": 10,
+        "path": "datasets/audit/contact-sheets/plantdoc/test__Tomato_leaf_late_blight.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "test",
+        "raw_class": "Tomato leaf mosaic virus",
+        "code": "TOMATO_MOSAIC_VIRUS",
+        "sampled": 10,
+        "path": "datasets/audit/contact-sheets/plantdoc/test__Tomato_leaf_mosaic_virus.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "test",
+        "raw_class": "Tomato leaf yellow virus",
+        "code": "TOMATO_YELLOW_LEAF_CURL_VIRUS",
+        "sampled": 6,
+        "path": "datasets/audit/contact-sheets/plantdoc/test__Tomato_leaf_yellow_virus.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "test",
+        "raw_class": "Tomato mold leaf",
+        "code": "TOMATO_LEAF_MOLD",
+        "sampled": 6,
+        "path": "datasets/audit/contact-sheets/plantdoc/test__Tomato_mold_leaf.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "train",
+        "raw_class": "Corn Gray leaf spot",
+        "code": "MAIZE_GRAY_LEAF_SPOT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantdoc/train__Corn_Gray_leaf_spot.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "train",
+        "raw_class": "Corn leaf blight",
+        "code": "MAIZE_NORTHERN_LEAF_BLIGHT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantdoc/train__Corn_leaf_blight.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "train",
+        "raw_class": "Corn rust leaf",
+        "code": "MAIZE_COMMON_RUST",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantdoc/train__Corn_rust_leaf.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "train",
+        "raw_class": "Potato leaf early blight",
+        "code": "POTATO_EARLY_BLIGHT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantdoc/train__Potato_leaf_early_blight.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "train",
+        "raw_class": "Potato leaf late blight",
+        "code": "POTATO_LATE_BLIGHT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantdoc/train__Potato_leaf_late_blight.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "train",
+        "raw_class": "Tomato Early blight leaf",
+        "code": "TOMATO_EARLY_BLIGHT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantdoc/train__Tomato_Early_blight_leaf.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "train",
+        "raw_class": "Tomato Septoria leaf spot",
+        "code": "TOMATO_SEPTORIA_LEAF_SPOT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantdoc/train__Tomato_Septoria_leaf_spot.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "train",
+        "raw_class": "Tomato leaf",
+        "code": "TOMATO_HEALTHY",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantdoc/train__Tomato_leaf.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "train",
+        "raw_class": "Tomato leaf bacterial spot",
+        "code": "TOMATO_BACTERIAL_SPOT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantdoc/train__Tomato_leaf_bacterial_spot.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "train",
+        "raw_class": "Tomato leaf late blight",
+        "code": "TOMATO_LATE_BLIGHT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantdoc/train__Tomato_leaf_late_blight.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "train",
+        "raw_class": "Tomato leaf mosaic virus",
+        "code": "TOMATO_MOSAIC_VIRUS",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantdoc/train__Tomato_leaf_mosaic_virus.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "train",
+        "raw_class": "Tomato leaf yellow virus",
+        "code": "TOMATO_YELLOW_LEAF_CURL_VIRUS",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantdoc/train__Tomato_leaf_yellow_virus.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "train",
+        "raw_class": "Tomato mold leaf",
+        "code": "TOMATO_LEAF_MOLD",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantdoc/train__Tomato_mold_leaf.jpg"
+      },
+      {
+        "dataset": "plantdoc",
+        "group": "train",
+        "raw_class": "Tomato two spotted spider mites leaf",
+        "code": "TOMATO_SPIDER_MITES",
+        "sampled": 2,
+        "path": "datasets/audit/contact-sheets/plantdoc/train__Tomato_two_spotted_spider_mites_leaf.jpg"
+      },
+      {
+        "dataset": "plantvillage",
+        "group": "all",
+        "raw_class": "Background_without_leaves",
+        "code": "BACKGROUND_NO_LEAF",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantvillage/all__Background_without_leaves.jpg"
+      },
+      {
+        "dataset": "plantvillage",
+        "group": "all",
+        "raw_class": "Corn___Cercospora_leaf_spot Gray_leaf_spot",
+        "code": "MAIZE_GRAY_LEAF_SPOT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantvillage/all__Corn___Cercospora_leaf_spot_Gray_leaf_spot.jpg"
+      },
+      {
+        "dataset": "plantvillage",
+        "group": "all",
+        "raw_class": "Corn___Common_rust",
+        "code": "MAIZE_COMMON_RUST",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantvillage/all__Corn___Common_rust.jpg"
+      },
+      {
+        "dataset": "plantvillage",
+        "group": "all",
+        "raw_class": "Corn___Northern_Leaf_Blight",
+        "code": "MAIZE_NORTHERN_LEAF_BLIGHT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantvillage/all__Corn___Northern_Leaf_Blight.jpg"
+      },
+      {
+        "dataset": "plantvillage",
+        "group": "all",
+        "raw_class": "Corn___healthy",
+        "code": "MAIZE_HEALTHY",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantvillage/all__Corn___healthy.jpg"
+      },
+      {
+        "dataset": "plantvillage",
+        "group": "all",
+        "raw_class": "Potato___Early_blight",
+        "code": "POTATO_EARLY_BLIGHT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantvillage/all__Potato___Early_blight.jpg"
+      },
+      {
+        "dataset": "plantvillage",
+        "group": "all",
+        "raw_class": "Potato___Late_blight",
+        "code": "POTATO_LATE_BLIGHT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantvillage/all__Potato___Late_blight.jpg"
+      },
+      {
+        "dataset": "plantvillage",
+        "group": "all",
+        "raw_class": "Potato___healthy",
+        "code": "POTATO_HEALTHY",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantvillage/all__Potato___healthy.jpg"
+      },
+      {
+        "dataset": "plantvillage",
+        "group": "all",
+        "raw_class": "Tomato___Bacterial_spot",
+        "code": "TOMATO_BACTERIAL_SPOT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantvillage/all__Tomato___Bacterial_spot.jpg"
+      },
+      {
+        "dataset": "plantvillage",
+        "group": "all",
+        "raw_class": "Tomato___Early_blight",
+        "code": "TOMATO_EARLY_BLIGHT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantvillage/all__Tomato___Early_blight.jpg"
+      },
+      {
+        "dataset": "plantvillage",
+        "group": "all",
+        "raw_class": "Tomato___Late_blight",
+        "code": "TOMATO_LATE_BLIGHT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantvillage/all__Tomato___Late_blight.jpg"
+      },
+      {
+        "dataset": "plantvillage",
+        "group": "all",
+        "raw_class": "Tomato___Leaf_Mold",
+        "code": "TOMATO_LEAF_MOLD",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantvillage/all__Tomato___Leaf_Mold.jpg"
+      },
+      {
+        "dataset": "plantvillage",
+        "group": "all",
+        "raw_class": "Tomato___Septoria_leaf_spot",
+        "code": "TOMATO_SEPTORIA_LEAF_SPOT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantvillage/all__Tomato___Septoria_leaf_spot.jpg"
+      },
+      {
+        "dataset": "plantvillage",
+        "group": "all",
+        "raw_class": "Tomato___Spider_mites Two-spotted_spider_mite",
+        "code": "TOMATO_SPIDER_MITES",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantvillage/all__Tomato___Spider_mites_Two-spotted_spider_mite.jpg"
+      },
+      {
+        "dataset": "plantvillage",
+        "group": "all",
+        "raw_class": "Tomato___Target_Spot",
+        "code": "TOMATO_TARGET_SPOT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantvillage/all__Tomato___Target_Spot.jpg"
+      },
+      {
+        "dataset": "plantvillage",
+        "group": "all",
+        "raw_class": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+        "code": "TOMATO_YELLOW_LEAF_CURL_VIRUS",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantvillage/all__Tomato___Tomato_Yellow_Leaf_Curl_Virus.jpg"
+      },
+      {
+        "dataset": "plantvillage",
+        "group": "all",
+        "raw_class": "Tomato___Tomato_mosaic_virus",
+        "code": "TOMATO_MOSAIC_VIRUS",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantvillage/all__Tomato___Tomato_mosaic_virus.jpg"
+      },
+      {
+        "dataset": "plantvillage",
+        "group": "all",
+        "raw_class": "Tomato___healthy",
+        "code": "TOMATO_HEALTHY",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/plantvillage/all__Tomato___healthy.jpg"
+      },
+      {
+        "dataset": "rice_healthy_diu",
+        "group": "augmented",
+        "raw_class": "Bacterial Leaf Blight",
+        "code": "RICE_BACTERIAL_LEAF_BLIGHT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/rice_healthy_diu/augmented__Bacterial_Leaf_Blight.jpg"
+      },
+      {
+        "dataset": "rice_healthy_diu",
+        "group": "augmented",
+        "raw_class": "Healthy _leaf",
+        "code": "RICE_NORMAL",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/rice_healthy_diu/augmented__Healthy__leaf.jpg"
+      },
+      {
+        "dataset": "rice_healthy_diu",
+        "group": "augmented",
+        "raw_class": "Rice Blast",
+        "code": "RICE_BLAST",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/rice_healthy_diu/augmented__Rice_Blast.jpg"
+      },
+      {
+        "dataset": "rice_healthy_diu",
+        "group": "augmented",
+        "raw_class": "Tungro",
+        "code": "RICE_TUNGRO",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/rice_healthy_diu/augmented__Tungro.jpg"
+      },
+      {
+        "dataset": "rice_healthy_diu",
+        "group": "original",
+        "raw_class": "Bacterial Leaf Blight",
+        "code": "RICE_BACTERIAL_LEAF_BLIGHT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/rice_healthy_diu/original__Bacterial_Leaf_Blight.jpg"
+      },
+      {
+        "dataset": "rice_healthy_diu",
+        "group": "original",
+        "raw_class": "Healthy _leaf",
+        "code": "RICE_NORMAL",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/rice_healthy_diu/original__Healthy__leaf.jpg"
+      },
+      {
+        "dataset": "rice_healthy_diu",
+        "group": "original",
+        "raw_class": "Rice Blast",
+        "code": "RICE_BLAST",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/rice_healthy_diu/original__Rice_Blast.jpg"
+      },
+      {
+        "dataset": "rice_healthy_diu",
+        "group": "original",
+        "raw_class": "Tungro",
+        "code": "RICE_TUNGRO",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/rice_healthy_diu/original__Tungro.jpg"
+      },
+      {
+        "dataset": "rice_odisha",
+        "group": "all",
+        "raw_class": "Bacterialblight",
+        "code": "RICE_BACTERIAL_LEAF_BLIGHT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/rice_odisha/all__Bacterialblight.jpg"
+      },
+      {
+        "dataset": "rice_odisha",
+        "group": "all",
+        "raw_class": "Blast",
+        "code": "RICE_BLAST",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/rice_odisha/all__Blast.jpg"
+      },
+      {
+        "dataset": "rice_odisha",
+        "group": "all",
+        "raw_class": "Brownspot",
+        "code": "RICE_BROWN_SPOT",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/rice_odisha/all__Brownspot.jpg"
+      },
+      {
+        "dataset": "rice_odisha",
+        "group": "all",
+        "raw_class": "Tungro",
+        "code": "RICE_TUNGRO",
+        "sampled": 30,
+        "path": "datasets/audit/contact-sheets/rice_odisha/all__Tungro.jpg"
+      }
+    ]
+  }
+}

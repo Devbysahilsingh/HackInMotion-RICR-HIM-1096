@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-12T17:00:33+00:00",
+  "generated_at": "2026-08-12T18:12:16+00:00",
   "generator": "scripts/ml/download_datasets.py",
   "registry_version": 1,
   "datasets": [
@@ -13,7 +13,7 @@
           "url": "https://data.mendeley.com/public-files/datasets/tywbtsjrjv/files/d5652a28-c1d8-4b76-97f3-72fb80f94efc/file_downloaded",
           "bytes": 868032562,
           "sha256": "ac3432453984d02a86197987e775a5429d0d59e7cc7c35bcf5a8f50349b90ff0",
-          "downloaded_at": "2026-08-12T17:00:14+00:00"
+          "downloaded_at": "2026-08-12T18:09:21+00:00"
         }
       ],
       "extracted_files": 55449,
@@ -45,7 +45,7 @@
           "url": "https://codeload.github.com/pratikkayal/PlantDoc-Dataset/zip/refs/heads/master",
           "bytes": 984413268,
           "sha256": "345548bb3659519f425608b428d8a2ca338032b7b02c3cb3c3bb2954fc8986d9",
-          "downloaded_at": "2026-08-12T17:00:22+00:00"
+          "downloaded_at": "2026-08-12T18:09:28+00:00"
         }
       ],
       "extracted_files": 2576,
@@ -76,7 +76,7 @@
           "url": "https://data.mendeley.com/public-api/zip/tm3v4zmh7c/download/1",
           "bytes": 3037394349,
           "sha256": "7b95cbbf3b725d3fc7f7315438efb374c5ce58e226473975a28e5079f7a08c4d",
-          "downloaded_at": "2026-08-12T17:00:25+00:00"
+          "downloaded_at": "2026-08-12T18:09:32+00:00"
         }
       ],
       "extracted_files": 8826,
@@ -108,7 +108,7 @@
           "url": "https://data.mendeley.com/public-api/zip/wzc6r6w5w5/download/3",
           "bytes": 3249913514,
           "sha256": "ab81a8e87be3b2bd22aab34ba37aedb74270acc897f7b2b069aa6a6144da7c24",
-          "downloaded_at": "2026-08-12T17:00:29+00:00"
+          "downloaded_at": "2026-08-12T18:09:36+00:00"
         }
       ],
       "extracted_files": 1526,
@@ -141,7 +141,7 @@
           "url": "https://data.mendeley.com/public-api/zip/b3jy2p6k8w/download/2",
           "bytes": 1568238230,
           "sha256": "9cb2cca0669f7ff17cd65d16776296eb19dddb13073094d4da2693ca5530189c",
-          "downloaded_at": "2026-08-12T17:00:31+00:00"
+          "downloaded_at": "2026-08-12T18:09:38+00:00"
         }
       ],
       "extracted_files": 9142,
@@ -173,7 +173,7 @@
           "url": "https://data.mendeley.com/public-api/zip/fwcj7stb8r/download/1",
           "bytes": 179406830,
           "sha256": "698171eed58206229693ac90fa47931ed2f1e5796cdc746ce99e4adca88132b3",
-          "downloaded_at": "2026-08-12T17:00:32+00:00"
+          "downloaded_at": "2026-08-12T18:09:40+00:00"
         }
       ],
       "extracted_files": 5935,
@@ -193,6 +193,41 @@
         "rice-odisha-fwcj7stb8r-v1.zip: 171.1MB sha256=698171eed5820622\u2026",
         "already extracted, skipping",
         "5932 images; sample-decoded 40/40"
+      ]
+    },
+    {
+      "id": "rice_healthy_diu",
+      "name": "Rice Leaf and Crop Disease Detection Dataset (Labib, Mim & Mojumdar 2024) \u2014 supplies RICE_NORMAL",
+      "status": "ok",
+      "archives": [
+        {
+          "filename": "rice-healthy-g7tcwvshff-v1.zip",
+          "url": "https://data.mendeley.com/public-files/datasets/g7tcwvshff/files/dd1289cd-339b-4f81-9dcd-f82d3a4fe0e5/file_downloaded",
+          "bytes": 976965280,
+          "sha256": "e4cc1f4bd98609167a1929d05bd4cc69ad5e80ea5b70dbcc47e97e77883678c5",
+          "downloaded_at": "2026-08-12T18:12:00+00:00"
+        }
+      ],
+      "extracted_files": 10767,
+      "image_files": 10766,
+      "sample_decoded": 40,
+      "corrupt_files": [],
+      "renamed_for_filesystem": 0,
+      "nested_archives_extracted": 0,
+      "macos_stubs_ignored": 0,
+      "top_level_dirs": [
+        "Bacterial Leaf Blight",
+        "Healthy _leaf",
+        "Rice",
+        "Rice Blast",
+        "Tungro"
+      ],
+      "bytes_on_disk": 994943950,
+      "notes": [
+        "checksum matches published value",
+        "rice-healthy-g7tcwvshff-v1.zip: 931.7MB sha256=e4cc1f4bd9860916\u2026",
+        "extracted 10766 entries safely",
+        "10766 images; sample-decoded 40/40"
       ]
     },
     {

@@ -4,7 +4,7 @@
 
 **Current phase: IMPLEMENTATION — controlled, one TODO at a time.** The user recommends/approves each TODO before it is built. Never chain TODOs autonomously: implement exactly the approved TODO, verify it, report, then stop and wait. If an unexpected prerequisite appears, stop and explain rather than absorbing it silently.
 
-**Completed:** P0-3 development foundation (tooling, secret gate, backend + web scaffolds). **Next:** proposed for approval — see implementation-log.md.
+**Completed:** P0-3 development foundation · P0-4 dataset acquisition · P0-5 dataset audit · P0-5b rice healthy acquisition · P0-6 dataset preparation (splits + manifest; no training). Curation decisions: ADR-021 (approved). **Next:** proposed for approval — see implementation-log.md.
 
 **How to run what exists:** root `npm install` (installs tooling and enables the pre-commit hook) · `cd backend && npm install && npm run dev` (needs `backend/.env`; copy names from `.env.example`) · `cd web/frontend && npm install && npm run dev`. Repo-wide checks: `npm run lint`, `npm run format:check`.
 

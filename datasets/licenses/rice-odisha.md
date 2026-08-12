@@ -35,3 +35,12 @@ This dataset is smaller and narrower, but it is **real Indian field data with a 
 Published as 5,932 images across **4 disease classes: bacterial blight, blast, brown spot, tungro**. There is **no healthy/normal class**.
 
 This matters: a classifier with no healthy class cannot tell a farmer their rice crop is fine — it would force every photograph into a disease. The audit must decide how to handle this, options being to source healthy rice leaves from another CC-licensed set, to route rice healthy-detection through the confidence gate (below-threshold → "no disease confidently identified"), or to accept the limitation and disclose it. **This is deliberately left to P0-5 on evidence, not pre-decided here.** Actual per-class counts also come from the audit, not from the dataset description.
+
+### RESOLVED 2026-08-12 — ADR-021 decision 2 (approved)
+
+`RICE_NORMAL` is supplied by **`rice_healthy_diu`** (Mendeley `g7tcwvshff`, CC BY 4.0, raw tree only) — see `datasets/licenses/rice-healthy-diu.md`. The confidence gate was explicitly **rejected** as a substitute: a four-way softmax over a healthy leaf has no correct output and can be confidently wrong.
+
+Two audit findings also revise this file's figures:
+
+- **Usable size is 2,446, not 5,932.** This set is 59% redundant (1,138 byte-identical copies plus verified near-duplicates). 2,446 is the only figure to quote.
+- Post-dedup per class: Tungro 852 · Brown Spot 606 · Bacterial Leaf Blight 514 · Blast 474.

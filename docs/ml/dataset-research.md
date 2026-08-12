@@ -16,6 +16,7 @@ Original scoring method (quality 20 / field-data 20 / Indian relevance 15 / dise
 | Chilli secondary | chilli | Mendeley `wzc6r6w5w5` v3 | **CC BY 4.0** | **1,515** | ✅ publisher-matched | 40/40 |
 | SAR-CLD-2024 cotton | cotton | Mendeley `b3jy2p6k8w` v2 | **CC BY 4.0** | **9,137** | ✅ publisher-matched | 40/40 |
 | Rice (Odisha, Sethy) | rice | Mendeley `fwcj7stb8r` v1 | **CC BY 4.0** | **5,932** | ✅ publisher-matched | 40/40 |
+| Rice healthy (DIU) | rice | Mendeley `g7tcwvshff` v1 | **CC BY 4.0** | **10,766** | ✅ publisher-matched | 40/40 |
 | ~~Paddy Doctor~~ | rice | — | **UNKNOWN — none published** | — | — | **REJECTED**, superseded |
 
 **Total: 83,422 images, 16.3 GB on disk. Zero corrupt files in sampling. Five of six archives byte-for-byte checksum-verified against publisher-published sha256 values.**
@@ -35,7 +36,8 @@ Every count was checked against the publisher's claim rather than assumed:
 | Chilli primary | ~8,814 | 8,817 | Effectively exact. |
 | Chilli secondary | 1,515 (v3) | 1,515 | **Exact** — after excluding 1,519 macOS AppleDouble stubs (see below). |
 | Cotton | 2,137 original + 7,000 augmented | 9,137 | **Exact.** Augmented images must be kept out of val/test splits (P0-6). |
-| Rice (Odisha) | 5,932 | 5,932 | **Exact.** |
+| Rice (Odisha) | 5,932 | 5,932 | **Exact.** But only **2,446 are unique** — the set is 59% redundant (P0-5). 2,446 is the figure to quote. |
+| Rice healthy (DIU) | 2,508 raw + 8,258 augmented | 10,766 | **Exact, per class.** Raw only is usable; **582** healthy survive dedup. |
 
 ### Structural findings that materially affect the P0-5 audit
 
@@ -43,7 +45,9 @@ Every count was checked against the publisher's claim rather than assumed:
 2. **macOS AppleDouble stubs.** chilli_secondary contains 1,519 `__MACOSX/._*` files carrying image extensions but holding resource-fork data. They inflated the apparent image count to 3,030 — exactly double the true 1,515. They are excluded from inventory and must stay excluded from any class census.
 3. **Rice ships `.7z`,** not ZIP; 7z support (`py7zr`) was required to reach the data at all.
 4. **PlantDoc required 87 filename rewrites** for Windows compatibility (illegal characters such as `?`). Every rename is counted in the manifest so files remain traceable to their archive entries.
-5. **Rice has no healthy class** (4 disease classes only). A classifier without one cannot tell a farmer their crop is fine — **an explicit P0-5 decision**, options recorded in `datasets/licenses/rice-odisha.md`.
+5. **Rice has no healthy class** (4 disease classes only). A classifier without one cannot tell a farmer their crop is fine — **an explicit P0-5 decision**, options recorded in `datasets/licenses/rice-odisha.md`. **Resolved** by ADR-021 decision 2: `rice_healthy_diu` supplies `RICE_NORMAL` (582 usable), with the field-realism caveat recorded there.
+6. **Inverted nesting in `rice_healthy_diu`.** Class directories come first and each holds its own `orginal` (publisher's spelling) and `augmented` subfolders — the healthy class uses `aug` where the others use `augmented`. The group is therefore selected *inside* the class, the reverse of every other dataset here; the audit's layout registry gained a `class_subdirs` option rather than guessing.
+7. **`public-api/datasets/{id}/files` works after all** — it needs `?folder_id=root&version=N`. P0-4 recorded it as 403-only. It returns the publisher's own **sha256 and byte size**, which is a stronger integrity anchor than a locally computed hash, and it is now the preferred way to register a Mendeley source.
 
 ---
 

@@ -1,13 +1,19 @@
 # Dataset Preparation
 
-Pipeline (`scripts/ml/prepare-datasets.py`, deterministic, seeded):
-1. **Ingest** from `datasets/raw/` using audit's keep-lists (corrupt/quarantined excluded).
-2. **Class mapping** → unified codes (crop-class-mapping.md); unmappable → excluded, counted.
-3. **Resize policy:** none at rest (train-time transforms handle it); EXIF orientation normalized; RGB coerced; save-as-is to `datasets/prepared/<classCode>/`.
-4. **Splits:** stratified 70/15/15 per class, seeded (SEED=42); **near-duplicate clusters assigned atomically to one split** (leakage prevention); Paddy Doctor: respect competition's held-out philosophy — our test split from labeled train only.
-5. **Field test set:** PlantDoc overlap classes → `datasets/fieldtest/` — NEVER seen in training/val; cross-set dedup vs train enforced.
-6. **Class balancing:** no oversampling on disk; handled at train time via WeightedRandomSampler + class-weighted CE (evaluation-plan covers per-class reporting so imbalance isn't hidden).
-7. **Manifest:** `datasets/manifest.json` — file→split→class, checksums, counts, seed, script version. Reproducibility contract: same raw + same script version ⇒ identical splits.
+**Status: EXECUTED 2026-08-12 (P0-6).** Implemented by `scripts/ml/prepare-datasets.py` driven by `scripts/ml/curation-rules.json` (the approved ADR-021 decisions in machine-readable form). Results: `datasets/manifest.json`.
+
+Pipeline (deterministic, seeded):
+1. **Ingest** from `datasets/raw/` reusing the P0-5 audit's own enumeration and hashing (imported, not reimplemented, so "duplicate" cannot mean two different things in the audit and in the splits). Any decode failure aborts — no splits over a corpus we cannot fully read.
+2. **Curation rules** applied from `curation-rules.json`; every excluded image is recorded with its rule *and its reason* in `datasets/splits/exclusions.json`, traceable to an ADR-021 decision.
+3. **Class mapping** → unified codes (crop-class-mapping.md); unmappable → excluded and counted, never guessed.
+4. **Duplicate collapse:** each near-duplicate cluster keeps one representative (lexicographically smallest path). This makes the manifest count distinct images rather than files — without it, rice (59% redundant) would be silently up-weighted against PlantVillage (0.07%), and a test set would score the same photograph several times.
+5. **Resize policy:** none at rest — train-time transforms handle it. **Deviation from the original plan:** images are *not* copied into `datasets/prepared/<classCode>/`. The manifest references raw paths instead, so there is exactly one copy of every image, provenance is preserved by construction, and no working copy can drift from its source. EXIF/RGB normalisation moves to the train-time transform where it already had to exist.
+6. **Splits:** stratified 70/15/15 per class, seeded (SEED=42), **cluster-atomic** — asserted, not assumed: the run aborts if any cluster spans two splits.
+7. **Minimum test size:** where a 15% test share would fall below the 50-image acceptance floor, that class's *test fraction* is raised (capped at 40%) rather than the gate being lowered — ADR-021 decision 7 generalised. Six classes needed it; all 36 now clear the floor.
+8. **Field test set:** the whole of PlantDoc, held out and never trained on. Its own train/test split is discarded, which dissolves the leakage that crossed it. Disjointness from the train/val pool is asserted at cluster level.
+9. **Source-stratified splits:** each (class, source) stratum is split independently. The confound probe measured that source datasets are separable from background alone (chilli 0.91, rice 0.96, tomato 0.96), so a split that happened to align with source would let a model score by recognising capture style. Two confounds are *contained, not removed* and carry mandatory evaluation gates in the manifest: `CHILLI_ANTHRACNOSE` vs the three chilli_primary-only classes, and `RICE_NORMAL` vs `RICE_BROWN_SPOT`.
+10. **Class balancing:** no oversampling on disk; handled at train time via WeightedRandomSampler + class-weighted CE (evaluation-plan covers per-class reporting so imbalance isn't hidden).
+11. **Manifest:** `datasets/manifest.json` (committed) — counts, per-class splits, rules hash, seed, gate results, and a SHA-256 over each split's file list. The lists themselves live in `datasets/splits/` and are gitignored derived artifacts. **Reproducibility contract:** same raw + same rules + same seed ⇒ identical split hashes. *Verified by re-running: all four hashes matched, only the timestamp differed.*
 
 ## Augmentation (train only; torchvision v2 / albumentations)
 RandomResizedCrop(224, scale 0.7–1.0) · HFlip · Rotation ±20° · ColorJitter (0.3/0.3/0.2) · GaussianBlur p=0.15 · RandomErasing p=0.1 · **domain-gap set:** RandomShadow/brightness extremes p=0.2, simulated background patches behind segmented PlantVillage leaves where masks exist (stretch — only if Day-1 time allows; not load-bearing). Val/test: Resize(256)→CenterCrop(224) only. Normalization: ImageNet stats (documented — must match inference exactly; golden-image parity test).

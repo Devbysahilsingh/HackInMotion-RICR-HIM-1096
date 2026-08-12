@@ -137,6 +137,35 @@
       ]
     },
     {
+      "id": "rice_healthy_diu",
+      "name": "Rice Leaf and Crop Disease Detection Dataset (Labib, Mim & Mojumdar 2024) — supplies RICE_NORMAL",
+      "crops": ["rice"],
+      "provenance": {
+        "publisher": "Mendeley Data",
+        "record": "https://data.mendeley.com/datasets/g7tcwvshff/1",
+        "doi": "10.17632/g7tcwvshff.1",
+        "version_used": 1,
+        "publish_date": "2024-11-20",
+        "institution": "Daffodil International University, Bangladesh",
+        "citation": "Labib, R., Mim, S., & Mojumdar, M. U. (2024). Rice Leaf and Crop Disease Detection Dataset [Dataset]. Mendeley Data. https://doi.org/10.17632/g7tcwvshff.1",
+        "licence": "CC BY 4.0 (Creative Commons Attribution 4.0 International) — read verbatim from the Mendeley licence object at /public-api/datasets/g7tcwvshff?version=1. Share, copy and modify with attribution; note the publisher's own caveat that third-party content within a dataset may need further permission.",
+        "selection_rationale": "Acquired under ADR-021 decision 2 to supply the RICE_NORMAL class, which the Odisha set lacks entirely. The decisive property is NOT the healthy count but that healthy ships alongside Bacterial Leaf Blight, Blast and Tungro FROM THE SAME CAPTURE CAMPAIGN — so healthy-vs-diseased is decidable within one source instead of being predictable from capture style. IEEE DataPort's Indian Rice Disease Dataset was rejected on the same grounds as Paddy Doctor: paid-subscription access and no published image licence.",
+        "raw_only": "The publisher ships Raw Data (2,508) and Augmented Data (8,258). ONLY the raw tree may be used: the augmented images are derived from the raw ones and would leak across splits. Published raw counts: Bacterial Leaf Blight 262, Rice Blast 592, Tungro 298, Healthy Leaf 771, Rice 585.",
+        "scope_note": "The 'Rice' class is a general/whole-plant category, not a condition — it is NOT mapped to a class code without inspection. Only Healthy Leaf is required by decision 2; the overlapping disease classes are a bonus pending the audit.",
+        "geography_note": "Bangladesh-collected, like chilli_secondary. Agroclimatically close to eastern India but a proxy, not Indian field data — disclosed rather than glossed.",
+        "verification_required": "Before this data may enter a class map: dedup within and against rice_odisha, and a source-separability check. If a trivial probe can predict which dataset an image came from, the merged rice label space is confounded and must be reported as such (ADR-021 decision 2)."
+      },
+      "files": [
+        {
+          "filename": "rice-healthy-g7tcwvshff-v1.zip",
+          "url": "https://data.mendeley.com/public-files/datasets/g7tcwvshff/files/dd1289cd-339b-4f81-9dcd-f82d3a4fe0e5/file_downloaded",
+          "expected_bytes": 976965280,
+          "expected_sha256": "e4cc1f4bd98609167a1929d05bd4cc69ad5e80ea5b70dbcc47e97e77883678c5",
+          "integrity_note": "Size and sha256 are the publisher's own, read from /public-api/datasets/g7tcwvshff/files?folder_id=root&version=1 — not values we computed after the fact."
+        }
+      ]
+    },
+    {
       "id": "paddy_doctor_rice",
       "name": "Paddy Doctor (rice) — REJECTED, superseded by rice_odisha",
       "crops": ["rice"],

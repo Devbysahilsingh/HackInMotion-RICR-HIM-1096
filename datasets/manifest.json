@@ -1,0 +1,1009 @@
+{
+  "schema_version": 1,
+  "todo": "P0-6",
+  "generated_at": "2026-08-12T18:43:29+00:00",
+  "rules": {
+    "path": "scripts/ml/curation-rules.json",
+    "version": 1,
+    "authority": "docs/decisions/ADR-021-dataset-curation-decisions.md (approved 2026-08-12)",
+    "sha256": "27b62c937198d34312ec5534dbd6e3eeb25b20f4d9440f8bbd4d1e984bd8ce5b"
+  },
+  "reproducibility": {
+    "seed": 42,
+    "contract": "same raw corpus + same curation-rules.json + same script ⇒ identical split hashes below. Split member lists live in datasets/splits/ and are derived artifacts, regenerable and gitignored.",
+    "audit_report": {
+      "path": "datasets/audit-report.json",
+      "sha256": "1907cfc8e9cceb348436e066de62e79db3f6145ab4410f0cf94c83f379f9e4f4"
+    }
+  },
+  "totals": {
+    "images_enumerated": 94187,
+    "kept": 39929,
+    "excluded": 54258,
+    "trainval_pool": 38696,
+    "fieldtest": 1233,
+    "train": 27009,
+    "val": 5811,
+    "test": 5876
+  },
+  "exclusions_by_rule": {
+    "unmapped_class_policy": 31956,
+    "ADR-021 decision 3": 1143,
+    "quarantine.label_contradiction": 146,
+    "quarantine.manual_review": 31,
+    "quarantine.stock_provenance": 15,
+    "ADR-021 decision 1": 116,
+    "ADR-021 decision 1 / raw-only rule": 7000,
+    "ADR-021 decision 2 / raw-only rule": 8258,
+    "duplicate_collapse": 5593
+  },
+  "splits": {
+    "train": {
+      "images": 27009,
+      "sha256": "3d235b0a96fc3c9c880422129b59fc7993a53630a4b08ab641d289cf39005e0d"
+    },
+    "val": {
+      "images": 5811,
+      "sha256": "7ffe5cca0d336f4a477c311a10cb84e4a4b1eb7b6ff7ff3f7afa6c62e15928f2"
+    },
+    "test": {
+      "images": 5876,
+      "sha256": "8a4c2d226d0f37147402ed78003f038410744c0c96dbc052d7f07ef6a8c25192"
+    },
+    "fieldtest": {
+      "images": 1233,
+      "sha256": "563f9e9fb9713ce2037b03e9fe1dbde724490944fc0f11cea84b06cf9a9e2e16"
+    }
+  },
+  "classes": {
+    "CHILLI_ANTHRACNOSE": {
+      "images": 323,
+      "clusters": 323,
+      "sources": {
+        "chilli_secondary": 323
+      },
+      "single_source": true,
+      "test_fraction": 0.1548,
+      "test_fraction_raised": true,
+      "source_split_balance": {
+        "train": {
+          "chilli_secondary": 225
+        },
+        "val": {
+          "chilli_secondary": 48
+        },
+        "test": {
+          "chilli_secondary": 50
+        }
+      },
+      "train": 225,
+      "val": 48,
+      "test": 50
+    },
+    "CHILLI_BACTERIAL_SPOT": {
+      "images": 743,
+      "clusters": 743,
+      "sources": {
+        "chilli_primary": 743
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "chilli_primary": 520
+        },
+        "val": {
+          "chilli_primary": 112
+        },
+        "test": {
+          "chilli_primary": 111
+        }
+      },
+      "train": 520,
+      "val": 112,
+      "test": 111
+    },
+    "CHILLI_CERCOSPORA_LEAF_SPOT": {
+      "images": 1997,
+      "clusters": 1997,
+      "sources": {
+        "chilli_primary": 1631,
+        "chilli_secondary": 366
+      },
+      "single_source": false,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "chilli_primary": 1142,
+          "chilli_secondary": 256
+        },
+        "val": {
+          "chilli_primary": 245,
+          "chilli_secondary": 55
+        },
+        "test": {
+          "chilli_primary": 244,
+          "chilli_secondary": 55
+        }
+      },
+      "train": 1398,
+      "val": 300,
+      "test": 299
+    },
+    "CHILLI_HEALTHY": {
+      "images": 1753,
+      "clusters": 1753,
+      "sources": {
+        "chilli_primary": 1321,
+        "chilli_secondary": 432
+      },
+      "single_source": false,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "chilli_primary": 925,
+          "chilli_secondary": 302
+        },
+        "val": {
+          "chilli_primary": 198,
+          "chilli_secondary": 65
+        },
+        "test": {
+          "chilli_primary": 198,
+          "chilli_secondary": 65
+        }
+      },
+      "train": 1227,
+      "val": 263,
+      "test": 263
+    },
+    "CHILLI_LEAF_CURL_VIRUS": {
+      "images": 1873,
+      "clusters": 1873,
+      "sources": {
+        "chilli_primary": 1505,
+        "chilli_secondary": 368
+      },
+      "single_source": false,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "chilli_primary": 1053,
+          "chilli_secondary": 258
+        },
+        "val": {
+          "chilli_primary": 226,
+          "chilli_secondary": 55
+        },
+        "test": {
+          "chilli_primary": 226,
+          "chilli_secondary": 55
+        }
+      },
+      "train": 1311,
+      "val": 281,
+      "test": 281
+    },
+    "CHILLI_NUTRIENT_DEFICIENCY": {
+      "images": 1006,
+      "clusters": 1006,
+      "sources": {
+        "chilli_primary": 1006
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "chilli_primary": 704
+        },
+        "val": {
+          "chilli_primary": 151
+        },
+        "test": {
+          "chilli_primary": 151
+        }
+      },
+      "train": 704,
+      "val": 151,
+      "test": 151
+    },
+    "CHILLI_POWDERY_MILDEW": {
+      "images": 821,
+      "clusters": 821,
+      "sources": {
+        "chilli_primary": 821
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "chilli_primary": 575
+        },
+        "val": {
+          "chilli_primary": 123
+        },
+        "test": {
+          "chilli_primary": 123
+        }
+      },
+      "train": 575,
+      "val": 123,
+      "test": 123
+    },
+    "COTTON_BACTERIAL_BLIGHT": {
+      "images": 250,
+      "clusters": 250,
+      "sources": {
+        "cotton_sarcld2024": 250
+      },
+      "single_source": true,
+      "test_fraction": 0.2,
+      "test_fraction_raised": true,
+      "source_split_balance": {
+        "train": {
+          "cotton_sarcld2024": 163
+        },
+        "val": {
+          "cotton_sarcld2024": 37
+        },
+        "test": {
+          "cotton_sarcld2024": 50
+        }
+      },
+      "train": 163,
+      "val": 37,
+      "test": 50
+    },
+    "COTTON_CURL_VIRUS": {
+      "images": 426,
+      "clusters": 426,
+      "sources": {
+        "cotton_sarcld2024": 426
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "cotton_sarcld2024": 298
+        },
+        "val": {
+          "cotton_sarcld2024": 64
+        },
+        "test": {
+          "cotton_sarcld2024": 64
+        }
+      },
+      "train": 298,
+      "val": 64,
+      "test": 64
+    },
+    "COTTON_HEALTHY": {
+      "images": 252,
+      "clusters": 252,
+      "sources": {
+        "cotton_sarcld2024": 252
+      },
+      "single_source": true,
+      "test_fraction": 0.1984,
+      "test_fraction_raised": true,
+      "source_split_balance": {
+        "train": {
+          "cotton_sarcld2024": 164
+        },
+        "val": {
+          "cotton_sarcld2024": 38
+        },
+        "test": {
+          "cotton_sarcld2024": 50
+        }
+      },
+      "train": 164,
+      "val": 38,
+      "test": 50
+    },
+    "COTTON_HERBICIDE_DAMAGE": {
+      "images": 280,
+      "clusters": 280,
+      "sources": {
+        "cotton_sarcld2024": 280
+      },
+      "single_source": true,
+      "test_fraction": 0.1786,
+      "test_fraction_raised": true,
+      "source_split_balance": {
+        "train": {
+          "cotton_sarcld2024": 188
+        },
+        "val": {
+          "cotton_sarcld2024": 42
+        },
+        "test": {
+          "cotton_sarcld2024": 50
+        }
+      },
+      "train": 188,
+      "val": 42,
+      "test": 50
+    },
+    "COTTON_LEAF_HOPPER_JASSIDS": {
+      "images": 225,
+      "clusters": 225,
+      "sources": {
+        "cotton_sarcld2024": 225
+      },
+      "single_source": true,
+      "test_fraction": 0.2222,
+      "test_fraction_raised": true,
+      "source_split_balance": {
+        "train": {
+          "cotton_sarcld2024": 141
+        },
+        "val": {
+          "cotton_sarcld2024": 34
+        },
+        "test": {
+          "cotton_sarcld2024": 50
+        }
+      },
+      "train": 141,
+      "val": 34,
+      "test": 50
+    },
+    "COTTON_LEAF_REDDENING": {
+      "images": 576,
+      "clusters": 576,
+      "sources": {
+        "cotton_sarcld2024": 576
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "cotton_sarcld2024": 403
+        },
+        "val": {
+          "cotton_sarcld2024": 87
+        },
+        "test": {
+          "cotton_sarcld2024": 86
+        }
+      },
+      "train": 403,
+      "val": 87,
+      "test": 86
+    },
+    "MAIZE_COMMON_RUST": {
+      "images": 1192,
+      "clusters": 1192,
+      "sources": {
+        "plantvillage": 1192
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "plantvillage": 834
+        },
+        "val": {
+          "plantvillage": 179
+        },
+        "test": {
+          "plantvillage": 179
+        }
+      },
+      "train": 834,
+      "val": 179,
+      "test": 179
+    },
+    "MAIZE_GRAY_LEAF_SPOT": {
+      "images": 513,
+      "clusters": 513,
+      "sources": {
+        "plantvillage": 513
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "plantvillage": 359
+        },
+        "val": {
+          "plantvillage": 77
+        },
+        "test": {
+          "plantvillage": 77
+        }
+      },
+      "train": 359,
+      "val": 77,
+      "test": 77
+    },
+    "MAIZE_HEALTHY": {
+      "images": 1160,
+      "clusters": 1160,
+      "sources": {
+        "plantvillage": 1160
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "plantvillage": 812
+        },
+        "val": {
+          "plantvillage": 174
+        },
+        "test": {
+          "plantvillage": 174
+        }
+      },
+      "train": 812,
+      "val": 174,
+      "test": 174
+    },
+    "MAIZE_NORTHERN_LEAF_BLIGHT": {
+      "images": 984,
+      "clusters": 984,
+      "sources": {
+        "plantvillage": 984
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "plantvillage": 689
+        },
+        "val": {
+          "plantvillage": 148
+        },
+        "test": {
+          "plantvillage": 147
+        }
+      },
+      "train": 689,
+      "val": 148,
+      "test": 147
+    },
+    "POTATO_EARLY_BLIGHT": {
+      "images": 1000,
+      "clusters": 1000,
+      "sources": {
+        "plantvillage": 1000
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "plantvillage": 700
+        },
+        "val": {
+          "plantvillage": 150
+        },
+        "test": {
+          "plantvillage": 150
+        }
+      },
+      "train": 700,
+      "val": 150,
+      "test": 150
+    },
+    "POTATO_HEALTHY": {
+      "images": 152,
+      "clusters": 152,
+      "sources": {
+        "plantvillage": 152
+      },
+      "single_source": true,
+      "test_fraction": 0.3289,
+      "test_fraction_raised": true,
+      "source_split_balance": {
+        "train": {
+          "plantvillage": 79
+        },
+        "val": {
+          "plantvillage": 23
+        },
+        "test": {
+          "plantvillage": 50
+        }
+      },
+      "train": 79,
+      "val": 23,
+      "test": 50
+    },
+    "POTATO_LATE_BLIGHT": {
+      "images": 1000,
+      "clusters": 1000,
+      "sources": {
+        "plantvillage": 1000
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "plantvillage": 700
+        },
+        "val": {
+          "plantvillage": 150
+        },
+        "test": {
+          "plantvillage": 150
+        }
+      },
+      "train": 700,
+      "val": 150,
+      "test": 150
+    },
+    "RICE_BACTERIAL_LEAF_BLIGHT": {
+      "images": 723,
+      "clusters": 723,
+      "sources": {
+        "rice_odisha": 514,
+        "rice_healthy_diu": 209
+      },
+      "single_source": false,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "rice_healthy_diu": 146,
+          "rice_odisha": 360
+        },
+        "val": {
+          "rice_healthy_diu": 32,
+          "rice_odisha": 77
+        },
+        "test": {
+          "rice_healthy_diu": 31,
+          "rice_odisha": 77
+        }
+      },
+      "train": 506,
+      "val": 109,
+      "test": 108
+    },
+    "RICE_BLAST": {
+      "images": 1064,
+      "clusters": 1064,
+      "sources": {
+        "rice_odisha": 474,
+        "rice_healthy_diu": 590
+      },
+      "single_source": false,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "rice_healthy_diu": 413,
+          "rice_odisha": 332
+        },
+        "val": {
+          "rice_healthy_diu": 89,
+          "rice_odisha": 71
+        },
+        "test": {
+          "rice_healthy_diu": 88,
+          "rice_odisha": 71
+        }
+      },
+      "train": 745,
+      "val": 160,
+      "test": 159
+    },
+    "RICE_BROWN_SPOT": {
+      "images": 606,
+      "clusters": 606,
+      "sources": {
+        "rice_odisha": 606
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "rice_odisha": 424
+        },
+        "val": {
+          "rice_odisha": 91
+        },
+        "test": {
+          "rice_odisha": 91
+        }
+      },
+      "train": 424,
+      "val": 91,
+      "test": 91
+    },
+    "RICE_NORMAL": {
+      "images": 549,
+      "clusters": 549,
+      "sources": {
+        "rice_healthy_diu": 549
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "rice_healthy_diu": 384
+        },
+        "val": {
+          "rice_healthy_diu": 83
+        },
+        "test": {
+          "rice_healthy_diu": 82
+        }
+      },
+      "train": 384,
+      "val": 83,
+      "test": 82
+    },
+    "RICE_TUNGRO": {
+      "images": 1083,
+      "clusters": 1083,
+      "sources": {
+        "rice_odisha": 852,
+        "rice_healthy_diu": 231
+      },
+      "single_source": false,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "rice_healthy_diu": 162,
+          "rice_odisha": 596
+        },
+        "val": {
+          "rice_healthy_diu": 35,
+          "rice_odisha": 128
+        },
+        "test": {
+          "rice_healthy_diu": 34,
+          "rice_odisha": 128
+        }
+      },
+      "train": 758,
+      "val": 163,
+      "test": 162
+    },
+    "TOMATO_BACTERIAL_SPOT": {
+      "images": 2127,
+      "clusters": 2127,
+      "sources": {
+        "plantvillage": 2127
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "plantvillage": 1489
+        },
+        "val": {
+          "plantvillage": 319
+        },
+        "test": {
+          "plantvillage": 319
+        }
+      },
+      "train": 1489,
+      "val": 319,
+      "test": 319
+    },
+    "TOMATO_EARLY_BLIGHT": {
+      "images": 1000,
+      "clusters": 1000,
+      "sources": {
+        "plantvillage": 1000
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "plantvillage": 700
+        },
+        "val": {
+          "plantvillage": 150
+        },
+        "test": {
+          "plantvillage": 150
+        }
+      },
+      "train": 700,
+      "val": 150,
+      "test": 150
+    },
+    "TOMATO_HEALTHY": {
+      "images": 1584,
+      "clusters": 1584,
+      "sources": {
+        "plantvillage": 1584
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "plantvillage": 1109
+        },
+        "val": {
+          "plantvillage": 238
+        },
+        "test": {
+          "plantvillage": 237
+        }
+      },
+      "train": 1109,
+      "val": 238,
+      "test": 237
+    },
+    "TOMATO_LATE_BLIGHT": {
+      "images": 1901,
+      "clusters": 1901,
+      "sources": {
+        "plantvillage": 1901
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "plantvillage": 1331
+        },
+        "val": {
+          "plantvillage": 285
+        },
+        "test": {
+          "plantvillage": 285
+        }
+      },
+      "train": 1331,
+      "val": 285,
+      "test": 285
+    },
+    "TOMATO_LEAF_MOLD": {
+      "images": 952,
+      "clusters": 952,
+      "sources": {
+        "plantvillage": 952
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "plantvillage": 666
+        },
+        "val": {
+          "plantvillage": 143
+        },
+        "test": {
+          "plantvillage": 143
+        }
+      },
+      "train": 666,
+      "val": 143,
+      "test": 143
+    },
+    "TOMATO_MOSAIC_VIRUS": {
+      "images": 373,
+      "clusters": 373,
+      "sources": {
+        "plantvillage": 373
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "plantvillage": 261
+        },
+        "val": {
+          "plantvillage": 56
+        },
+        "test": {
+          "plantvillage": 56
+        }
+      },
+      "train": 261,
+      "val": 56,
+      "test": 56
+    },
+    "TOMATO_SEPTORIA_LEAF_SPOT": {
+      "images": 1771,
+      "clusters": 1771,
+      "sources": {
+        "plantvillage": 1771
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "plantvillage": 1240
+        },
+        "val": {
+          "plantvillage": 266
+        },
+        "test": {
+          "plantvillage": 265
+        }
+      },
+      "train": 1240,
+      "val": 266,
+      "test": 265
+    },
+    "TOMATO_SPIDER_MITES": {
+      "images": 1676,
+      "clusters": 1676,
+      "sources": {
+        "plantvillage": 1676
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "plantvillage": 1173
+        },
+        "val": {
+          "plantvillage": 252
+        },
+        "test": {
+          "plantvillage": 251
+        }
+      },
+      "train": 1173,
+      "val": 252,
+      "test": 251
+    },
+    "TOMATO_TARGET_SPOT": {
+      "images": 1404,
+      "clusters": 1404,
+      "sources": {
+        "plantvillage": 1404
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "plantvillage": 983
+        },
+        "val": {
+          "plantvillage": 211
+        },
+        "test": {
+          "plantvillage": 210
+        }
+      },
+      "train": 983,
+      "val": 211,
+      "test": 210
+    },
+    "TOMATO_YELLOW_LEAF_CURL_VIRUS": {
+      "images": 5357,
+      "clusters": 5357,
+      "sources": {
+        "plantvillage": 5357
+      },
+      "single_source": true,
+      "test_fraction": 0.15,
+      "test_fraction_raised": false,
+      "source_split_balance": {
+        "train": {
+          "plantvillage": 3750
+        },
+        "val": {
+          "plantvillage": 804
+        },
+        "test": {
+          "plantvillage": 803
+        }
+      },
+      "train": 3750,
+      "val": 804,
+      "test": 803
+    }
+  },
+  "acceptance_gates": {
+    "no_cluster_spans_splits": "PASS",
+    "fieldtest_disjoint_from_trainval": "PASS",
+    "min_test_images_per_class": "PASS",
+    "classes_below_min_test": []
+  },
+  "known_confounds": [
+    {
+      "id": "chilli_source_disjoint_classes",
+      "crop": "CHILLI",
+      "evidence": "datasets/confound-report.json — chilli_primary vs chilli_secondary separable at 0.91 accuracy from a single background statistic (a lower bound; a model does better). CHILLI_ANTHRACNOSE exists ONLY in chilli_secondary; CHILLI_BACTERIAL_SPOT, CHILLI_NUTRIENT_DEFICIENCY and CHILLI_POWDERY_MILDEW exist ONLY in chilli_primary. Those three class pairs are decidable by capture style alone.",
+      "mitigations_applied": [
+        "source-stratified splits (no split aligns with source)",
+        "per-class source composition recorded in the manifest",
+        "chilli held at GENERAL tier — no field-robustness claim"
+      ],
+      "evaluation_gate": "Metrics for CHILLI_ANTHRACNOSE, CHILLI_BACTERIAL_SPOT, CHILLI_NUTRIENT_DEFICIENCY and CHILLI_POWDERY_MILDEW MUST be reported with this confound stated, and MUST NOT be presented as evidence of disease-discrimination ability. The Grad-CAM background-reliance probe in docs/ml/error-analysis.md is REQUIRED for chilli before any chilli accuracy figure is published.",
+      "residual_risk": "Not removed, only contained. The only complete fix is chilli imagery of the same classes from a second capture style — no such data exists in the corpus.",
+      "open_option_requiring_approval": "Excluding CHILLI_ANTHRACNOSE (323 unique images, the sole chilli_secondary-only class) would remove all three source-disjoint pairs outright. It costs a real disease class, so it is a product decision and is NOT applied here."
+    },
+    {
+      "id": "rice_healthy_brownspot_source_disjoint",
+      "crop": "RICE",
+      "evidence": "datasets/confound-report.json — rice_healthy_diu vs rice_odisha separable at 0.96. RICE_NORMAL comes only from the studio source; RICE_BROWN_SPOT only from the field source. Healthy-vs-brown-spot is therefore decidable by background alone.",
+      "mitigations_applied": [
+        "source-stratified splits",
+        "per-class source composition recorded in the manifest",
+        "rice held at GENERAL tier",
+        "healthy-rice field performance declared unvalidated"
+      ],
+      "evaluation_gate": "The RICE_NORMAL <-> RICE_BROWN_SPOT confusion cell MUST be reported explicitly in the evaluation battery, not folded into macro-F1 alone. RICE_NORMAL recall MUST NOT be quoted as field performance. If RICE_NORMAL recall exceeds RICE_BROWN_SPOT recall by a wide margin, treat it as evidence of the shortcut, not of skill.",
+      "residual_risk": "Cannot be removed with the data on hand: no field-realistic healthy rice imagery exists in the corpus. The complete fix is field-realistic healthy rice data used FOR TRAINING, which ADR-021 decision 2 (option c) reserves for separate approval.",
+      "open_option_requiring_approval": "Acquire a field-realistic healthy rice dataset for TRAINING (not evaluation-only). This is the only measure that removes the confound rather than containing it."
+    }
+  ],
+  "source_stratified_splits": {
+    "enabled": true,
+    "reason": "The confound probe measured that source datasets are separable from background alone (chilli 0.91, rice 0.96, tomato 0.96). A split that happened to align with source would let a model score by recognising capture style rather than disease. Each (class, source) stratum is therefore split independently, so every split carries the same source mix."
+  },
+  "field_test_review": {
+    "quarantined_after_visual_review": 31,
+    "coverage": {
+      "images": 1264,
+      "reviewed": 209,
+      "remaining": 1055
+    },
+    "outstanding": "Images not yet reviewed may still contain pixel-burned watermarks, screenshots or composite figures — filename rules do not catch them. Any field-test number published before the remainder is reviewed must state this coverage."
+  },
+  "pre_training_checks_required": [
+    {
+      "id": "chilli_source_separability",
+      "decision": "ADR-021 decision 4",
+      "reason": "CHILLI_HEALTHY and CHILLI_CERCOSPORA_LEAF_SPOT draw from both chilli sources while ANTHRACNOSE comes only from the paper-background set and POWDERY_MILDEW / NUTRIENT_DEFICIENCY / BACTERIAL_SPOT only from the cut-out set. Both sources are studio imagery separable by capture style, so a model can score well by reading the background. The merged chilli label space must not be trusted until a probe shows source is not trivially predictable.",
+      "blocking": "chilli claims only, not the training run"
+    },
+    {
+      "id": "rice_healthy_field_validation",
+      "decision": "ADR-021 decision 2 (option c, approved)",
+      "reason": "RICE_NORMAL is 100% studio imagery (582 images, leaves on white paper); no field-realistic healthy rice exists in the corpus. Healthy-rice field performance is UNVALIDATED and must not be claimed. Any field-realistic healthy rice data obtained later is EVALUATION-ONLY unless separately approved for training.",
+      "blocking": "healthy-rice field claims only"
+    }
+  ],
+  "support_tiers": {
+    "COTTON": {
+      "tier": "SPECIALIZED",
+      "decision": "ADR-021 decision 1",
+      "note": "6 classes. Ships only once each has a KB entry (en+hi) and the agronomist items (a)-(c) are signed off."
+    },
+    "CHILLI": {
+      "tier": "GENERAL",
+      "decision": "ADR-021 decision 4",
+      "note": "Trainable, but no field-robustness claim: both sources are studio imagery and no field-realistic chilli evaluation set exists yet."
+    },
+    "RICE": {
+      "tier": "GENERAL",
+      "decision": "ADR-021 decision 2 (option c)",
+      "note": "Healthy-rice field-condition performance is unvalidated. Do not claim field robustness for healthy-rice classification."
+    }
+  },
+  "known_limitations": [
+    "RICE_NORMAL is 100% studio imagery; healthy-rice field performance is UNVALIDATED and must not be claimed (ADR-021 decision 2, option c).",
+    "Both chilli sources are studio imagery separable by capture style; the merged chilli label space is not trusted until the source-separability probe runs (ADR-021 decision 4).",
+    "Stock-image quarantine is filename-evidence only. Pixel-burned watermarks with neutral filenames are NOT caught and need the human review queue.",
+    "Rotated/mirrored publisher augmentations are undetectable by the duplicate method; augmented groups are excluded by construction, not by detection."
+  ]
+}
