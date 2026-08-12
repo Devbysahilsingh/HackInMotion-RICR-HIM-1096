@@ -1,6 +1,8 @@
 # Security Testing Plan
 
-Tooling (realistically runnable in-hackathon): Jest+Supertest suites (automated, in CI mindset), Gitleaks (pre-commit + history), npm audit/pip-audit, Postman collection for manual probes, OWASP ZAP baseline scan (Day 3 if time — nice-to-have, not gating).
+Tooling (realistically runnable in-hackathon): **`node:test` suites driven over real HTTP** (ADR-022 — automated, in CI mindset), Gitleaks (pre-commit + history), npm audit/pip-audit, Postman collection for manual probes, OWASP ZAP baseline scan (Day 3 if time — nice-to-have, not gating).
+
+**Implemented (P1):** ST-50 `backend/tests/security/st-50-api-hygiene.test.js` · ST-01..05 `st-01-05-auth.test.js` · ST-10 `st-10-authorization.test.js` (matrix generated from `backend/src/routes/ownership-table.js`; see `docs/security/route-ownership.md`).
 
 ## Suites (blocking = must pass before deploy)
 - **ST-01..05 Auth [blocking]:** brute-force lockout behavior; enumeration uniformity (message+status parity); token-in-memory only (no localStorage writes — web test); refresh rotation + reuse → family revocation; JWT tamper/expiry/alg-none/audience suite.

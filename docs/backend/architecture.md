@@ -8,7 +8,7 @@ backend/src/
 ├── middleware/       # auth, loadOwned factory, validate(zod), rateLimits, errorHandler, audit
 ├── routes/ → controllers/   # thin: parse → service → respond (no logic in controllers)
 ├── services/         # domain orchestration (farmService, healthService: the AI-chain conductor, ...)
-├── engines/          # PURE: irrigation/, weatherRisk/, marketSignal/, cropRec/, symptomRules/, feedComposer/
+├── engines/          # PURE: stage/, irrigation/, weatherRisk/, marketSignal/, cropRec/, symptomRules/, feedComposer/
 │                     #   ⇒ no imports from services/models; fixture-tested; the viva core
 ├── integrations/     # openMeteo, openWeather, dataGovIn, gemini, openRouter, cloudinary, mlService, groq
 │                     #   each: timeout, retry, circuit counters, zod response validation, kill-switch flag

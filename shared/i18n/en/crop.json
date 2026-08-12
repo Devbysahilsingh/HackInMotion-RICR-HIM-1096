@@ -1,0 +1,4 @@
+{
+  "limitReached": "This farm already has the maximum number of active crops.",
+  "registryNotFound": "We do not have information for that crop yet."
+}

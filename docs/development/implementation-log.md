@@ -392,3 +392,87 @@ Changed: `scripts/ml/curation-rules.json` (`known_confounds`, `source_stratified
 
 ### Boundaries respected — left to human judgement, not guessed
 Whether author-credited images (©T.A. Zitter, ©D. Maeso, university-extension marks) belong in a published benchmark · whether a photographed plant is the labelled species · every agronomic label question including cotton items (a)–(c) · whether to drop `CHILLI_ANTHRACNOSE` · whether to acquire field healthy rice **for training**.
+
+---
+
+## P1-1..P1-8 · Backend foundation — 2026-08-13 · Status: COMPLETED (verified, team-approved)
+
+**Scope implemented:** Express foundation hardening, 14 Mongoose models with asserted indexes, the full authentication lifecycle, the ownership layer, Farms and Crops CRUD, the crop registry with a sourced knowledge base and versioned seed, the pure stage-derivation engine, and the security review + deployment configuration. The Render deploy itself is an external setup item, not a Phase-1 code gap — see P1-8 below.
+
+**Verification:** `cd backend && npm test` → **235 tests, 235 pass, 0 fail**. Repo `npm run lint` clean · `prettier --check` clean · web `tsc --noEmit` clean · `npm audit` (with and without dev) **0 vulnerabilities** · `gitleaks detect` over the full tree **no leaks found** · `scripts/smoke.mjs` **18/18** against a local `NODE_ENV=production` server backed by a real database.
+
+### Security gates
+| Suite | Asserts | Result |
+|---|---|---|
+| **ST-50** API hygiene | forced-500 leaks no stack/message/path, unknown-route envelope, foreign origin denied CORS, credentials only on the auth path, rate-limit headers, 413 on oversized body, 422 on malformed JSON, correlation id, hardened headers | ✔ 9/9 |
+| **ST-01..05** Auth | 6th login 429 keyed on IP+email (a different account from the same IP is unaffected), byte-identical 401 for unknown-email vs wrong-password **plus a timing-ratio assertion**, bcrypt cost 12, httpOnly path-scoped cookie, hash-at-rest, rotation chain, **replay → whole-family revocation + `token_reuse` audit**, other families untouched, idempotent logout, JWT tamper/alg-none/wrong-secret/expired/wrong-audience/wrong-issuer/malformed-header/deleted-user | ✔ 21/21 |
+| **ST-10** Authorization matrix | generated from the route table: 401 anonymous, 404 for another farmer's resource, 404 indistinguishable from non-existent, 404 for malformed id with no cast-error leak, 401 tampered token, nested chain (crop via another's farm), list scoping, client-supplied `userId` cannot claim ownership, and every table row is actually mounted | ✔ 27/27 |
+
+### Engineering decisions
+1. **`node:test`, not Jest** (ADR-022) — the docs specified Jest but the shipped scaffold wired `node --test`, and no ADR recorded it. Resolved toward the code: ESM-native under ADR-019, and it adds zero framework dependencies to a locked list. Supertest replaced by real HTTP over an ephemeral port; `mongodb-memory-server` retained because index/uniqueness/TTL behaviour is server behaviour and a mock would prove nothing.
+2. **14 models, not 12** — `docs/database/schema.md` and the plan spec both name 14 collections; only `MASTER-TODO` said 12. Built all 14; `communityAlerts` (P2) and `yieldEstimates` (P3) carry schemas and take no writes.
+3. **`PAYLOAD_TOO_LARGE` (413) and `NOT_IMPLEMENTED` (501) added to the error catalogue** — ST-50 requires a 413 that no code covered, so body-parser errors were surfacing as 500. `entity.parse.failed` now maps to 422.
+4. **Hand-written Mongo sanitizer** — the locked `express-mongo-sanitize` throws on Express 5 (`req.query` is getter-only). `docs/database/validation.md` already anticipated this ("sanitize-v5"). ~30 lines we control, non-mutating.
+5. **`iss`/`aud` added to the JWT claim set and verified** — ST-05 calls for an audience test that the documented `{sub,jti,iat,exp}` claim set could not satisfy. Neither claim carries PII or roles.
+6. **CORS credentials scoped to `/api/v1/auth`** — the code granted them globally; the docs say "credentials on auth path only".
+7. **`CORS_ORIGINS` required in production; `MONGODB_URI` scheme-checked** — the origin list previously defaulted to localhost in every environment, so a forgotten variable would have deployed a silently broken allowlist.
+8. **Refresh reuse distinguishes first detection from a dead family** — replaying an already-rotated token revokes the family and audits `token_reuse`; presenting a token from a family that is *already* dead returns the same 401 but does **not** re-audit. Found by a failing test: the naive version fired `token_reuse` on every retry, flooding the exact metric the threat model uses to detect theft.
+9. **Registry seed validates every document before writing any** — ADR-002 rules out transactions, so a document that failed validation halfway through left a partly-applied registry (observed: 3 of 10 written, no seedMeta row). Now it fails before the first write and the collection stays on its last good state.
+10. **`bcrypt` upgraded 5 → 6** — v5 pulls `@mapbox/node-pre-gyp` → `tar` with 2 high and 1 critical advisory; the dependency policy requires high/critical to be upgraded.
+
+### Crop registry — sourcing
+FAO-56 values were transcribed from the published tables (`x0490e0b.htm` Tables 11/12, `x0490e0e.htm` Table 22) cell-by-cell from raw HTML, because the summarised rendering corrupted values (wheat `0.25-0.4` plus footnote marker `10` became `0.25-0.41`, and Kc_ini vanished for 8 of 9 crops). Every number carries `{org,title,url,accessed,confidence}`.
+
+**Recorded gaps — absent, never invented:** `soilSuitability` 0–3 scores for 8 of 9 crops (the source gives prose, not scores) · potato `tempOpt` (published as two stage-specific figures, not a range) · `durationDays` for all crops · per-crop weather `sensitivity` thresholds · disease KB entries for all 35 ML classes (blocks *model ship*, not Phase 1). Each is carried in the document's `dataGaps` and printed by the seed.
+
+**Two findings that affect Phase 2, flagged now:**
+- **Chilli has no FAO-56 entry at all.** Its Kc curve is proxied from `Sweet peppers (bell)` and marked `isProxy: true`. Irrigation advice for chilli rests on a bell-pepper curve until reviewed.
+- **Rice `p = 0.20` is a fraction *of saturation*** (Table 22 footnote 4), not of TAW like the other eight. The standard `RAW = p × TAW` formula is wrong for rice — the irrigation engine must special-case it via `paddyFlooding`.
+
+Also noted for the fertilizer TODO: `totalNpk` for tomato/chilli/onion is the **basal** dose, not a season total — the sources publish no sum and none was computed.
+
+### Adversarial security review — findings and fixes
+
+An independent review executed live probes against a running instance (in-memory mongod, real HTTP). **No critical finding.** Ownership enforcement, JWT verification, enumeration uniformity, `$`-operator filtering, prototype-pollution resistance and log redaction all held under direct attack. Every issue below is fixed, and each carries a regression test that fails against the old code.
+
+| # | Severity | Finding | Fix |
+|---|---|---|---|
+| 1 | **HIGH** | **Refresh rotation was not atomic.** Read-then-write: two concurrent presentations of one token both passed the `revokedAt` check, yielding two live lineages and **zero `token_reuse` audits** — defeating the exact control ST-04 exists to prove. Sequential tests passed; the race did not. | Rotation now claims the token with `findOneAndUpdate({tokenHash, revokedAt:{$exists:false}})` — the revoke *is* the guard, so exactly one concurrent request can win. Deliberate trade-off recorded: revoking before minting the successor means a crash mid-rotation logs the client out, which is the correct direction. Test: two `Promise.all` refreshes → `[200, 401]`, family revoked, exactly one audit row. |
+| 2 | **HIGH** | **`X-Forwarded-For` reset the login and global buckets.** `trust proxy: 1` makes `req.ip` header-derived; rotating the header gave unlimited login attempts and also let an attacker choose the IP written to their own `auditLogs` and `refreshTokens` rows. Correct behind Render (which appends the real peer) but wide open anywhere without exactly one hop — including `npm run dev`. | `trust proxy` is now `1` only in production and `false` elsewhere, so outside production the socket address is authoritative. Test: 8 logins with rotating `X-Forwarded-For` still trip the bucket. |
+| 3 | MEDIUM | **The 12-crop cap was not enforced.** `assertFarmHasCapacity` counted only `active` and ran only on create; a future sowing date yields `planned` (uncounted), and `PATCH {status:'active'}` never re-checked. 30 active crops on one farm were demonstrated. Harvest churn gave a second, unbounded bypass. | The count now includes `planned`, and the check re-runs on any transition into `active` (excluding the crop being promoted). Test covers both paths. |
+| 4 | MEDIUM | **Unauthenticated 500 from a malformed refresh cookie.** `rt=%` made `decodeURIComponent` throw; the client envelope was clean, but each request wrote a full stack trace with absolute paths at ERROR level — an anonymous log-flood and 5xx-rate inflator. | The decode is guarded; an undecodable cookie is simply not a token → 401. Test covers three malformed escapes. |
+| 5 | MEDIUM | **Unbounded `User-Agent` persisted** on every refresh-token row and every failed-login audit row (6000 chars demonstrated) — a cheap path to filling a 512MB M0 cluster. | New `utils/clientContext.js` truncates to `MAX_STORED_USER_AGENT` (256) at the single point both call sites use. Test asserts the bound. |
+| 6 | MEDIUM | **`rate_limited` audit events were never written.** `attachAudit` was exported and never imported, so `req.recordAudit` was always undefined and the optional call silently no-opped. Only attempts *below* the threshold were audited; every trip past it was invisible — backwards for a brute-force signal. | Dead helper removed; the limiter records through `auditService` directly. Test asserts rows exist after tripping the bucket. |
+| 7 | LOW | Crop cascade delete filtered on `cropId` alone, unlike the farm cascade. Not exploitable today (no endpoint writes those collections yet) but becomes a cross-user delete as soon as one accepts a client-named `cropId`. | `userId` added to every cascade filter. |
+| 8 | LOW | `mongoSanitize` called `scrub(req.params)`, but it is app-level middleware so `req.params` is always `{}` — the documented defence did not exist. | The call is removed and the comment now states the truth: path params are guarded by `loadOwned`'s ObjectId check before any query. |
+| 9 | LOW | The sanitizer's depth cap **abandoned** the subtree, leaving an operator nested past 12 levels untouched while the request appeared sanitized. | An over-deep body is now rejected outright (422) rather than partially cleaned. |
+| 10 | LOW | `scrubMeta` converted arrays to objects (`Object.entries([a,b])` → `{0:a,1:b}`) and its denylist missed several key spellings. | Arrays handled explicitly, depth-bounded, denylist extended (`set-cookie`, `apiKey`, `x-service-key`, `sessionId`, snake_case token forms). |
+| 11 | INFO | Nested crop routes ran `requireAuth` twice (two `User.findById` per request) because the farms router matched the shared prefix first. | Crops router mounted before the farms router. |
+
+**Verified safe under direct attack** (attempted and failed): cross-user access on every addressable route · client-asserted ownership via body `userId` · `$`-operator and dotted-key injection through body and query · prototype pollution · login-bucket evasion by email case/whitespace/IPv6/field-shuffling · JWT `alg:none`, wrong secret, wrong `iss`/`aud`, expiry, tampering, deleted user · account enumeration by status, body or timing · CSRF against the cookie-authenticated refresh route · credential leakage into a 15.8KB captured log stream (password, raw refresh token, its sha256 and the access token appear zero times) · error disclosure on forced 500 · hardcoded secrets or dev bypasses.
+
+One nuance worth carrying forward: CSRF protection on `/auth/refresh` currently works *incidentally* — a cross-site form POST fails because `express.json` will not parse it, so validation rejects the body before the handler. An explicit `Origin` / `Sec-Fetch-Site` check would make that deliberate. Logged for Phase 7 hardening rather than changed now.
+
+### Deliberately not done
+- **~21 LIMITED crops proposed, not seeded.** The roster is a product decision; the seed only includes it once `crops.limited.proposal.json` carries an `APPROVED` status. 5 of the 21 have no sourced Hindi name.
+- **No `shared/constants/geo`** — farm `state`/`district` validate as trimmed strings, not the canonical list, because that list does not exist and inventing one would fabricate data.
+- **No weather fetch on farm create.** `docs/api/farms.md` mentions an immediate on-demand fetch; that violates the DB-first rule and belongs to the Phase-2 job.
+- **No ML work of any kind.** `datasets/` is untouched; the registry only *reads* `manifest.json` for class codes.
+
+### Files
+Created: `backend/src/config/{constants,db}.js`, `middleware/{sanitize,rateLimits,validate,requireAuth,loadOwned}.js`, `models/` (15 files), `services/{tokenService,authService,auditService,farmService,cropService,registrySeedService,registrySeedRunner}.js`, `routes/{auth,farms,crops,registry,ownership-table}.js`, `utils/{respond,locationKey}.js`, `engines/stage/deriveStage.js`, `knowledge/{crops.agronomy,crops.base,crops.fertilizer,crops.limited.proposal}.json` plus `README.md`, `scripts/{build-indexes,seed-registry,smoke}.mjs`, `tests/` (11 files), `shared/i18n/{en,hi}/{errors,auth,farm,crop}.json`, `render.yaml`, `docs/security/route-ownership.md`, `docs/decisions/ADR-022-node-test-runner.md`.
+Changed: `backend/src/{app,server}.js`, `config/env.js`, `utils/{logger,errors}.js`, `middleware/errorHandler.js`, `routes/health.js`, `backend/package.json`, `eslint.config.js`, `docs/api/error-codes.md`, `docs/testing/{strategy,api-testing}.md`, `docs/security/security-testing.md`, `docs/deployment/{environment,backend}.md`, `docs/backend/architecture.md`, this log, `MASTER-TODO.md`.
+
+### P1-8 — review pass complete; deploy is an external item
+The **review pass is complete** (findings and fixes tabled above) and the **deployment configuration is delivered and locally verified**: `render.yaml` with every secret marked `sync: false`, the staging variable checklist in `docs/deployment/environment.md`, and `backend/scripts/smoke.mjs` (18/18 against a local production-mode server with a real database).
+
+**Not done, and not claimed:** the Render deploy itself. No Render account exists — the Phase-0 accounts task is still open — so creating the service, setting the dashboard variables and verifying staging `/healthz` remain external setup items owned by A, tracked in the Phase-0 accounts row and the Phase 8 deploy sequence. Phase 1's *code* has no gap here.
+
+
+### Phase 1 finalization — 2026-08-13
+
+Phase 1 approved COMPLETE (P1-1..P1-8) by the team. Final gate re-run at sign-off: **235 backend tests / 235 pass / 0 fail / 0 cancelled** across 23 suites; repo lint clean; `prettier --check` clean; web `tsc --noEmit` clean; `npm audit` **0 vulnerabilities** with and without dev; layer-1 staged-secret scanner clean; `gitleaks protect --staged` and `gitleaks detect` over the full tree both report no leaks.
+
+Committed alongside the code: `.claude/settings.json`, an approved project permission policy. It auto-approves routine development commands (repo file operations, npm/node scripts, tests, lint/format/typecheck, read-only git, shell inspection, the secret scanners, localhost smoke requests and read-only fetches of the project's documented data sources) while keeping publishing, history-rewriting, destructive, credential and arbitrary-egress operations behind an explicit prompt. Two pre-existing defects in the local settings were corrected in the same pass: `git commit`/`git push`/`git reset` had been auto-approved, and three entries embedded a live data.gov.in API key — all removed. Writes to `datasets/**` and reads of `.env`/`*.pem`/`*.key` are denied outright.
+
+**No ML work was performed.** `datasets/` is byte-for-byte untouched; the curated manifest, curation rules and class decisions from P0-6/P0-6b are unchanged. The crop registry only *reads* `datasets/manifest.json` for class codes and support tiers.

@@ -19,12 +19,18 @@
 | AUTHORIZATION_ERROR | 403 | Authenticated but action forbidden (rare; ownership uses 404) |
 | NOT_FOUND | 404 | Missing OR not owned |
 | CONFLICT | 409 | Duplicate (e.g., email registered — same generic messageKey as validation to avoid enumeration on register: see auth doc) |
+| PAYLOAD_TOO_LARGE | 413 | Request body exceeded the 100KB JSON limit. Added in P1-1: ST-50 asserts a 413 here, and without a mapped code the body-parser error surfaced as a 500 |
 | RATE_LIMITED | 429 | Bucket exceeded |
 | EXTERNAL_SERVICE_ERROR | 503 | All fallbacks exhausted AND no cache (rare by design) |
 | AI_ERROR | 502 | Gemini/OpenRouter failure after retries (health flow degrades to rules instead of surfacing this where possible) |
 | ML_ERROR | 502 | ml-service failure (flow degrades to Gemini/rules; surfaced only if terminal) |
 | UPLOAD_ERROR | 400 | File failed validation pipeline; messageKey specifies reason class |
 | DATABASE_ERROR | 500 | Persistence failure (generic to client, detailed in server logs) |
+| NOT_IMPLEMENTED | 501 | Contract reserved but not built (the yield endpoint until P3). Added in P1-1 — `docs/api/intelligence.md` already specified a 501 with no code behind it |
 | INTERNAL_ERROR | 500 | Unhandled (logged with correlation id `meta.requestId`) |
 
 Never in any response: stack traces, driver errors, file paths, connection strings, keys, internal hostnames. Every response carries `X-Request-Id` for log correlation.
+
+**`meta.requestId` is returned in the error envelope** (implemented P1-1): every error response carries `meta: { requestId }` matching the `X-Request-Id` header, so a farmer can quote one id when reporting a problem. It discloses nothing — the id is minted per request.
+
+Malformed JSON (`entity.parse.failed`) maps to 422 `VALIDATION_ERROR`, and an unsupported charset/encoding likewise; neither may reach the generic 500 branch.

@@ -1,0 +1,947 @@
+{
+  "status": "RESEARCH OUTPUT — pure transcription of docs/fertilizer/knowledge-base.md; requires human review AND page-by-page primary re-verification before seeding cropRegistry.fertilizer",
+  "purpose": "Fertilizer knowledge base for the 9 SPECIALIZED/GENERAL crops, transcribed from the verified-values table in docs/fertilizer/knowledge-base.md into the structure that same doc defines. Blanket (no-soil-test) recommendations only — no STCR soil-test tier is published anywhere in the repo.",
+  "accessed": "2026-08-13",
+  "rules": {
+    "transcriptionOnly": "Every number, unit, timing and source string in this file is literally written in docs/fertilizer/knowledge-base.md. Nothing is estimated, averaged, summed, converted or inferred. Values that are not written down are absent and listed in `gaps`.",
+    "unitsExactlyAsPublished": "The doc's own rule is quoted verbatim: 'no number without source.url; units stored exactly as published.' COTTON and WHEAT are per ACRE; the other seven are per hectare. NO unit normalisation was performed and none may be performed in the seed pipeline — docs/fertilizer/fertilizer-intelligence.md requires a 'unit-preservation test (per-acre sources never silently become per-ha)' and mandates that the display layer converts alongside the original.",
+    "rangeValues": "Where the source publishes a range in place of a single number (e.g. rice short-duration N '120–150'), the value is stored as a [min, max] array and the full published string is kept in `published`. No midpoint or average was computed.",
+    "noSummedTotals": "Where a crop has a blanket basal dose PLUS a separately published top-dress nitrogen figure (tomato, chilli, onion), `totalNpk` holds the basal dose EXACTLY as published and the top-dress appears only in `schedule`. The source publishes no summed season total, so none was computed.",
+    "i18nKeys": "`fractionKey` and `symptomKey` are i18n key strings, never display text — the API never returns display language text (docs/api/error-codes.md). The keys in this file are NEWLY MINTED here; no en/hi strings exist for them yet (gap F15). The exact published wording each key must render is preserved in the sibling `note`.",
+    "fractionKeyNamespace": "fertilizer.schedule.basal.* for at-planting applications, fertilizer.schedule.split.* for splits whose proportion the source does not state, fertilizer.schedule.topdress.* for later applications. A key ending in `unspecifiedFraction` means the source names the application but publishes no proportion for it.",
+    "unitNote": "`totalNpk.unitNote` records how the unit was determined from the published row — including the rows where the unit is NOT written at all (onion) or where only the area denominator is written (cotton, wheat).",
+    "accessedSemantics": "`accessed: 2026-08-12` on every source object is the date docs/fertilizer/knowledge-base.md records for its research ('Verified values (as researched 2026-08-12)'). These external pages were NOT re-fetched for this file; it was transcribed from the repo doc on 2026-08-13. The doc's own instruction stands: 're-verify page-by-page during seed authoring'.",
+    "verificationPending": "Set true wherever docs/fertilizer/knowledge-base.md marks the row ⚠️ in its Status column: potato (region flag — plains value missing), soybean (bulletin PDF citation missing), wheat (PAU value not verified against the PDF). docs/fertilizer/fertilizer-intelligence.md: 'KB entries marked verificationPending: true until done — UI shows source anyway'."
+  },
+  "disclaimer": {
+    "key": "fertilizer.disclaimer.general",
+    "en": "General guidance compiled from published TNAU/PAU/ICAR recommendations. Doses vary with your soil and region. Not a substitute for a soil test or advice from your local Krishi Vigyan Kendra / Agriculture Officer. Get a free Soil Health Card: soilhealth.dac.gov.in · Kisan Call Centre 1800-180-1551.",
+    "hi": null,
+    "soilHealthCardUrl": "soilhealth.dac.gov.in",
+    "kisanCallCentre": "1800-180-1551",
+    "mandatory": true,
+    "renderingRule": "Rendered on every fertilizer surface, en+hi (docs/fertilizer/knowledge-base.md). docs/fertilizer/fertilizer-intelligence.md additionally requires a 'disclaimer presence test on every response' and specifies the response of GET /crops/:id/fertilizer-guidance as 'current-stage card + full schedule + sources + disclaimer key'.",
+    "sourceRef": {
+      "org": "Repo doc",
+      "title": "docs/fertilizer/knowledge-base.md — Disclaimer (rendered on every fertilizer surface, en+hi)",
+      "url": null,
+      "accessed": "2026-08-13",
+      "confidence": "S",
+      "note": "English text transcribed verbatim, including the '·' separators. The Hindi translation is NOT written anywhere in the repo and was not authored here (gap F10) — CLAUDE.md rule 8 requires human verification of agronomic Hindi before demo."
+    }
+  },
+  "sourceUrls": {
+    "TNAU_RICE": "agritech.tnau.ac.in/agriculture/agri_cropproduction_cereals_rice_tranpudlow_mainfield_nutrient_mgmt_inorganic.html",
+    "TNAU_VEGETABLES": "agritech.tnau.ac.in/horticulture/FERTILIZER%20SCHEDULE%20FOR%20VEGETABLES.pdf",
+    "TNAU_CPG_MAIZE": "tnagriculture.in/dashboard/CPG/02_%20Maize.pdf",
+    "TNAU_COTTON": "agritech.tnau.ac.in/agriculture/agri_cotton_Inorganic_manures%20.html",
+    "PAU_POP_RABI": "pau.edu/content/ccil/pf/pp_rabi.pdf",
+    "PAU_POP_KHARIF": "pau.edu/content/ccil/pf/pp_kharif.pdf",
+    "PAU_POP_VEG": "pau.edu/content/ccil/pf/pp_veg.pdf",
+    "ICAR_IISR": null,
+    "SHC": "soilhealth.dac.gov.in",
+    "KAU_REGIONAL_VARIANT": "agritech.kau.in",
+    "note": "Reproduced exactly as written in the 'Source URLs' line of docs/fertilizer/knowledge-base.md — bare, without a scheme. ICAR_IISR is null because the doc publishes no URL for it, only the provenance chain 'ICAR-IISR via krishakjagat.org + ResearchGate 368392183'. KAU_REGIONAL_VARIANT is listed by the doc but no KAU values are transcribed in this file (gap F13)."
+  },
+  "crops": {
+    "RICE": {
+      "cropCode": "RICE",
+      "context": {
+        "region": "Tamil Nadu (TN)",
+        "condition": "transplanted",
+        "varietyClass": null,
+        "note": "Row label published as 'Rice (TN, transplanted)'. varietyClass is null at context level because the source publishes three different doses by variety class; each is carried on its own recommendation. The source URL slug ('tranpudlow') indicates transplanted puddled lowland rice."
+      },
+      "recommendations": [
+        {
+          "varietyClass": "short_duration",
+          "source": {
+            "org": "TNAU",
+            "title": "TNAU Agritech rice nutrient page (transplanted puddled lowland — mainfield inorganic nutrient management)",
+            "url": "agritech.tnau.ac.in/agriculture/agri_cropproduction_cereals_rice_tranpudlow_mainfield_nutrient_mgmt_inorganic.html",
+            "accessed": "2026-08-12",
+            "confidence": "P",
+            "note": "Transcribed from docs/fertilizer/knowledge-base.md (Status ✅). Doc instruction: 're-verify page-by-page during seed authoring'."
+          },
+          "basis": "blanket_no_soil_test",
+          "totalNpk": {
+            "n": [120, 150],
+            "p2o5": [40, 50],
+            "k2o": [40, 50],
+            "unit": "kg/ha",
+            "published": "120–150:40–50:40–50 kg/ha short-dur",
+            "unitNote": "'kg/ha' is written once for the row and applies to all three variety-class doses."
+          },
+          "schedule": [
+            {
+              "stage": "BASAL",
+              "timing": null,
+              "fractionKey": "fertilizer.schedule.basal.fullPhosphorusPlusFirstNkSplit",
+              "note": "Published: 'N&K in 4 splits (basal/tillering/PI/heading); P basal'. Full P at basal; the basal application is the first of the four N&K splits. The source does not state the proportion of each split, so no fraction is asserted."
+            },
+            {
+              "stage": "TILLERING",
+              "timing": null,
+              "fractionKey": "fertilizer.schedule.split.nitrogenPotassiumUnspecifiedFraction",
+              "note": "Second of the four published N&K splits. No days-after-transplanting timing is published."
+            },
+            {
+              "stage": "PANICLE_INITIATION",
+              "timing": null,
+              "fractionKey": "fertilizer.schedule.split.nitrogenPotassiumUnspecifiedFraction",
+              "note": "Third of the four published N&K splits ('PI' in the source)."
+            },
+            {
+              "stage": "HEADING",
+              "timing": null,
+              "fractionKey": "fertilizer.schedule.split.nitrogenPotassiumUnspecifiedFraction",
+              "note": "Fourth of the four published N&K splits."
+            }
+          ]
+        },
+        {
+          "varietyClass": "medium_long_duration",
+          "source": {
+            "org": "TNAU",
+            "title": "TNAU Agritech rice nutrient page (transplanted puddled lowland — mainfield inorganic nutrient management)",
+            "url": "agritech.tnau.ac.in/agriculture/agri_cropproduction_cereals_rice_tranpudlow_mainfield_nutrient_mgmt_inorganic.html",
+            "accessed": "2026-08-12",
+            "confidence": "P",
+            "note": "Transcribed from docs/fertilizer/knowledge-base.md (Status ✅)."
+          },
+          "basis": "blanket_no_soil_test",
+          "totalNpk": {
+            "n": 150,
+            "p2o5": 50,
+            "k2o": 50,
+            "unit": "kg/ha",
+            "published": "150:50:50 med/long",
+            "unitNote": "'kg/ha' is written once for the row and applies to all three variety-class doses."
+          },
+          "schedule": [
+            {
+              "stage": "BASAL",
+              "timing": null,
+              "fractionKey": "fertilizer.schedule.basal.fullPhosphorusPlusFirstNkSplit",
+              "note": "Published: 'N&K in 4 splits (basal/tillering/PI/heading); P basal'. Proportion of each split not published."
+            },
+            {
+              "stage": "TILLERING",
+              "timing": null,
+              "fractionKey": "fertilizer.schedule.split.nitrogenPotassiumUnspecifiedFraction",
+              "note": "Second of the four published N&K splits."
+            },
+            {
+              "stage": "PANICLE_INITIATION",
+              "timing": null,
+              "fractionKey": "fertilizer.schedule.split.nitrogenPotassiumUnspecifiedFraction",
+              "note": "Third of the four published N&K splits ('PI' in the source)."
+            },
+            {
+              "stage": "HEADING",
+              "timing": null,
+              "fractionKey": "fertilizer.schedule.split.nitrogenPotassiumUnspecifiedFraction",
+              "note": "Fourth of the four published N&K splits."
+            }
+          ]
+        },
+        {
+          "varietyClass": "hybrid",
+          "source": {
+            "org": "TNAU",
+            "title": "TNAU Agritech rice nutrient page (transplanted puddled lowland — mainfield inorganic nutrient management)",
+            "url": "agritech.tnau.ac.in/agriculture/agri_cropproduction_cereals_rice_tranpudlow_mainfield_nutrient_mgmt_inorganic.html",
+            "accessed": "2026-08-12",
+            "confidence": "P",
+            "note": "Transcribed from docs/fertilizer/knowledge-base.md (Status ✅)."
+          },
+          "basis": "blanket_no_soil_test",
+          "totalNpk": {
+            "n": 175,
+            "p2o5": 60,
+            "k2o": 60,
+            "unit": "kg/ha",
+            "published": "hybrid 175:60:60",
+            "unitNote": "'kg/ha' is written once for the row and applies to all three variety-class doses."
+          },
+          "schedule": [
+            {
+              "stage": "BASAL",
+              "timing": null,
+              "fractionKey": "fertilizer.schedule.basal.fullPhosphorusPlusFirstNkSplit",
+              "note": "Published: 'N&K in 4 splits (basal/tillering/PI/heading); P basal'. Proportion of each split not published."
+            },
+            {
+              "stage": "TILLERING",
+              "timing": null,
+              "fractionKey": "fertilizer.schedule.split.nitrogenPotassiumUnspecifiedFraction",
+              "note": "Second of the four published N&K splits."
+            },
+            {
+              "stage": "PANICLE_INITIATION",
+              "timing": null,
+              "fractionKey": "fertilizer.schedule.split.nitrogenPotassiumUnspecifiedFraction",
+              "note": "Third of the four published N&K splits ('PI' in the source)."
+            },
+            {
+              "stage": "HEADING",
+              "timing": null,
+              "fractionKey": "fertilizer.schedule.split.nitrogenPotassiumUnspecifiedFraction",
+              "note": "Fourth of the four published N&K splits."
+            }
+          ]
+        }
+      ],
+      "deficiencySymptoms": [],
+      "verificationPending": false
+    },
+    "WHEAT": {
+      "cropCode": "WHEAT",
+      "context": {
+        "region": null,
+        "condition": "medium fertility",
+        "varietyClass": null,
+        "note": "Row published as 'Wheat | PAU per acre: 50 N + 25 P2O5 (medium fertility; ...)'. The row names no region; the source is PAU (Punjab Agricultural University) Package of Practices — Rabi. docs/fertilizer/fertilizer-intelligence.md describes this as the northern variant ('region-aware KB variants (PAU for north)') but no region string is published for the row, so none is asserted here (gap F9)."
+      },
+      "recommendations": [
+        {
+          "varietyClass": null,
+          "source": {
+            "org": "PAU (Punjab Agricultural University)",
+            "title": "PAU Package of Practices — Rabi",
+            "url": "pau.edu/content/ccil/pf/pp_rabi.pdf",
+            "accessed": "2026-08-12",
+            "confidence": "P",
+            "note": "Status ⚠️ in docs/fertilizer/knowledge-base.md: 'verify against PDF directly before KB entry'. The value reached the repo doc without the PDF having been read directly, so this citation is currently unverified."
+          },
+          "basis": "blanket_no_soil_test",
+          "totalNpk": {
+            "n": 50,
+            "p2o5": 25,
+            "k2o": null,
+            "unit": "kg/acre",
+            "published": "PAU per acre: 50 N + 25 P2O5 (medium fertility; DAP 55kg sowing, urea 45kg before 1st & 2nd irrigation)",
+            "unitNote": "PER ACRE — the row writes 'per acre' explicitly. The mass unit 'kg' is not written against the 50/25 nutrient figures themselves (only against the DAP/urea product quantities), so 'kg/acre' takes kg from the same row's product doses. MUST NOT be converted to per-hectare anywhere in the pipeline."
+          },
+          "k2oNote": "No K2O figure is published for wheat. k2o is null, NOT zero — the source does not state that no potash is recommended (gap F4)."
+        },
+        {
+          "varietyClass": null,
+          "source": {
+            "org": "PAU (Punjab Agricultural University)",
+            "title": "PAU Package of Practices — Rabi",
+            "url": "pau.edu/content/ccil/pf/pp_rabi.pdf",
+            "accessed": "2026-08-12",
+            "confidence": "P",
+            "note": "Status ⚠️ — verify against the PDF directly before KB entry."
+          },
+          "basis": "blanket_no_soil_test",
+          "totalNpk": null,
+          "productDoseNote": "This second entry carries the PAU PRODUCT schedule (DAP and urea quantities) that the row publishes alongside the nutrient dose. It is kept separate from totalNpk because the source states the two in different terms (nutrient kg vs fertiliser-product kg) and never states the arithmetic between them.",
+          "schedule": [
+            {
+              "stage": "SOWING",
+              "timing": "at sowing",
+              "fractionKey": "fertilizer.schedule.basal.fullPhosphorusProduct",
+              "note": "Published: 'DAP 55kg sowing' (per acre)."
+            },
+            {
+              "stage": "FIRST_IRRIGATION",
+              "timing": "before 1st irrigation",
+              "fractionKey": "fertilizer.schedule.topdress.ureaProduct",
+              "note": "Published: 'urea 45kg before 1st & 2nd irrigation' (per acre). AMBIGUOUS: the source writes 45 kg once against both irrigations and does not say whether it is 45 kg at EACH irrigation or 45 kg split across the two. Not resolved here (gap F6b)."
+            },
+            {
+              "stage": "SECOND_IRRIGATION",
+              "timing": "before 2nd irrigation",
+              "fractionKey": "fertilizer.schedule.topdress.ureaProduct",
+              "note": "Published: 'urea 45kg before 1st & 2nd irrigation' (per acre). Same ambiguity as the first-irrigation entry — see gap F6b."
+            }
+          ]
+        }
+      ],
+      "deficiencySymptoms": [],
+      "verificationPending": true
+    },
+    "MAIZE": {
+      "cropCode": "MAIZE",
+      "context": {
+        "region": null,
+        "condition": null,
+        "varietyClass": null,
+        "note": "Row label published as plain 'Maize' with no region or condition. The source is the TNAU (Tamil Nadu) Crop Production Guide, but the row itself states no region, so none is asserted (gap F9)."
+      },
+      "recommendations": [
+        {
+          "varietyClass": "varieties",
+          "source": {
+            "org": "TNAU",
+            "title": "TNAU Crop Production Guide — Maize (PDF)",
+            "url": "tnagriculture.in/dashboard/CPG/02_%20Maize.pdf",
+            "accessed": "2026-08-12",
+            "confidence": "P",
+            "note": "Status ✅ in docs/fertilizer/knowledge-base.md, noted as also containing N/P/K deficiency symptom texts."
+          },
+          "basis": "blanket_no_soil_test",
+          "totalNpk": {
+            "n": 135,
+            "p2o5": 62.5,
+            "k2o": 50,
+            "unit": "kg/ha",
+            "published": "135:62.5:50 varieties",
+            "unitNote": "'(kg/ha)' is written once at the end of the row and applies to both variety classes."
+          },
+          "schedule": [
+            {
+              "stage": "BASAL",
+              "timing": null,
+              "fractionKey": "fertilizer.schedule.basal.quarterNitrogenFullPk",
+              "note": "Published: '¼N+P+K basal' — one quarter of the nitrogen plus the full P and K dose."
+            },
+            {
+              "stage": "TOPDRESS_1",
+              "timing": "25 DAS",
+              "fractionKey": "fertilizer.schedule.topdress.halfNitrogen",
+              "note": "Published: '½N @25 DAS' (days after sowing)."
+            },
+            {
+              "stage": "TOPDRESS_2",
+              "timing": "45 DAS",
+              "fractionKey": "fertilizer.schedule.topdress.quarterNitrogen",
+              "note": "Published: '¼N @45 DAS' (days after sowing)."
+            }
+          ]
+        },
+        {
+          "varietyClass": "hybrids",
+          "source": {
+            "org": "TNAU",
+            "title": "TNAU Crop Production Guide — Maize (PDF)",
+            "url": "tnagriculture.in/dashboard/CPG/02_%20Maize.pdf",
+            "accessed": "2026-08-12",
+            "confidence": "P",
+            "note": "Status ✅ in docs/fertilizer/knowledge-base.md."
+          },
+          "basis": "blanket_no_soil_test",
+          "totalNpk": {
+            "n": 250,
+            "p2o5": 75,
+            "k2o": 75,
+            "unit": "kg/ha",
+            "published": "250:75:75 hybrids (kg/ha)",
+            "unitNote": "'(kg/ha)' is written once at the end of the row and applies to both variety classes."
+          },
+          "schedule": [
+            {
+              "stage": "BASAL",
+              "timing": null,
+              "fractionKey": "fertilizer.schedule.basal.quarterNitrogenFullPk",
+              "note": "Published: '¼N+P+K basal'. The schedule is published once for the row and is not differentiated by variety class."
+            },
+            {
+              "stage": "TOPDRESS_1",
+              "timing": "25 DAS",
+              "fractionKey": "fertilizer.schedule.topdress.halfNitrogen",
+              "note": "Published: '½N @25 DAS'."
+            },
+            {
+              "stage": "TOPDRESS_2",
+              "timing": "45 DAS",
+              "fractionKey": "fertilizer.schedule.topdress.quarterNitrogen",
+              "note": "Published: '¼N @45 DAS'."
+            }
+          ]
+        }
+      ],
+      "deficiencySymptoms": [
+        {
+          "nutrient": "N",
+          "symptomKey": "fertilizer.deficiency.MAIZE.N",
+          "sourceUrl": "tnagriculture.in/dashboard/CPG/02_%20Maize.pdf"
+        },
+        {
+          "nutrient": "P",
+          "symptomKey": "fertilizer.deficiency.MAIZE.P",
+          "sourceUrl": "tnagriculture.in/dashboard/CPG/02_%20Maize.pdf"
+        },
+        {
+          "nutrient": "K",
+          "symptomKey": "fertilizer.deficiency.MAIZE.K",
+          "sourceUrl": "tnagriculture.in/dashboard/CPG/02_%20Maize.pdf"
+        }
+      ],
+      "deficiencySymptomsNote": "docs/fertilizer/knowledge-base.md states the maize source includes N/P/K deficiency symptom texts ('✅ (incl. N/P/K deficiency symptom texts)') but does NOT reproduce them. Only the keys and the source URL are recorded; the symptom text itself must be pulled from the PDF before en/hi strings can be authored (gap F5). Maize is the ONLY crop for which the repo asserts that symptom texts exist.",
+      "verificationPending": false
+    },
+    "COTTON": {
+      "cropCode": "COTTON",
+      "context": {
+        "region": "Tamil Nadu (TN)",
+        "condition": null,
+        "varietyClass": null,
+        "note": "Row label published as 'Cotton (TN)'. THIS ROW IS PER ACRE — the doc bolds 'per **acre**' and its Status cell reads '✅ (unit flag: acre)'."
+      },
+      "recommendations": [
+        {
+          "varietyClass": "varieties",
+          "source": {
+            "org": "TNAU",
+            "title": "TNAU Agritech cotton page (inorganic manures)",
+            "url": "agritech.tnau.ac.in/agriculture/agri_cotton_Inorganic_manures%20.html",
+            "accessed": "2026-08-12",
+            "confidence": "P",
+            "note": "Status ✅ (unit flag: acre) in docs/fertilizer/knowledge-base.md."
+          },
+          "basis": "blanket_no_soil_test",
+          "totalNpk": {
+            "n": 32,
+            "p2o5": 16,
+            "k2o": 16,
+            "unit": "kg/acre",
+            "published": "per **acre**: 32:16:16 varieties",
+            "unitNote": "PER ACRE — published as 'per **acre**' (the doc's own bold emphasis). The mass unit 'kg' is not written in the row; 'kg/acre' assumes the same kg basis as every other row. MUST NOT be converted to per-hectare — docs/fertilizer/fertilizer-intelligence.md requires a unit-preservation test and display-layer conversion alongside the original."
+          },
+          "schedule": [
+            {
+              "stage": "BASAL",
+              "timing": null,
+              "fractionKey": "fertilizer.schedule.basal.halfDose",
+              "note": "Published: 'varieties 50/50 basal & 40–45 DAS'. AMBIGUOUS: the source does not state whether the 50/50 split applies to nitrogen only or to the full NPK dose (gap F6)."
+            },
+            {
+              "stage": "TOPDRESS_1",
+              "timing": "40–45 DAS",
+              "fractionKey": "fertilizer.schedule.topdress.halfDose",
+              "note": "Published: 'varieties 50/50 basal & 40–45 DAS'. Timing published as a range of days after sowing. Same nutrient-scope ambiguity as the basal entry."
+            }
+          ]
+        },
+        {
+          "varietyClass": "hybrids",
+          "source": {
+            "org": "TNAU",
+            "title": "TNAU Agritech cotton page (inorganic manures)",
+            "url": "agritech.tnau.ac.in/agriculture/agri_cotton_Inorganic_manures%20.html",
+            "accessed": "2026-08-12",
+            "confidence": "P",
+            "note": "Status ✅ (unit flag: acre) in docs/fertilizer/knowledge-base.md."
+          },
+          "basis": "blanket_no_soil_test",
+          "totalNpk": {
+            "n": 48,
+            "p2o5": 24,
+            "k2o": 24,
+            "unit": "kg/acre",
+            "published": "per **acre**: 48:24:24 hybrids",
+            "unitNote": "PER ACRE — see the varieties entry. No unit normalisation permitted."
+          },
+          "schedule": [
+            {
+              "stage": "BASAL",
+              "timing": null,
+              "fractionKey": "fertilizer.schedule.basal.thirdDose",
+              "note": "Published: 'hybrids thirds basal/40–45/60–65 DAS'. AMBIGUOUS: the source does not state whether the thirds apply to nitrogen only or to the full NPK dose (gap F6)."
+            },
+            {
+              "stage": "TOPDRESS_1",
+              "timing": "40–45 DAS",
+              "fractionKey": "fertilizer.schedule.topdress.thirdDose",
+              "note": "Published: 'hybrids thirds basal/40–45/60–65 DAS'."
+            },
+            {
+              "stage": "TOPDRESS_2",
+              "timing": "60–65 DAS",
+              "fractionKey": "fertilizer.schedule.topdress.thirdDose",
+              "note": "Published: 'hybrids thirds basal/40–45/60–65 DAS'."
+            }
+          ]
+        }
+      ],
+      "deficiencySymptoms": [],
+      "verificationPending": false
+    },
+    "SOYBEAN": {
+      "cropCode": "SOYBEAN",
+      "context": {
+        "region": null,
+        "condition": null,
+        "varietyClass": null,
+        "note": "Row label published as plain 'Soybean' with no region or condition."
+      },
+      "recommendations": [
+        {
+          "varietyClass": null,
+          "source": {
+            "org": "ICAR-IISR (Indian Institute of Soybean Research)",
+            "title": "ICAR-IISR Bulletin 18 (via summary)",
+            "url": null,
+            "accessed": "2026-08-12",
+            "confidence": "S",
+            "note": "Status ⚠️: 'pull bulletin PDF for citation'. The doc publishes NO direct URL — only the provenance chain 'ICAR-IISR via krishakjagat.org + ResearchGate 368392183'. Confidence is recorded as S because the doc's own label is 'via summary', i.e. the primary bulletin was not read. This VIOLATES the doc's own rule 'no number without source.url' until the PDF is pulled (gap F3)."
+          },
+          "basis": "blanket_no_soil_test",
+          "totalNpk": {
+            "n": 25,
+            "p2o5": 60,
+            "k2o": 40,
+            "unit": "kg/ha",
+            "published": "25:60:40 + S 20 kg/ha, basal only + FYM 5–10t",
+            "unitNote": "'kg/ha' is written once in the row, after 'S 20', and is taken to apply to the row's nutrient figures as published."
+          },
+          "organics": {
+            "fym": {
+              "value": [5, 10],
+              "unit": null,
+              "published": "FYM 5–10t",
+              "note": "Published as a range in tonnes with NO per-area denominator written (gap F1). unit is null rather than 't/ha' — the denominator was not invented."
+            }
+          },
+          "micronutrients": {
+            "sulphur": {
+              "value": 20,
+              "unit": "kg/ha",
+              "published": "S 20 kg/ha",
+              "note": "Sulphur is a SECONDARY nutrient, not a micronutrient. It is recorded here because the structure defined by docs/fertilizer/knowledge-base.md provides no secondary-nutrient field (gap F8b)."
+            }
+          },
+          "schedule": [
+            {
+              "stage": "BASAL",
+              "timing": null,
+              "fractionKey": "fertilizer.schedule.basal.full",
+              "note": "Published: 'basal only (official)' — the entire dose is applied at basal; there is no top-dressing in the official recommendation."
+            }
+          ]
+        }
+      ],
+      "deficiencySymptoms": [],
+      "verificationPending": true
+    },
+    "TOMATO": {
+      "cropCode": "TOMATO",
+      "context": {
+        "region": "Tamil Nadu (TN)",
+        "condition": null,
+        "varietyClass": null,
+        "note": "Row label published as 'Tomato (TN)'."
+      },
+      "recommendations": [
+        {
+          "varietyClass": null,
+          "source": {
+            "org": "TNAU",
+            "title": "TNAU vegetables fertilizer schedule (PDF) — FERTILIZER SCHEDULE FOR VEGETABLES",
+            "url": "agritech.tnau.ac.in/horticulture/FERTILIZER%20SCHEDULE%20FOR%20VEGETABLES.pdf",
+            "accessed": "2026-08-12",
+            "confidence": "P",
+            "note": "Status ✅ in docs/fertilizer/knowledge-base.md. Schedule core recorded there as 'as stated'."
+          },
+          "basis": "blanket_no_soil_test",
+          "totalNpk": {
+            "n": 75,
+            "p2o5": 100,
+            "k2o": 50,
+            "unit": "kg/ha",
+            "published": "FYM 25t + 75:100:50 kg/ha + borax 10 + ZnSO₄ 50 basal; +75 N @30d",
+            "unitNote": "'kg/ha' written explicitly against the NPK figures."
+          },
+          "organics": {
+            "fym": {
+              "value": 25,
+              "unit": null,
+              "published": "FYM 25t",
+              "note": "Tonnes with NO per-area denominator written (gap F1). unit left null rather than inventing 't/ha'."
+            }
+          },
+          "micronutrients": {
+            "borax": {
+              "value": 10,
+              "unit": null,
+              "published": "borax 10",
+              "note": "No unit written against this figure (gap F1)."
+            },
+            "znso4": {
+              "value": 50,
+              "unit": null,
+              "published": "ZnSO₄ 50",
+              "note": "No unit written against this figure (gap F1)."
+            }
+          },
+          "schedule": [
+            {
+              "stage": "BASAL",
+              "timing": null,
+              "fractionKey": "fertilizer.schedule.basal.fullNpkPlusOrganicsAndMicronutrients",
+              "note": "Published: 'FYM 25t + 75:100:50 kg/ha + borax 10 + ZnSO₄ 50 basal' — the whole NPK dose, the FYM and both micronutrients go in at basal."
+            },
+            {
+              "stage": "TOPDRESS_1",
+              "timing": "30 d",
+              "fractionKey": "fertilizer.schedule.topdress.fixedNitrogen",
+              "note": "Published: '+75 N @30d' — an ADDITIONAL 75 kg N/ha at 30 days, stated as an absolute dose, not a fraction. It is deliberately NOT added into totalNpk: the source publishes no summed season total."
+            }
+          ]
+        }
+      ],
+      "deficiencySymptoms": [],
+      "verificationPending": false
+    },
+    "POTATO": {
+      "cropCode": "POTATO",
+      "context": {
+        "region": "Tamil Nadu (TN) — hills",
+        "condition": "hills",
+        "varietyClass": null,
+        "note": "Row label published as 'Potato (TN hills)'. This is a HILLS recommendation. docs/crop-recommendation/scoring-model.md, by contrast, lists potato as 'Rabi (plains)' — so the crop's agronomy row and its fertilizer row describe different growing contexts (see gap F2)."
+      },
+      "recommendations": [
+        {
+          "varietyClass": null,
+          "source": {
+            "org": "TNAU",
+            "title": "TNAU vegetables fertilizer schedule (PDF) — FERTILIZER SCHEDULE FOR VEGETABLES",
+            "url": "agritech.tnau.ac.in/horticulture/FERTILIZER%20SCHEDULE%20FOR%20VEGETABLES.pdf",
+            "accessed": "2026-08-12",
+            "confidence": "P",
+            "note": "Status ⚠️ region flag in docs/fertilizer/knowledge-base.md: 'add PAU/UP value for plains before demo in northern persona'. The VALUE is TNAU-sourced; the PENDING item is the missing plains variant, not the correctness of this figure."
+          },
+          "basis": "blanket_no_soil_test",
+          "totalNpk": {
+            "n": 120,
+            "p2o5": 240,
+            "k2o": 120,
+            "unit": "kg/ha",
+            "published": "120:240:120 kg/ha half basal/half 30 DAS + MgSO₄ 60",
+            "unitNote": "'kg/ha' written explicitly against the NPK figures."
+          },
+          "micronutrients": {
+            "mgso4": {
+              "value": 60,
+              "unit": null,
+              "published": "MgSO₄ 60",
+              "note": "Magnesium sulphate; no unit written against the figure (gap F1). Magnesium is a secondary nutrient, recorded here for want of a secondary-nutrient field (gap F8b)."
+            }
+          },
+          "schedule": [
+            {
+              "stage": "BASAL",
+              "timing": null,
+              "fractionKey": "fertilizer.schedule.basal.halfDose",
+              "note": "Published: 'half basal/half 30 DAS'. AMBIGUOUS: the source does not state whether the halves apply to nitrogen only or to the full NPK dose (gap F6). The MgSO₄ timing is likewise not stated."
+            },
+            {
+              "stage": "TOPDRESS_1",
+              "timing": "30 DAS",
+              "fractionKey": "fertilizer.schedule.topdress.halfDose",
+              "note": "Published: 'half basal/half 30 DAS' (days after sowing/planting). Same nutrient-scope ambiguity as the basal entry."
+            }
+          ]
+        }
+      ],
+      "deficiencySymptoms": [],
+      "verificationPending": true
+    },
+    "ONION": {
+      "cropCode": "ONION",
+      "context": {
+        "region": null,
+        "condition": null,
+        "varietyClass": null,
+        "note": "Row label published as plain 'Onion'; the source is the TNAU vegetables PDF but the row states no region. Two variety classes are published ('small' and 'Bellary') and are carried on separate recommendations."
+      },
+      "recommendations": [
+        {
+          "varietyClass": "small onion",
+          "source": {
+            "org": "TNAU",
+            "title": "TNAU vegetables fertilizer schedule (PDF) — FERTILIZER SCHEDULE FOR VEGETABLES",
+            "url": "agritech.tnau.ac.in/horticulture/FERTILIZER%20SCHEDULE%20FOR%20VEGETABLES.pdf",
+            "accessed": "2026-08-12",
+            "confidence": "P",
+            "note": "Status ✅ in docs/fertilizer/knowledge-base.md."
+          },
+          "basis": "blanket_no_soil_test",
+          "totalNpk": {
+            "n": 30,
+            "p2o5": 60,
+            "k2o": 30,
+            "unit": null,
+            "published": "small: 30:60:30 basal +30 N @30 DAS",
+            "unitNote": "NO UNIT IS PUBLISHED IN THE ONION ROW. Every other vegetable row drawn from the same TNAU PDF writes kg/ha, but this row does not, so `unit` is null rather than an assumed 'kg/ha' (gap F7). MUST be resolved from the PDF before seeding — an unlabelled dose cannot be shown to a farmer."
+          },
+          "schedule": [
+            {
+              "stage": "BASAL",
+              "timing": null,
+              "fractionKey": "fertilizer.schedule.basal.fullNpk",
+              "note": "Published: 'small: 30:60:30 basal' — the whole published NPK dose at basal."
+            },
+            {
+              "stage": "TOPDRESS_1",
+              "timing": "30 DAS",
+              "fractionKey": "fertilizer.schedule.topdress.fixedNitrogen",
+              "note": "Published: '+30 N @30 DAS' — an ADDITIONAL 30 N at 30 days after sowing, absolute not fractional. Not added into totalNpk (no summed total is published)."
+            }
+          ]
+        },
+        {
+          "varietyClass": "Bellary onion",
+          "source": {
+            "org": "TNAU",
+            "title": "TNAU vegetables fertilizer schedule (PDF) — FERTILIZER SCHEDULE FOR VEGETABLES",
+            "url": "agritech.tnau.ac.in/horticulture/FERTILIZER%20SCHEDULE%20FOR%20VEGETABLES.pdf",
+            "accessed": "2026-08-12",
+            "confidence": "P",
+            "note": "Status ✅ in docs/fertilizer/knowledge-base.md."
+          },
+          "basis": "blanket_no_soil_test",
+          "totalNpk": {
+            "n": 50,
+            "p2o5": 150,
+            "k2o": 75,
+            "unit": null,
+            "published": "Bellary: 50:150:75 basal +50 N @30 DAP + ZnSO₄ 50",
+            "unitNote": "NO UNIT IS PUBLISHED IN THE ONION ROW — see the small-onion entry and gap F7."
+          },
+          "micronutrients": {
+            "znso4": {
+              "value": 50,
+              "unit": null,
+              "published": "ZnSO₄ 50",
+              "note": "No unit written against the figure (gap F1); the row publishes no unit at all."
+            }
+          },
+          "schedule": [
+            {
+              "stage": "BASAL",
+              "timing": null,
+              "fractionKey": "fertilizer.schedule.basal.fullNpkPlusMicronutrients",
+              "note": "Published: 'Bellary: 50:150:75 basal ... + ZnSO₄ 50'. The ZnSO₄ timing is not separately stated."
+            },
+            {
+              "stage": "TOPDRESS_1",
+              "timing": "30 DAP",
+              "fractionKey": "fertilizer.schedule.topdress.fixedNitrogen",
+              "note": "Published verbatim as '+50 N @30 DAP'. 'DAP' is transcribed exactly as written and is AMBIGUOUS: in the same sentence DAP is also the name of a fertiliser (di-ammonium phosphate), while the sibling small-onion entry uses 'DAS' for the identical 30-day timing. Most likely a typo for DAS (days after sowing) or an abbreviation of days-after-planting — NOT resolved here (gap F7b)."
+            }
+          ]
+        }
+      ],
+      "deficiencySymptoms": [],
+      "verificationPending": false
+    },
+    "CHILLI": {
+      "cropCode": "CHILLI",
+      "context": {
+        "region": null,
+        "condition": null,
+        "varietyClass": null,
+        "note": "Row label published as plain 'Chilli'; the source is the TNAU vegetables PDF but the row states no region."
+      },
+      "recommendations": [
+        {
+          "varietyClass": null,
+          "source": {
+            "org": "TNAU",
+            "title": "TNAU vegetables fertilizer schedule (PDF) — FERTILIZER SCHEDULE FOR VEGETABLES",
+            "url": "agritech.tnau.ac.in/horticulture/FERTILIZER%20SCHEDULE%20FOR%20VEGETABLES.pdf",
+            "accessed": "2026-08-12",
+            "confidence": "P",
+            "note": "Status ✅ in docs/fertilizer/knowledge-base.md."
+          },
+          "basis": "blanket_no_soil_test",
+          "totalNpk": {
+            "n": 30,
+            "p2o5": 60,
+            "k2o": 30,
+            "unit": "kg/ha",
+            "published": "basal 30:60:30 kg/ha + 30 N @30/60/90d",
+            "unitNote": "'kg/ha' written explicitly against the NPK figures."
+          },
+          "schedule": [
+            {
+              "stage": "BASAL",
+              "timing": null,
+              "fractionKey": "fertilizer.schedule.basal.fullNpk",
+              "note": "Published: 'basal 30:60:30 kg/ha' — the whole published NPK dose at basal."
+            },
+            {
+              "stage": "TOPDRESS_1",
+              "timing": "30 d",
+              "fractionKey": "fertilizer.schedule.topdress.fixedNitrogen",
+              "note": "Published: '+ 30 N @30/60/90d' — 30 kg N at each of three top-dressings. Absolute dose, not a fraction; not added into totalNpk."
+            },
+            {
+              "stage": "TOPDRESS_2",
+              "timing": "60 d",
+              "fractionKey": "fertilizer.schedule.topdress.fixedNitrogen",
+              "note": "Published: '+ 30 N @30/60/90d'."
+            },
+            {
+              "stage": "TOPDRESS_3",
+              "timing": "90 d",
+              "fractionKey": "fertilizer.schedule.topdress.fixedNitrogen",
+              "note": "Published: '+ 30 N @30/60/90d'."
+            }
+          ]
+        }
+      ],
+      "deficiencySymptoms": [],
+      "verificationPending": false
+    }
+  },
+  "gaps": [
+    {
+      "id": "F1",
+      "field": "organics[].unit and micronutrients[].unit — every organic and micronutrient figure",
+      "problem": "docs/fertilizer/knowledge-base.md writes the NPK doses with an explicit unit but writes the organic and micronutrient quantities as bare numbers: tomato 'FYM 25t ... borax 10 + ZnSO₄ 50', potato 'MgSO₄ 60', soybean 'FYM 5–10t', onion Bellary 'ZnSO₄ 50'. No per-area denominator is written for any of them, and for FYM even the tonnes have no denominator.",
+      "checked": "docs/fertilizer/knowledge-base.md (the whole Verified-values table), docs/fertilizer/fertilizer-intelligence.md. No unit is stated anywhere in the repo.",
+      "impact": "These figures cannot be rendered to a farmer without a unit. Assuming t/ha and kg/ha is almost certainly right agronomically — which is exactly why assuming it is dangerous: it would be an unsourced number wearing a citation.",
+      "resolution": "`unit: null` everywhere, with the bare published string preserved in `published`. Units must be read off the TNAU PDFs during seed authoring."
+    },
+    {
+      "id": "F2",
+      "field": "POTATO — plains recommendation missing entirely",
+      "problem": "The only potato entry is 'Potato (TN hills)'. The doc's Status cell reads '⚠️ region flag: add PAU/UP value for plains before demo in northern persona'. Meanwhile docs/crop-recommendation/scoring-model.md characterises potato as 'Rabi (plains)', and docs/crop-recommendation/engine.md scopes the demo to MP/Maharashtra/UP — i.e. plains states.",
+      "checked": "docs/fertilizer/knowledge-base.md, docs/fertilizer/fertilizer-intelligence.md ('Regional variance (TNAU potato ≠ Punjab potato — flagged per-entry; ship with stated region context)'), docs/crop-recommendation/scoring-model.md.",
+      "impact": "A northern-plains demo persona would be shown a TN-hills dose (120:240:120 kg/ha) as its potato guidance. The 240 kg/ha P2O5 figure in particular is a hills-specific value.",
+      "resolution": "verificationPending: true, and context.region is stated explicitly as 'Tamil Nadu (TN) — hills'. A PAU/UP plains recommendation must be added as a second entry before a northern-persona demo."
+    },
+    {
+      "id": "F3",
+      "field": "SOYBEAN — source.url is null; the row breaks the KB's own citation rule",
+      "problem": "The doc records the source as 'ICAR-IISR Bulletin 18 (via summary)' with Status '⚠️ pull bulletin PDF for citation', and its Source URLs line gives only 'ICAR-IISR via krishakjagat.org + ResearchGate 368392183' — a provenance chain, not a URL. The KB's own stated rule is 'no number without source.url'.",
+      "checked": "docs/fertilizer/knowledge-base.md rows and Source URLs line; docs/fertilizer/fertilizer-intelligence.md Risks ('Wheat + soybean primary-PDF verification pending').",
+      "impact": "The soybean NPK+S dose currently has no citable primary source. Confidence is recorded as S for that reason.",
+      "resolution": "url: null, confidence S, verificationPending true. Bulletin 18 PDF must be pulled before seeding."
+    },
+    {
+      "id": "F4",
+      "field": "WHEAT — no K2O figure published",
+      "problem": "The PAU row publishes '50 N + 25 P2O5' and no potash figure at all.",
+      "checked": "docs/fertilizer/knowledge-base.md wheat row; the PAU PoP PDF itself was NOT fetched (out of scope for a transcription task and the row is already flagged unverified).",
+      "impact": "An engine that treats a missing k2o as 0 would be asserting 'PAU recommends no potash for wheat' — a claim the repo does not make. PAU genuinely may omit potash on medium-fertility soils, but the repo does not say so.",
+      "resolution": "k2o: null (explicitly not 0), with a k2oNote on the recommendation. Must be settled when the PDF is verified."
+    },
+    {
+      "id": "F5",
+      "field": "deficiencySymptoms — no symptom text exists for any crop",
+      "problem": "docs/fertilizer/knowledge-base.md asserts symptom texts exist for exactly one crop — maize, '✅ (incl. N/P/K deficiency symptom texts)' — but reproduces none of them. docs/fertilizer/fertilizer-intelligence.md nonetheless specifies a deficiency-symptom checker feature: 'KB symptom texts (TNAU CPG verbatim, translated with curation) surfaced in crop-health rule engine too (nutrient deficiency is a differential for disease)'.",
+      "checked": "docs/fertilizer/knowledge-base.md, docs/fertilizer/fertilizer-intelligence.md, docs/i18n/agricultural-terminology.md (its Diseases table has no nutrient-deficiency entries).",
+      "impact": "The deficiency-symptom checker has no content. For 8 of 9 crops the array is empty; for maize only key stubs exist.",
+      "resolution": "MAIZE carries three entries (N, P, K) with keys and the TNAU CPG maize PDF URL, because the repo explicitly asserts that source contains them. All other crops: empty array. NOTE — the maize symptomKeys currently resolve to nothing; the verbatim TNAU text must be extracted (and Hindi human-curated per CLAUDE.md rule 8) before they can render."
+    },
+    {
+      "id": "F6",
+      "field": "schedule[].fractionKey — nutrient scope of the split is unstated for COTTON and POTATO",
+      "problem": "Cotton is published as 'varieties 50/50 basal & 40–45 DAS' and 'hybrids thirds basal/40–45/60–65 DAS'; potato as 'half basal/half 30 DAS'. None of these says whether the split applies to nitrogen only or to the whole NPK dose. Phosphorus is normally applied wholly basal (as the rice row explicitly states, 'P basal'), which makes a whole-dose reading doubtful — but the source does not say.",
+      "checked": "docs/fertilizer/knowledge-base.md Schedule-core column for all 9 rows.",
+      "impact": "A wrong reading changes the P and K timing for three of the nine crops.",
+      "resolution": "Neutral keys (…halfDose / …thirdDose) with the ambiguity recorded in every affected schedule note. Resolve from the TNAU pages during seed authoring."
+    },
+    {
+      "id": "F6b",
+      "field": "WHEAT schedule — urea quantity across two irrigations",
+      "problem": "Published as 'urea 45kg before 1st & 2nd irrigation'. It is not stated whether that is 45 kg BEFORE EACH irrigation (90 kg total) or 45 kg split across the two.",
+      "checked": "docs/fertilizer/knowledge-base.md wheat row.",
+      "impact": "A factor-of-two difference in the top-dressed nitrogen for wheat.",
+      "resolution": "Two schedule entries created (one per irrigation) with the identical published string and the ambiguity flagged in both notes; no quantity was assigned to either entry. This is part of the row's existing ⚠️ verification task."
+    },
+    {
+      "id": "F7",
+      "field": "ONION — the row publishes NO unit",
+      "problem": "Every other TNAU-sourced row writes kg/ha explicitly. The onion row ('small: 30:60:30 basal +30 N @30 DAS; Bellary: 50:150:75 basal +50 N @30 DAP + ZnSO₄ 50') writes no unit anywhere.",
+      "checked": "docs/fertilizer/knowledge-base.md onion row, compared against the rice/maize/tomato/potato/chilli rows.",
+      "impact": "Onion is the designated 'star mandi demo' crop (docs/product/crop-support-matrix.md), so its guidance card is likely to be shown live. An unlabelled dose must never reach a farmer.",
+      "resolution": "unit: null for both onion recommendations, with unitNote explaining why it was not assumed. Almost certainly kg/ha from the same TNAU PDF — but 'almost certainly' is not a source."
+    },
+    {
+      "id": "F7b",
+      "field": "ONION Bellary schedule — '30 DAP' vs '30 DAS'",
+      "problem": "The Bellary entry reads '+50 N @30 DAP' while the sibling small-onion entry reads '+30 N @30 DAS' for the same 30-day timing. 'DAP' is simultaneously a common abbreviation for days-after-planting and the name of a fertiliser (di-ammonium phosphate) that appears elsewhere in this very doc (wheat: 'DAP 55kg sowing').",
+      "checked": "docs/fertilizer/knowledge-base.md onion and wheat rows.",
+      "impact": "Low agronomic impact (both readings put the top-dress at 30 days) but a real i18n/display hazard if 'DAP' is rendered literally to a farmer next to a nitrogen dose.",
+      "resolution": "Transcribed exactly as written ('30 DAP') with the ambiguity recorded in the schedule note. Not silently normalised to DAS."
+    },
+    {
+      "id": "F8",
+      "field": "totalNpk — no season totals for TOMATO, CHILLI, ONION",
+      "problem": "These three publish a basal NPK dose plus one or more separate absolute top-dress nitrogen figures (tomato +75 N @30d; chilli +30 N @30/60/90d; onion small +30 N @30 DAS, Bellary +50 N @30 DAP). The source never publishes the summed season nitrogen.",
+      "checked": "docs/fertilizer/knowledge-base.md rows for tomato, chilli, onion.",
+      "impact": "totalNpk is therefore NOT a season total for these three crops — it is the published basal dose. A consumer that reads totalNpk as 'the season dose' will understate nitrogen (tomato by 75, chilli by 90, per the published units).",
+      "resolution": "No addition performed. The field name comes from the structure the doc itself defines; the discrepancy is recorded here and in each schedule note. A reviewer should decide whether the structure needs a distinct `basalNpk` vs `seasonTotalNpk` distinction — that is a schema change requiring approval."
+    },
+    {
+      "id": "F8b",
+      "field": "structure — no field for secondary nutrients (S, Mg)",
+      "problem": "The structure defined by docs/fertilizer/knowledge-base.md provides totalNpk, organics and micronutrients only. Soybean publishes 'S 20 kg/ha' and potato publishes 'MgSO₄ 60'; sulphur and magnesium are secondary nutrients, not micronutrients.",
+      "checked": "docs/fertilizer/knowledge-base.md structure block (lines 4-11).",
+      "impact": "Both values are currently filed under `micronutrients`, which mislabels them.",
+      "resolution": "Recorded under micronutrients with an explicit note on each. Adding a secondaryNutrients field would change the documented structure and needs approval."
+    },
+    {
+      "id": "F9",
+      "field": "context.region — not published for MAIZE, SOYBEAN, ONION, CHILLI, WHEAT",
+      "problem": "Four rows are labelled with a region in parentheses (rice 'TN, transplanted', tomato 'TN', potato 'TN hills', cotton 'TN'); five are not. Wheat's region is implied only by its source being PAU (Punjab).",
+      "checked": "docs/fertilizer/knowledge-base.md row labels.",
+      "impact": "docs/fertilizer/fertilizer-intelligence.md requires the guidance to 'ship with stated region context' and to be labeled 'General recommendation (no soil test) — Source: TNAU/PAU/ICAR'. Five crops currently have no region string to display.",
+      "resolution": "region: null where not published, with the source organisation recorded in the context note so the reviewer can supply it deliberately. Not inferred from the source organisation."
+    },
+    {
+      "id": "F10",
+      "field": "disclaimer.hi — Hindi text missing",
+      "problem": "The disclaimer is required on every fertilizer surface in BOTH en and hi. Only the English text is written in the repo.",
+      "checked": "docs/fertilizer/knowledge-base.md Disclaimer section; docs/i18n/agricultural-terminology.md (has term-level Hindi but no sentence-level disclaimer); docs/i18n/translation-strategy.md not consulted for content (it defines process, not strings).",
+      "impact": "The hi rendering of a legally/ethically load-bearing disclaimer does not exist.",
+      "resolution": "hi: null. NOT machine-translated — CLAUDE.md rule 8 requires human verification of agronomic Hindi, and docs/i18n/agricultural-terminology.md notes that the UI must use full sentence keys rather than concatenated fragments."
+    },
+    {
+      "id": "F11",
+      "field": "basis — no STCR / soil-test tier exists",
+      "problem": "The structure defines basis as 'blanket_no_soil_test' | 'stcr_soil_test', and docs/fertilizer/fertilizer-intelligence.md states that every SAU publishes both tiers ('blanket dose ... + STCR soil-test dose — so our KB mirrors it'). No STCR values are published in the repo for any crop.",
+      "checked": "docs/fertilizer/knowledge-base.md (all 9 rows are blanket doses), docs/fertilizer/fertilizer-intelligence.md.",
+      "impact": "None immediately — fertilizer-intelligence.md defers the soil-test tier to P3 ('Soil-test values present (P3 upload): defer to the card, don't recompute'). Recorded so the empty half of the enum is not mistaken for missing transcription.",
+      "resolution": "Every recommendation in this file is basis: 'blanket_no_soil_test'. Wheat's '(medium fertility)' is a fertility CONDITION on a blanket dose, not an STCR dose, and is recorded in context.condition."
+    },
+    {
+      "id": "F12",
+      "field": "schedule — no schedule published for WHEAT nutrient dose, and no timings in days for RICE",
+      "problem": "Wheat's Schedule-core cell says only 'as stated' and the schedule information that exists is expressed in fertiliser PRODUCTS (DAP/urea), not in fractions of the 50 N + 25 P2O5 nutrient dose. Rice's four N&K splits are named by growth stage (basal/tillering/PI/heading) with no days-after-transplanting figures and no per-split proportion.",
+      "checked": "docs/fertilizer/knowledge-base.md Schedule-core column.",
+      "impact": "docs/fertilizer/fertilizer-intelligence.md's product is 'stage-driven guidance cards: what nutrient matters now, when to apply'. 'When' cannot be computed for rice from stage names alone unless the crop's stage model (crops.agronomy.json kcStages) supplies the day offsets — a cross-file join that nothing in the repo currently authorises.",
+      "resolution": "timing: null wherever no timing is published; fraction keys ending 'unspecifiedFraction' wherever no proportion is published. No day numbers were borrowed from crops.agronomy.json."
+    },
+    {
+      "id": "F13",
+      "field": "KAU regional variant — listed as a source but no values transcribed",
+      "problem": "The Source URLs line includes 'KAU regional variant: agritech.kau.in' but no KAU dose appears in the Verified-values table for any crop.",
+      "checked": "docs/fertilizer/knowledge-base.md (whole file).",
+      "impact": "None. Recorded so the unused URL is not mistaken for a dropped transcription.",
+      "resolution": "URL preserved in sourceUrls with a note; no values invented for it."
+    },
+    {
+      "id": "F14",
+      "field": "source.title — descriptive labels, not exact published titles",
+      "problem": "The doc names sources descriptively ('TNAU vegetables schedule PDF', 'TNAU CPG Maize PDF', 'TNAU Agritech rice nutrient page', 'PAU PoP Rabi PDF'). The exact document titles as printed on the source pages are not recorded anywhere in the repo.",
+      "checked": "docs/fertilizer/knowledge-base.md Source column and Source URLs line.",
+      "impact": "Citations shown to a viva panel would be descriptive rather than exact. Low risk, but it is an unverified element of every citation in this file.",
+      "resolution": "Titles transcribed as the doc writes them, with the URL filename appended where the doc's own URL reveals it (e.g. 'FERTILIZER SCHEDULE FOR VEGETABLES'). No title was invented."
+    },
+    {
+      "id": "F15",
+      "field": "fractionKey / symptomKey — i18n keys minted here have no strings",
+      "problem": "The structure requires i18n keys rather than prose, but the repo defines no fertilizer key namespace and no en/hi bundles for these keys. Every key in this file is newly minted.",
+      "checked": "Searched docs/ for 'fractionKey', 'symptomKey' and 'fertilizer.' key examples — the only occurrences are the structure block in docs/fertilizer/knowledge-base.md itself. docs/i18n/agricultural-terminology.md defines a key convention only for diseases ('agri:disease.{CODE}').",
+      "impact": "Nothing renders until the strings are authored, en + hi, with the Hindi human-verified.",
+      "resolution": "Keys follow the namespace documented in this file's `rules.fractionKeyNamespace`, and every key carries the exact published wording it must express in its sibling `note`, so a translator never has to guess. The key names themselves are naming decisions, not agronomic claims."
+    },
+    {
+      "id": "F16",
+      "field": "whole file — values are second-hand and dated",
+      "problem": "docs/fertilizer/knowledge-base.md heads its table 'Verified values (as researched 2026-08-12 — re-verify page-by-page during seed authoring)' and docs/fertilizer/fertilizer-intelligence.md records the basis as a 'subagent report 2026-08-12'. No source page was fetched for this transcription.",
+      "checked": "docs/fertilizer/knowledge-base.md line 14; docs/fertilizer/fertilizer-intelligence.md line 3.",
+      "impact": "Every number here is a transcription of a transcription. The doc's own instruction to re-verify page-by-page is unfulfilled for all 9 crops, not only the three marked ⚠️.",
+      "resolution": "source.accessed is recorded as 2026-08-12 (the research date the doc states), never as today, so the age of the evidence is visible. Page-by-page re-verification remains a prerequisite for seeding."
+    }
+  ]
+}

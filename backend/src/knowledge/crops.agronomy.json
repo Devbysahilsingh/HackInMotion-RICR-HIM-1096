@@ -1,0 +1,1359 @@
+{
+  "status": "RESEARCH OUTPUT — requires human review before seeding cropRegistry",
+  "purpose": "FAO-56 sourced irrigation parameters (kcStages, rootDepthM, depletionFraction) for the 9 SPECIALIZED/GENERAL crops. No other registry fields are populated here.",
+  "accessed": "2026-08-13",
+  "rules": {
+    "noInventedNumbers": "Every numeric value in this file was read from a source that was actually fetched. Nothing is estimated, averaged, rounded or inferred. Fields that could not be sourced are absent and are listed in `gaps`.",
+    "citationShape": "{ org, title, url, accessed, confidence, note }. `sourceRef` is always an ARRAY of that shape, because a single stage draws `days` from FAO-56 Table 11 and `kc` from Table 12.",
+    "confidence": "P = primary/official source. S = secondary."
+  },
+  "conventions": {
+    "developmentKc": "FAO-56 publishes Kc for the initial, mid-season and end-of-late-season points only. The crop-development stage is the linear transition between Kc_ini and Kc_mid, so its `kc` is recorded as null and MUST be interpolated by the engine (FAO-56 Eq. 66).",
+    "lateStageKc": "The `kc` recorded on the LATE stage is FAO-56's Kc_end — the value at the END of the late season, NOT the average over it. The engine must interpolate Kc_mid -> Kc_end across the late stage, not hold it flat.",
+    "table11RowSelection": "Ordered rule, applied identically to all 9 crops: (1) use the row whose Region column names India; (2) otherwise use the row whose Region and Plant Date best match Indian cropping conditions. The rule applied and every alternative row published in Table 11 are recorded per crop under `alternativeRowsInSource` so a reviewer can override.",
+    "rangeValues": "Where FAO-56 prints a two-value range in a single cell (e.g. Kc_end '0.90-0.60'), the FIRST published value is recorded and the full published string is kept in `published`. No midpoint or average is ever computed.",
+    "rootDepthLowerBound": "Zr is recorded as the LOWER bound of the published range, on the authority of FAO-56 Table 22 footnote 1: 'The smaller values for Zr may be used for irrigation scheduling and the larger values for modeling soil water stress or for rainfed conditions.' This platform schedules irrigation.",
+    "kcIniGroupRows": "In FAO-56 Table 12 the Kc_ini column is printed once per crop GROUP heading row (e.g. 'i. Cereals 0.3') and left blank on the individual crop rows beneath it, except where a crop overrides it. Rice is the only one of these nine crops with a Kc_ini printed on its own row (1.05). For the other eight, the group heading value is recorded and the group is named in the citation note.",
+    "depletionFractionEt": "All p values are FAO-56's p for ETc ~ 5 mm/day. Table 22 footnote 2 gives the adjustment the engine must apply for other ETc: p = p_table22 + 0.04 * (5 - ETc), p as a fraction and ETc in mm/day."
+  },
+  "sourceDocuments": {
+    "FAO56_TABLE_11": {
+      "org": "FAO",
+      "title": "FAO Irrigation and Drainage Paper 56 — Crop Evapotranspiration, Chapter 6, TABLE 11. Lengths of crop development stages for various planting periods and climatic regions (days)",
+      "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "Table caption footnote *: 'Lengths of crop development stages provided in this table are indicative of general conditions, but may vary substantially from region to region, with climate and cropping conditions, and with crop variety. The user is strongly encouraged to obtain appropriate local information.'"
+    },
+    "FAO56_TABLE_12": {
+      "org": "FAO",
+      "title": "FAO Irrigation and Drainage Paper 56 — Crop Evapotranspiration, Chapter 6, TABLE 12. Single (time-averaged) crop coefficients, Kc, and mean maximum plant heights for non stressed, well-managed crops in subhumid climates (RHmin ~ 45%, u2 ~ 2 m/s) for use with the FAO Penman-Monteith ETo",
+      "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "Values are for subhumid climate with u2 ~ 2 m/s and RHmin ~ 45%. FAO-56 Eq. 62 adjusts Kc_mid and Kc_end (>0.45) for local climate and crop height; that adjustment is NOT applied in this file."
+    },
+    "FAO56_TABLE_22": {
+      "org": "FAO",
+      "title": "FAO Irrigation and Drainage Paper 56 — Crop Evapotranspiration, Chapter 8, TABLE 22. Ranges of maximum effective rooting depth (Zr), and soil water depletion fraction for no stress (p), for common crops",
+      "url": "https://www.fao.org/4/x0490e/x0490e0e.htm",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "Footnote 2: 'The values for p apply for ETc ~ 5 mm/day. The value for p can be adjusted for different ETc according to p = p table 22 + 0.04 (5 - ETc) where p is expressed as a fraction and ETc as mm/day.'"
+    }
+  },
+  "crops": [
+    {
+      "cropCode": "RICE",
+      "faoEntriesUsed": {
+        "table11": "Rice — 30 / 30 / 60 / 30, total 150, Plant Date 'Dec; May', Region 'Tropics; Mediterranean'",
+        "table12": "Rice — Kc ini 1.05, Kc mid 1.20, Kc end 0.90-0.60, h 1 m",
+        "table22": "Rice — Zr 0.5-1.0 m, p 0.20"
+      },
+      "whyThisEntry": "Table 11 lists only two rice rows and neither names India; the selected row is the tropical/Mediterranean 150-day row, chosen over the 180-day 'May, Tropics' row because 150 days matches the common Indian kharif duration band. No India row exists — see gaps.",
+      "kcStages": [
+        {
+          "stage": "INITIAL",
+          "days": 30,
+          "kc": 1.05,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Rice', Lini = 30, Plant Date 'Dec; May', Region 'Tropics; Mediterranean' (total 150 d)."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Rice', Kc ini = 1.05 printed on the crop row itself. Chapter 6 text: 'For rice growing in paddy fields with a water depth of 0.10-0.20 m, the ETc during the initial stage mainly consists of evaporation from the standing water. The Kc ini in Table 12 is 1.05 for a sub-humid climate with calm to moderate wind speeds.' FAO-56 Table 14 gives climate-specific Kc ini for rice; not applied here."
+            }
+          ]
+        },
+        {
+          "stage": "DEVELOPMENT",
+          "days": 30,
+          "kc": null,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Rice', Ldev = 30. Kc is null by design: FAO-56 publishes no Kc for the development stage; interpolate Kc_ini -> Kc_mid per FAO-56 Eq. 66."
+            }
+          ]
+        },
+        {
+          "stage": "MID",
+          "days": 60,
+          "kc": 1.2,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Rice', Lmid = 60."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Rice', Kc mid = 1.20, no footnote marker."
+            }
+          ]
+        },
+        {
+          "stage": "LATE",
+          "days": 30,
+          "kc": 0.9,
+          "published": "0.90-0.60",
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Rice', Llate = 30."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Rice', Kc end printed as the range '0.90-0.60' with NO footnote marker — FAO-56 does not state which condition each value applies to. First published value recorded. REVIEWER DECISION NEEDED (see gaps)."
+            }
+          ]
+        }
+      ],
+      "rootDepthM": {
+        "value": 0.5,
+        "unit": "m",
+        "published": "0.5-1.0",
+        "selected": "lower bound of the published range",
+        "why": "Table 22 footnote 1 — smaller Zr values are the ones intended for irrigation scheduling.",
+        "sourceRef": [
+          {
+            "org": "FAO",
+            "title": "FAO Irrigation and Drainage Paper 56, Chapter 8, Table 22 (Maximum effective rooting depth Zr and depletion fraction p)",
+            "url": "https://www.fao.org/4/x0490e/x0490e0e.htm",
+            "accessed": "2026-08-13",
+            "confidence": "P",
+            "note": "Row 'Rice' under group 'i. Cereals'; published Zr range 0.5-1.0 m."
+          }
+        ]
+      },
+      "depletionFraction": {
+        "value": 0.2,
+        "published": "0.20",
+        "forEtcMmPerDay": 5,
+        "caveat": "RICE IS SPECIAL. Table 22 footnote 4: 'The value for p for rice is 0.20 of saturation.' For every other crop p is a fraction of total available water between field capacity and wilting point. The irrigation engine must NOT apply the rice p through the same TAW formula as the other crops without an explicit, reviewed rule.",
+        "sourceRef": [
+          {
+            "org": "FAO",
+            "title": "FAO Irrigation and Drainage Paper 56, Chapter 8, Table 22 (Maximum effective rooting depth Zr and depletion fraction p)",
+            "url": "https://www.fao.org/4/x0490e/x0490e0e.htm",
+            "accessed": "2026-08-13",
+            "confidence": "P",
+            "note": "Row 'Rice', p = 0.20 with footnote marker 4: 'The value for p for rice is 0.20 of saturation.'"
+          }
+        ]
+      },
+      "alternativeRowsInSource": {
+        "table11": ["Rice — 30 / 30 / 80 / 40, total 180, Plant Date 'May', Region 'Tropics'"]
+      }
+    },
+    {
+      "cropCode": "WHEAT",
+      "faoEntriesUsed": {
+        "table11": "Barley/Oats/Wheat — 15 / 25 / 50 / 30, total 120, Plant Date 'November', Region 'Central India'",
+        "table12": "Spring Wheat — Kc ini 0.3 (from group heading 'i. Cereals'), Kc mid 1.15, Kc end 0.25-0.4 (footnote 10), h 1 m",
+        "table22": "Wheat Spring — Zr 1.0-1.5 m, p 0.55"
+      },
+      "whyThisEntry": "Table 11 has an explicit 'Central India' row for wheat, under the combined 'Barley/Oats/Wheat' heading, with a November plant date matching the Indian rabi calendar — rule (1) applies. For Kc and Zr, FAO-56 separates Winter Wheat from Spring Wheat; SPRING WHEAT was selected because the Winter Wheat entries are explicitly conditioned on frozen/dormancy climates (Table 11 footnote 2 and the Table 12 split into 'with frozen soils' / 'with non-frozen soils'), which do not describe Indian wheat-growing conditions. FAO-56 does not itself make this call — REVIEWER DECISION NEEDED (see gaps). Winter Wheat values are recorded under `alternativeRowsInSource`.",
+      "kcStages": [
+        {
+          "stage": "INITIAL",
+          "days": 15,
+          "kc": 0.3,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Barley/Oats/Wheat', Lini = 15, Plant Date 'November', Region 'Central India' (total 120 d). This is the only India row for wheat in Table 11; it is shared with barley and oats."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Kc ini is blank on the 'Spring Wheat' row; taken from the group heading row 'i. Cereals 0.3 1.15 0.4'. Table 12 footnote 1: 'These are general values for Kc ini under typical irrigation management and soil wetting... Kc ini is a function of wetting interval and potential evaporation rate... and is more accurately estimated using Figures 29 and 30.'"
+            }
+          ]
+        },
+        {
+          "stage": "DEVELOPMENT",
+          "days": 25,
+          "kc": null,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Barley/Oats/Wheat' (Central India, November), Ldev = 25. Kc null by design; interpolate."
+            }
+          ]
+        },
+        {
+          "stage": "MID",
+          "days": 50,
+          "kc": 1.15,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Barley/Oats/Wheat' (Central India, November), Lmid = 50."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Spring Wheat', Kc mid = 1.15 (identical to the Winter Wheat rows and to the 'i. Cereals' group value)."
+            }
+          ]
+        },
+        {
+          "stage": "LATE",
+          "days": 30,
+          "kc": 0.25,
+          "published": "0.25-0.4",
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Barley/Oats/Wheat' (Central India, November), Llate = 30."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Spring Wheat', Kc end published as '0.25-0.4' with footnote 10: 'The higher value is for hand-harvested crops.' First published value (0.25) recorded. Hand harvesting is common in Indian wheat, so 0.4 may be the correct choice — REVIEWER DECISION NEEDED (see gaps)."
+            }
+          ]
+        }
+      ],
+      "rootDepthM": {
+        "value": 1.0,
+        "unit": "m",
+        "published": "1.0-1.5",
+        "selected": "lower bound of the published range",
+        "why": "Table 22 footnote 1 — smaller Zr values are the ones intended for irrigation scheduling.",
+        "sourceRef": [
+          {
+            "org": "FAO",
+            "title": "FAO Irrigation and Drainage Paper 56, Chapter 8, Table 22 (Maximum effective rooting depth Zr and depletion fraction p)",
+            "url": "https://www.fao.org/4/x0490e/x0490e0e.htm",
+            "accessed": "2026-08-13",
+            "confidence": "P",
+            "note": "Row 'Spring Wheat' under group 'i. Cereals'; published Zr range 1.0-1.5 m. The 'Winter Wheat' row publishes 1.5-1.8 m — not used, see whyThisEntry."
+          }
+        ]
+      },
+      "depletionFraction": {
+        "value": 0.55,
+        "published": "0.55",
+        "forEtcMmPerDay": 5,
+        "sourceRef": [
+          {
+            "org": "FAO",
+            "title": "FAO Irrigation and Drainage Paper 56, Chapter 8, Table 22 (Maximum effective rooting depth Zr and depletion fraction p)",
+            "url": "https://www.fao.org/4/x0490e/x0490e0e.htm",
+            "accessed": "2026-08-13",
+            "confidence": "P",
+            "note": "Row 'Spring Wheat', p = 0.55. Winter Wheat publishes the same p = 0.55, so this value is unaffected by the spring/winter decision."
+          }
+        ]
+      },
+      "alternativeRowsInSource": {
+        "table11": [
+          "Barley/Oats/Wheat — 20 / 25 / 60 / 30, total 135, 'March/Apr', '35-45 degrees latitude'",
+          "Barley/Oats/Wheat — 15 / 30 / 65 / 40, total 150, 'July', 'East Africa'",
+          "Barley/Oats/Wheat — 40 / 30 / 40 / 20, total 130, 'Apr', region blank",
+          "Barley/Oats/Wheat — 40 / 60 / 60 / 40, total 200, 'Nov', region blank",
+          "Barley/Oats/Wheat — 20 / 50 / 60 / 30, total 160, 'Dec', 'Calif. Desert, USA'",
+          "Winter Wheat — 20 / 60 / 70 / 30, total 180, 'December', 'Calif., USA' (footnote 2 on Lini and Ldev)",
+          "Winter Wheat — 30 / 140 / 40 / 30, total 240, 'November', 'Mediterranean'",
+          "Winter Wheat — 160 / 75 / 75 / 25, total 335, 'October', 'Idaho, USA'"
+        ],
+        "table12": [
+          "Winter Wheat, with frozen soils — Kc ini 0.4, Kc mid 1.15, Kc end 0.25-0.4",
+          "Winter Wheat, with non-frozen soils — Kc ini 0.7, Kc mid 1.15, Kc end 0.25-0.4"
+        ],
+        "table22": ["Winter Wheat — Zr 1.5-1.8 m, p 0.55"]
+      }
+    },
+    {
+      "cropCode": "MAIZE",
+      "faoEntriesUsed": {
+        "table11": "Maize (grain) — 20 / 35 / 40 / 30, total 125, Plant Date 'October', Region 'India (dry, cool)'",
+        "table12": "Maize, Field (grain) (field corn) — Kc ini 0.3 (from group heading 'i. Cereals'), Kc mid 1.20, Kc end 0.60-0.35 (footnote 11), h 2 m",
+        "table22": "Maize, Field (grain) (field corn) — Zr 1.0-1.7 m, p 0.55"
+      },
+      "whyThisEntry": "Table 11 has an explicit 'India (dry, cool)' row — rule (1) applies. Convenient cross-check: the 'June / Nigeria (humid)' row publishes the identical 20/35/40/30 split, so the kharif-vs-rabi question does not change any number here.",
+      "kcStages": [
+        {
+          "stage": "INITIAL",
+          "days": 20,
+          "kc": 0.3,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Maize (grain)', Lini = 20, Plant Date 'October', Region 'India (dry, cool)' (total 125 d)."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Kc ini is blank on the 'Maize, Field (grain)' row; taken from the group heading row 'i. Cereals 0.3 1.15 0.4'."
+            }
+          ]
+        },
+        {
+          "stage": "DEVELOPMENT",
+          "days": 35,
+          "kc": null,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Maize (grain)' (India, October), Ldev = 35. Kc null by design; interpolate."
+            }
+          ]
+        },
+        {
+          "stage": "MID",
+          "days": 40,
+          "kc": 1.2,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Maize (grain)' (India, October), Lmid = 40."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Maize, Field (grain) (field corn)', Kc mid = 1.20, no footnote marker."
+            }
+          ]
+        },
+        {
+          "stage": "LATE",
+          "days": 30,
+          "kc": 0.6,
+          "published": "0.60-0.35",
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Maize (grain)' (India, October), Llate = 30."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Maize, Field (grain)', Kc end published as '0.60-0.35' with footnote 11: 'The first Kc end value is for harvest at high grain moisture. The second Kc end value is for harvest after complete field drying of the grain (to about 18% moisture, wet mass basis).' First published value (0.60) recorded. If Indian grain maize is field-dried before harvest, 0.35 is the correct choice — REVIEWER DECISION NEEDED (see gaps)."
+            }
+          ]
+        }
+      ],
+      "rootDepthM": {
+        "value": 1.0,
+        "unit": "m",
+        "published": "1.0-1.7",
+        "selected": "lower bound of the published range",
+        "why": "Table 22 footnote 1 — smaller Zr values are the ones intended for irrigation scheduling.",
+        "sourceRef": [
+          {
+            "org": "FAO",
+            "title": "FAO Irrigation and Drainage Paper 56, Chapter 8, Table 22 (Maximum effective rooting depth Zr and depletion fraction p)",
+            "url": "https://www.fao.org/4/x0490e/x0490e0e.htm",
+            "accessed": "2026-08-13",
+            "confidence": "P",
+            "note": "Row 'Maize, Field (grain) (field corn)' under group 'i. Cereals'; published Zr range 1.0-1.7 m. The separate 'Maize, Sweet' row (0.8-1.2 m, p 0.50) was NOT used — this registry entry is grain maize."
+          }
+        ]
+      },
+      "depletionFraction": {
+        "value": 0.55,
+        "published": "0.55",
+        "forEtcMmPerDay": 5,
+        "sourceRef": [
+          {
+            "org": "FAO",
+            "title": "FAO Irrigation and Drainage Paper 56, Chapter 8, Table 22 (Maximum effective rooting depth Zr and depletion fraction p)",
+            "url": "https://www.fao.org/4/x0490e/x0490e0e.htm",
+            "accessed": "2026-08-13",
+            "confidence": "P",
+            "note": "Row 'Maize, Field (grain) (field corn)', p = 0.55."
+          }
+        ]
+      },
+      "alternativeRowsInSource": {
+        "table11": [
+          "Maize (grain) — 30 / 50 / 60 / 40, total 180, 'April', 'East Africa (alt.)'",
+          "Maize (grain) — 25 / 40 / 45 / 30, total 140, 'Dec/Jan', 'Arid Climate'",
+          "Maize (grain) — 20 / 35 / 40 / 30, total 125, 'June', 'Nigeria (humid)'",
+          "Maize (grain) — 30 / 40 / 50 / 30, total 150, 'April', 'Spain (spr, sum.); Calif.'",
+          "Maize (grain) — 30 / 40 / 50 / 50, total 170, 'April', 'Idaho, USA'"
+        ]
+      }
+    },
+    {
+      "cropCode": "COTTON",
+      "faoEntriesUsed": {
+        "table11": "Cotton — 30 / 50 / 60 / 55, total 195, Plant Date 'Mar-May', Region 'Egypt; Pakistan; Calif.'",
+        "table12": "Cotton — Kc ini 0.35 (from group heading 'g. Fibre Crops'), Kc mid 1.15-1.20, Kc end 0.70-0.50, h 1.2-1.5 m",
+        "table22": "Cotton — Zr 1.0-1.7 m, p 0.65"
+      },
+      "whyThisEntry": "No India row exists. Rule (2): the selected row names Pakistan — the nearest agro-climatic analogue to the north-west Indian cotton belt — and its Mar-May plant date matches Indian cotton sowing. Recorded as a documented judgement, not as a FAO statement about India.",
+      "kcStages": [
+        {
+          "stage": "INITIAL",
+          "days": 30,
+          "kc": 0.35,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Cotton', Lini = 30, Plant Date 'Mar-May', Region 'Egypt; Pakistan; Calif.' (total 195 d)."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Kc ini is blank on the 'Cotton' row; taken from the group heading row 'g. Fibre Crops 0.35'."
+            }
+          ]
+        },
+        {
+          "stage": "DEVELOPMENT",
+          "days": 50,
+          "kc": null,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Cotton' (Egypt; Pakistan; Calif.), Ldev = 50. Kc null by design; interpolate."
+            }
+          ]
+        },
+        {
+          "stage": "MID",
+          "days": 60,
+          "kc": 1.15,
+          "published": "1.15-1.20",
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Cotton' (Egypt; Pakistan; Calif.), Lmid = 60."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Cotton', Kc mid published as the range '1.15-1.20' with NO footnote marker — FAO-56 does not state what distinguishes the two. First published value recorded."
+            }
+          ]
+        },
+        {
+          "stage": "LATE",
+          "days": 55,
+          "kc": 0.7,
+          "published": "0.70-0.50",
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Cotton' (Egypt; Pakistan; Calif.), Llate = 55."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Cotton', Kc end published as the range '0.70-0.50' with NO footnote marker. First published value recorded. REVIEWER DECISION NEEDED (see gaps)."
+            }
+          ]
+        }
+      ],
+      "rootDepthM": {
+        "value": 1.0,
+        "unit": "m",
+        "published": "1.0-1.7",
+        "selected": "lower bound of the published range",
+        "why": "Table 22 footnote 1 — smaller Zr values are the ones intended for irrigation scheduling.",
+        "sourceRef": [
+          {
+            "org": "FAO",
+            "title": "FAO Irrigation and Drainage Paper 56, Chapter 8, Table 22 (Maximum effective rooting depth Zr and depletion fraction p)",
+            "url": "https://www.fao.org/4/x0490e/x0490e0e.htm",
+            "accessed": "2026-08-13",
+            "confidence": "P",
+            "note": "Row 'Cotton' under group 'g. Fibre Crops'; published Zr range 1.0-1.7 m."
+          }
+        ]
+      },
+      "depletionFraction": {
+        "value": 0.65,
+        "published": "0.65",
+        "forEtcMmPerDay": 5,
+        "sourceRef": [
+          {
+            "org": "FAO",
+            "title": "FAO Irrigation and Drainage Paper 56, Chapter 8, Table 22 (Maximum effective rooting depth Zr and depletion fraction p)",
+            "url": "https://www.fao.org/4/x0490e/x0490e0e.htm",
+            "accessed": "2026-08-13",
+            "confidence": "P",
+            "note": "Row 'Cotton', p = 0.65 — the highest p of these nine crops."
+          }
+        ]
+      },
+      "alternativeRowsInSource": {
+        "table11": [
+          "Cotton — 45 / 90 / 45 / 45, total 225, 'Mar', 'Calif. Desert, USA'",
+          "Cotton — 30 / 50 / 60 / 55, total 195, 'Sept', 'Yemen'",
+          "Cotton — 30 / 50 / 55 / 45, total 180, 'April', 'Texas'"
+        ]
+      }
+    },
+    {
+      "cropCode": "SOYBEAN",
+      "faoEntriesUsed": {
+        "table11": "Soybeans — 15 / 15 / 40 / 15, total 85, Plant Date 'Dec', Region 'Tropics'",
+        "table12": "Soybeans — Kc ini 0.4 (from group heading 'e. Legumes (Leguminosae)'), Kc mid 1.15, Kc end 0.50, h 0.5-1.0 m",
+        "table22": "Soybeans — Zr 0.6-1.3 m, p 0.50"
+      },
+      "whyThisEntry": "No India row exists. Rule (2): of the three published rows ('Dec/Tropics' 85 d, 'May/Central USA' 140 d, 'June/Japan' 150 d) only the Tropics row describes a tropical climate, and its 85-day total is the closest of the three to Indian kharif soybean. Its plant date (Dec) does NOT match Indian sowing (June-July). This is the weakest row match of the nine crops — REVIEWER DECISION NEEDED (see gaps).",
+      "kcStages": [
+        {
+          "stage": "INITIAL",
+          "days": 15,
+          "kc": 0.4,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Soybeans', Lini = 15, Plant Date 'Dec', Region 'Tropics' (total 85 d)."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Kc ini is blank on the 'Soybeans' row; taken from the group heading row 'e. Legumes (Leguminosae) 0.4 1.15 0.55'."
+            }
+          ]
+        },
+        {
+          "stage": "DEVELOPMENT",
+          "days": 15,
+          "kc": null,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Soybeans' (Dec, Tropics), Ldev = 15. Kc null by design; interpolate."
+            }
+          ]
+        },
+        {
+          "stage": "MID",
+          "days": 40,
+          "kc": 1.15,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Soybeans' (Dec, Tropics), Lmid = 40."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Soybeans', Kc mid = 1.15, no footnote marker."
+            }
+          ]
+        },
+        {
+          "stage": "LATE",
+          "days": 15,
+          "kc": 0.5,
+          "published": "0.50",
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Soybeans' (Dec, Tropics), Llate = 15."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Soybeans', Kc end = 0.50, single value, no footnote marker."
+            }
+          ]
+        }
+      ],
+      "rootDepthM": {
+        "value": 0.6,
+        "unit": "m",
+        "published": "0.6-1.3",
+        "selected": "lower bound of the published range",
+        "why": "Table 22 footnote 1 — smaller Zr values are the ones intended for irrigation scheduling.",
+        "sourceRef": [
+          {
+            "org": "FAO",
+            "title": "FAO Irrigation and Drainage Paper 56, Chapter 8, Table 22 (Maximum effective rooting depth Zr and depletion fraction p)",
+            "url": "https://www.fao.org/4/x0490e/x0490e0e.htm",
+            "accessed": "2026-08-13",
+            "confidence": "P",
+            "note": "Row 'Soybeans' under group 'e. Legumes (Leguminosae)'; published Zr range 0.6-1.3 m."
+          }
+        ]
+      },
+      "depletionFraction": {
+        "value": 0.5,
+        "published": "0.50",
+        "forEtcMmPerDay": 5,
+        "sourceRef": [
+          {
+            "org": "FAO",
+            "title": "FAO Irrigation and Drainage Paper 56, Chapter 8, Table 22 (Maximum effective rooting depth Zr and depletion fraction p)",
+            "url": "https://www.fao.org/4/x0490e/x0490e0e.htm",
+            "accessed": "2026-08-13",
+            "confidence": "P",
+            "note": "Row 'Soybeans', p = 0.50."
+          }
+        ]
+      },
+      "alternativeRowsInSource": {
+        "table11": [
+          "Soybeans — 20 / 30-35 / 60 / 25, total 140, 'May', 'Central USA' (Ldev printed as the range '30/35')",
+          "Soybeans — 20 / 25 / 75 / 30, total 150, 'June', 'Japan'"
+        ]
+      }
+    },
+    {
+      "cropCode": "TOMATO",
+      "faoEntriesUsed": {
+        "table11": "Tomato — 30 / 40 / 40 / 25, total 135, Plant Date 'January', Region 'Arid Region'",
+        "table12": "Tomato — Kc ini 0.6 (from group heading 'b. Vegetables - Solanum Family (Solanaceae)'), Kc mid 1.15 (footnote 2), Kc end 0.70-0.90, h 0.6 m",
+        "table22": "Tomato — Zr 0.7-1.5 m, p 0.40"
+      },
+      "whyThisEntry": "No India row exists. Rule (2): two of the five published rows are 'Arid Region', matching Indian conditions better than the Californian and Mediterranean rows; the first of them (135 d) was taken. The other Arid Region row (180 d, Oct/Nov plant date, which matches Indian rabi tomato planting) is a legitimate alternative and is recorded below.",
+      "kcStages": [
+        {
+          "stage": "INITIAL",
+          "days": 30,
+          "kc": 0.6,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Tomato', Lini = 30, Plant Date 'January', Region 'Arid Region' (total 135 d)."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Kc ini is blank on the 'Tomato' row; taken from the group heading row 'b. Vegetables - Solanum Family (Solanaceae) 0.6 1.15 0.80'."
+            }
+          ]
+        },
+        {
+          "stage": "DEVELOPMENT",
+          "days": 40,
+          "kc": null,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Tomato' (January, Arid Region), Ldev = 40. Kc null by design; interpolate."
+            }
+          ]
+        },
+        {
+          "stage": "MID",
+          "days": 40,
+          "kc": 1.15,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Tomato' (January, Arid Region), Lmid = 40."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Tomato', Kc mid = 1.15 with footnote 2: 'Beans, Peas, Legumes, Tomatoes, Peppers and Cucumbers are sometimes grown on stalks reaching 1.5 to 2 meters in height. In such cases, increased Kc values need to be taken... for tomatoes, dry beans and peas, 1.20. Under these conditions h should be increased also.' Staked tomato is common in India; 1.20 may apply — REVIEWER DECISION NEEDED (see gaps)."
+            }
+          ]
+        },
+        {
+          "stage": "LATE",
+          "days": 25,
+          "kc": 0.7,
+          "published": "0.70-0.90",
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Tomato' (January, Arid Region), Llate = 25."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Tomato', Kc end published as the range '0.70-0.90' with NO footnote marker. First published value recorded."
+            }
+          ]
+        }
+      ],
+      "rootDepthM": {
+        "value": 0.7,
+        "unit": "m",
+        "published": "0.7-1.5",
+        "selected": "lower bound of the published range",
+        "why": "Table 22 footnote 1 — smaller Zr values are the ones intended for irrigation scheduling.",
+        "sourceRef": [
+          {
+            "org": "FAO",
+            "title": "FAO Irrigation and Drainage Paper 56, Chapter 8, Table 22 (Maximum effective rooting depth Zr and depletion fraction p)",
+            "url": "https://www.fao.org/4/x0490e/x0490e0e.htm",
+            "accessed": "2026-08-13",
+            "confidence": "P",
+            "note": "Row 'Tomato' under group 'b. Vegetables - Solanum Family (Solanaceae)'; published Zr range 0.7-1.5 m. FAO-56 Example 36 in the same chapter uses 'Tomato Zr ~ 0.8 m, p = 0.40' for a full-grown crop — a worked example, not a table value, recorded here only as context."
+          }
+        ]
+      },
+      "depletionFraction": {
+        "value": 0.4,
+        "published": "0.40",
+        "forEtcMmPerDay": 5,
+        "sourceRef": [
+          {
+            "org": "FAO",
+            "title": "FAO Irrigation and Drainage Paper 56, Chapter 8, Table 22 (Maximum effective rooting depth Zr and depletion fraction p)",
+            "url": "https://www.fao.org/4/x0490e/x0490e0e.htm",
+            "accessed": "2026-08-13",
+            "confidence": "P",
+            "note": "Row 'Tomato', p = 0.40."
+          }
+        ]
+      },
+      "alternativeRowsInSource": {
+        "table11": [
+          "Tomato — 35 / 40 / 50 / 30, total 155, 'Apr/May', 'Calif., USA'",
+          "Tomato — 25 / 40 / 60 / 30, total 155, 'Jan', 'Calif. Desert, USA'",
+          "Tomato — 35 / 45 / 70 / 30, total 180, 'Oct/Nov', 'Arid Region'",
+          "Tomato — 30 / 40 / 45 / 30, total 145, 'April/May', 'Mediterranean'"
+        ]
+      }
+    },
+    {
+      "cropCode": "POTATO",
+      "faoEntriesUsed": {
+        "table11": "Potato — 25 / 30 / 30-45 / 30, total '115/130', Plant Date 'Jan/Nov', Region '(Semi) Arid Climate'",
+        "table12": "Potato — Kc ini 0.5 (from group heading 'd. Roots and Tubers'), Kc mid 1.15, Kc end 0.75 (footnote 4), h 0.6 m",
+        "table22": "Potato — Zr 0.4-0.6 m, p 0.35"
+      },
+      "whyThisEntry": "No India row exists. Rule (2): '(Semi) Arid Climate' is the closest regional match and its Jan/Nov plant dates match Indian rabi potato planting.",
+      "kcStages": [
+        {
+          "stage": "INITIAL",
+          "days": 25,
+          "kc": 0.5,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Potato', Lini = 25, Plant Date 'Jan/Nov', Region '(Semi) Arid Climate'."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Kc ini is blank on the 'Potato' row; taken from the group heading row 'd. Roots and Tubers 0.5 1.10 0.95'."
+            }
+          ]
+        },
+        {
+          "stage": "DEVELOPMENT",
+          "days": 30,
+          "kc": null,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Potato' ((Semi) Arid Climate), Ldev = 30. Kc null by design; interpolate."
+            }
+          ]
+        },
+        {
+          "stage": "MID",
+          "days": 30,
+          "kc": 1.15,
+          "published": "30/45",
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Potato' ((Semi) Arid Climate), Lmid printed as '30/45' with Total printed as '115/130' for Plant Date 'Jan/Nov'. FAO-56 does not state which of 30 / 45 belongs to the January planting and which to the November planting. First published value (30, total 115) recorded. REVIEWER DECISION NEEDED (see gaps)."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Potato', Kc mid = 1.15, no footnote marker."
+            }
+          ]
+        },
+        {
+          "stage": "LATE",
+          "days": 30,
+          "kc": 0.75,
+          "published": "0.75",
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Potato' ((Semi) Arid Climate), Llate = 30."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Potato', Kc end = 0.75 with footnote 4: 'The Kc end value for potatoes is about 0.40 for long season potatoes with vine kill.' Recorded the table value 0.75; the 0.40 case is a distinct management practice not assumed here."
+            }
+          ]
+        }
+      ],
+      "rootDepthM": {
+        "value": 0.4,
+        "unit": "m",
+        "published": "0.4-0.6",
+        "selected": "lower bound of the published range",
+        "why": "Table 22 footnote 1 — smaller Zr values are the ones intended for irrigation scheduling.",
+        "sourceRef": [
+          {
+            "org": "FAO",
+            "title": "FAO Irrigation and Drainage Paper 56, Chapter 8, Table 22 (Maximum effective rooting depth Zr and depletion fraction p)",
+            "url": "https://www.fao.org/4/x0490e/x0490e0e.htm",
+            "accessed": "2026-08-13",
+            "confidence": "P",
+            "note": "Row 'Potato' under group 'd. Roots and Tubers'; published Zr range 0.4-0.6 m — the shallowest of these nine crops."
+          }
+        ]
+      },
+      "depletionFraction": {
+        "value": 0.35,
+        "published": "0.35",
+        "forEtcMmPerDay": 5,
+        "sourceRef": [
+          {
+            "org": "FAO",
+            "title": "FAO Irrigation and Drainage Paper 56, Chapter 8, Table 22 (Maximum effective rooting depth Zr and depletion fraction p)",
+            "url": "https://www.fao.org/4/x0490e/x0490e0e.htm",
+            "accessed": "2026-08-13",
+            "confidence": "P",
+            "note": "Row 'Potato', p = 0.35."
+          }
+        ]
+      },
+      "alternativeRowsInSource": {
+        "table11": [
+          "Potato — 25 / 30 / 45 / 30, total 130, 'May', 'Continental Climate'",
+          "Potato — 30 / 35 / 50 / 30, total 145, 'April', 'Europe'",
+          "Potato — 45 / 30 / 70 / 20, total 165, 'Apr/May', 'Idaho, USA'",
+          "Potato — 30 / 35 / 50 / 25, total 140, 'Dec', 'Calif. Desert, USA'"
+        ]
+      }
+    },
+    {
+      "cropCode": "ONION",
+      "faoEntriesUsed": {
+        "table11": "Onion (dry) — 20 / 35 / 110 / 45, total 210, Plant Date 'Oct; Jan.', Region 'Arid Region; Calif.'",
+        "table12": "Onions - dry — Kc ini 0.7 (from group heading 'a. Small Vegetables'), Kc mid 1.05, Kc end 0.75, h 0.4 m",
+        "table22": "Onions - dry — Zr 0.3-0.6 m, p 0.30"
+      },
+      "whyThisEntry": "No India row exists. Rule (2): the 'Arid Region' row matches Indian conditions on both columns — region (arid) and plant date (Oct; Jan, matching Indian late-kharif/rabi onion planting). The alternative Mediterranean row has an April plant date that does not correspond to any Indian onion planting window. FAO-56's 'dry' onion (bulb onion for storage) is the correct variant, not 'green' or 'seed'. NOTE: the resulting 210-day total is long relative to typical Indian onion crop duration — REVIEWER DECISION NEEDED (see gaps).",
+      "kcStages": [
+        {
+          "stage": "INITIAL",
+          "days": 20,
+          "kc": 0.7,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Onion (dry)', Lini = 20, Plant Date 'Oct; Jan.', Region 'Arid Region; Calif.' (total 210 d)."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Kc ini is blank on the 'Onions - dry' row; taken from the group heading row 'a. Small Vegetables 0.7 1.05 0.95'."
+            }
+          ]
+        },
+        {
+          "stage": "DEVELOPMENT",
+          "days": 35,
+          "kc": null,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Onion (dry)' (Arid Region; Calif.), Ldev = 35. Kc null by design; interpolate."
+            }
+          ]
+        },
+        {
+          "stage": "MID",
+          "days": 110,
+          "kc": 1.05,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Onion (dry)' (Arid Region; Calif.), Lmid = 110."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Onions - dry', Kc mid = 1.05, no footnote marker."
+            }
+          ]
+        },
+        {
+          "stage": "LATE",
+          "days": 45,
+          "kc": 0.75,
+          "published": "0.75",
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Onion (dry)' (Arid Region; Calif.), Llate = 45."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "Row 'Onions - dry', Kc end = 0.75, single value, no footnote marker."
+            }
+          ]
+        }
+      ],
+      "rootDepthM": {
+        "value": 0.3,
+        "unit": "m",
+        "published": "0.3-0.6",
+        "selected": "lower bound of the published range",
+        "why": "Table 22 footnote 1 — smaller Zr values are the ones intended for irrigation scheduling.",
+        "sourceRef": [
+          {
+            "org": "FAO",
+            "title": "FAO Irrigation and Drainage Paper 56, Chapter 8, Table 22 (Maximum effective rooting depth Zr and depletion fraction p)",
+            "url": "https://www.fao.org/4/x0490e/x0490e0e.htm",
+            "accessed": "2026-08-13",
+            "confidence": "P",
+            "note": "Row 'Onions - dry' under group 'a. Small Vegetables'; published Zr range 0.3-0.6 m. FAO-56 Example 35 in the same chapter uses 'Onion Zr ~ 0.4 m, p = 0.30' for a full-grown crop — a worked example, not a table value, recorded here only as context."
+          }
+        ]
+      },
+      "depletionFraction": {
+        "value": 0.3,
+        "published": "0.30",
+        "forEtcMmPerDay": 5,
+        "sourceRef": [
+          {
+            "org": "FAO",
+            "title": "FAO Irrigation and Drainage Paper 56, Chapter 8, Table 22 (Maximum effective rooting depth Zr and depletion fraction p)",
+            "url": "https://www.fao.org/4/x0490e/x0490e0e.htm",
+            "accessed": "2026-08-13",
+            "confidence": "P",
+            "note": "Row 'Onions - dry', p = 0.30. The 'green' row publishes the same 0.30; the 'seed' row publishes 0.35."
+          }
+        ]
+      },
+      "alternativeRowsInSource": {
+        "table11": ["Onion (dry) — 15 / 25 / 70 / 40, total 150, 'April', 'Mediterranean'"]
+      }
+    },
+    {
+      "cropCode": "CHILLI",
+      "proxy": {
+        "isProxy": true,
+        "faoName": "Sweet peppers (bell)",
+        "statement": "FAO-56 contains NO entry named Chilli or Chillies in Table 11, Table 12 or Table 22 — this was checked explicitly against the full fetched tables. EVERY value below is taken from FAO-56's 'Sweet peppers (bell)' rows and applied to chilli on the basis that both are Capsicum annuum. FAO-56 makes no such statement. This proxy REQUIRES HUMAN APPROVAL before it is seeded; chilli is a SPECIALIZED crop in this platform and a wrong Kc curve here mis-advises irrigation directly."
+      },
+      "faoEntriesUsed": {
+        "table11": "Sweet peppers (bell) — 30 / 40 / 110 / 30, total 210, Plant Date 'October', Region 'Arid Region'",
+        "table12": "Sweet Peppers (bell) — Kc ini 0.6 (from group heading 'b. Vegetables - Solanum Family (Solanaceae)'), Kc mid 1.05 (footnote 2), Kc end 0.90, h 0.7 m",
+        "table22": "Sweet Peppers (bell) — Zr 0.5-1.0 m, p 0.30"
+      },
+      "whyThisEntry": "No India row exists for peppers. Rule (2): the 'Arid Region / October' row matches Indian chilli conditions on both columns — arid region, and an October planting matching the main Indian chilli crop — and its 210-day total is consistent with a long dry-chilli crop. The alternative 'Europe and Medit.' row (125 d, April/June) matches neither.",
+      "kcStages": [
+        {
+          "stage": "INITIAL",
+          "days": 30,
+          "kc": 0.6,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "PROXY — row 'Sweet peppers (bell)', Lini = 30, Plant Date 'October', Region 'Arid Region' (total 210 d). FAO-56 has no chilli entry."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "PROXY — Kc ini is blank on the 'Sweet Peppers (bell)' row; taken from the group heading row 'b. Vegetables - Solanum Family (Solanaceae) 0.6 1.15 0.80'."
+            }
+          ]
+        },
+        {
+          "stage": "DEVELOPMENT",
+          "days": 40,
+          "kc": null,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "PROXY — row 'Sweet peppers (bell)' (October, Arid Region), Ldev = 40. Kc null by design; interpolate."
+            }
+          ]
+        },
+        {
+          "stage": "MID",
+          "days": 110,
+          "kc": 1.05,
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "PROXY — row 'Sweet peppers (bell)' (October, Arid Region), Lmid = 110."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "PROXY — row 'Sweet Peppers (bell)', Kc mid = 1.05 with footnote 2: 'Beans, Peas, Legumes, Tomatoes, Peppers and Cucumbers are sometimes grown on stalks reaching 1.5 to 2 meters in height. In such cases, increased Kc values need to be taken. For green beans, peppers and cucumbers, 1.15 can be taken.'"
+            }
+          ]
+        },
+        {
+          "stage": "LATE",
+          "days": 30,
+          "kc": 0.9,
+          "published": "0.90",
+          "sourceRef": [
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 11 (Lengths of crop development stages)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "PROXY — row 'Sweet peppers (bell)' (October, Arid Region), Llate = 30."
+            },
+            {
+              "org": "FAO",
+              "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12 (Single crop coefficients Kc)",
+              "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+              "accessed": "2026-08-13",
+              "confidence": "P",
+              "note": "PROXY — row 'Sweet Peppers (bell)', Kc end = 0.90, single value, no footnote marker. FAO-56's pepper Kc_end is for a fresh-harvested bell pepper; dry chilli is harvested after the fruit dries on the plant, a condition FAO-56 does not cover."
+            }
+          ]
+        }
+      ],
+      "rootDepthM": {
+        "value": 0.5,
+        "unit": "m",
+        "published": "0.5-1.0",
+        "selected": "lower bound of the published range",
+        "why": "Table 22 footnote 1 — smaller Zr values are the ones intended for irrigation scheduling.",
+        "sourceRef": [
+          {
+            "org": "FAO",
+            "title": "FAO Irrigation and Drainage Paper 56, Chapter 8, Table 22 (Maximum effective rooting depth Zr and depletion fraction p)",
+            "url": "https://www.fao.org/4/x0490e/x0490e0e.htm",
+            "accessed": "2026-08-13",
+            "confidence": "P",
+            "note": "PROXY — row 'Sweet Peppers (bell)' under group 'b. Vegetables - Solanum Family (Solanaceae)'; published Zr range 0.5-1.0 m. No chilli row exists."
+          }
+        ]
+      },
+      "depletionFraction": {
+        "value": 0.3,
+        "published": "0.30",
+        "forEtcMmPerDay": 5,
+        "sourceRef": [
+          {
+            "org": "FAO",
+            "title": "FAO Irrigation and Drainage Paper 56, Chapter 8, Table 22 (Maximum effective rooting depth Zr and depletion fraction p)",
+            "url": "https://www.fao.org/4/x0490e/x0490e0e.htm",
+            "accessed": "2026-08-13",
+            "confidence": "P",
+            "note": "PROXY — row 'Sweet Peppers (bell)', p = 0.30. No chilli row exists."
+          }
+        ]
+      },
+      "alternativeRowsInSource": {
+        "table11": [
+          "Sweet peppers (bell) — 25/30 / 35 / 40 / 20, total 125, 'April/June', 'Europe and Medit.' (Lini printed as the range '25/30'; only 30 is consistent with the printed total of 125)"
+        ]
+      }
+    }
+  ],
+  "gaps": [
+    {
+      "id": "G1",
+      "field": "CHILLI — all fields",
+      "problem": "FAO-56 has no Chilli/Chillies entry in Tables 11, 12 or 22. Verified explicitly against the full fetched tables.",
+      "tried": "Fetched and parsed the complete raw HTML of both chapters and searched for 'chilli'/'chillies'/'capsicum' — zero hits.",
+      "resolution": "All CHILLI values proxied from 'Sweet peppers (bell)' and flagged with `proxy.isProxy: true`. REQUIRES HUMAN APPROVAL, or replacement with an Indian source (e.g. an ICAR/TNAU/state-university package of practices giving a chilli Kc curve)."
+    },
+    {
+      "id": "G2",
+      "field": "kcStages[].days — row selection for RICE, COTTON, SOYBEAN, TOMATO, POTATO, ONION, CHILLI",
+      "problem": "FAO-56 Table 11 names India only in the wheat row ('Central India') and the maize row ('India (dry, cool)'). For the other seven crops no India row exists, so stage lengths come from a region/plant-date analogue chosen by the documented rule.",
+      "tried": "Read every published Table 11 row for all nine crops from the raw HTML; all alternatives are recorded per crop under `alternativeRowsInSource`.",
+      "resolution": "Selection is a documented judgement, not a FAO statement. Table 11's own caption footnote says the user is strongly encouraged to obtain local information — Indian state-university or ICAR crop durations should override these before demo. SOYBEAN is the weakest match (85-day Tropics row, Dec plant date vs Indian June-July kharif sowing)."
+    },
+    {
+      "id": "G3",
+      "field": "POTATO kcStages[MID].days",
+      "problem": "Table 11 prints Lmid as '30/45' with Total '115/130' against Plant Date 'Jan/Nov'. FAO-56 does not state which length belongs to which planting date.",
+      "tried": "Searched Chapter 6 body text and all Table 11 footnotes for a convention explaining slash-separated cells; none found.",
+      "resolution": "Recorded 30 (first published value, total 115). Reviewer must decide; if the Nov planting maps to 45, the Indian rabi potato entry should be 130 days."
+    },
+    {
+      "id": "G4",
+      "field": "WHEAT — spring vs winter wheat",
+      "problem": "FAO-56 publishes distinct Kc_ini and Zr for Winter Wheat (0.4 frozen / 0.7 non-frozen; Zr 1.5-1.8 m) and Spring Wheat (0.3; Zr 1.0-1.5 m). It does not say which applies to Indian rabi wheat.",
+      "tried": "Read Table 11 footnote 2 and the Table 12 winter-wheat sub-rows; both condition winter wheat on frozen soils / dormancy / northern temperate planting rules.",
+      "resolution": "Spring Wheat selected and the reasoning recorded in `whyThisEntry`; winter-wheat values kept in `alternativeRowsInSource`. p = 0.55 either way, so only Kc_ini and Zr are at stake."
+    },
+    {
+      "id": "G5",
+      "field": "Kc_end for RICE, COTTON, TOMATO (and Kc_mid for COTTON)",
+      "problem": "These cells publish a two-value range with NO footnote explaining the split: Rice Kc_end '0.90-0.60', Cotton Kc_mid '1.15-1.20', Cotton Kc_end '0.70-0.50', Tomato Kc_end '0.70-0.90'.",
+      "tried": "Read every numbered Table 12 footnote (1-25) from the raw HTML; none attaches to these cells. Searched Chapter 6 body text for rice/cotton Kc_end discussion — only the rice Kc_ini paddy-water passage was found.",
+      "resolution": "First published value recorded in each case, with `published` retaining the full string. No midpoint was computed. Rice in particular matters: a drained-before-harvest field and a field kept ponded to harvest are very different, and the platform already flags rice standing-water logic."
+    },
+    {
+      "id": "G6",
+      "field": "Kc_end for WHEAT and MAIZE — footnoted alternatives not applied",
+      "problem": "Wheat Kc_end '0.25-0.4', footnote 10: the higher value is for hand-harvested crops. Maize Kc_end '0.60-0.35', footnote 11: the first is for harvest at high grain moisture, the second for harvest after complete field drying (~18% moisture).",
+      "tried": "Both footnotes were read in full and are quoted in the citation notes.",
+      "resolution": "First published value recorded for consistency. Deciding which Indian practice applies is an agronomic judgement I deliberately did NOT make — it needs the reviewer, since hand harvesting and field-dried grain are both common in India and both would flip the value."
+    },
+    {
+      "id": "G7",
+      "field": "TOMATO and CHILLI Kc_mid — staking",
+      "problem": "Table 12 footnote 2 says tomatoes/peppers grown on stalks of 1.5-2 m need increased Kc (1.20 for tomato, 1.15 for peppers), with h increased too. FAO-56 does not say which Indian systems are staked.",
+      "tried": "Footnote read in full and quoted in the Kc_mid citation for both crops.",
+      "resolution": "Unstaked table values recorded (tomato 1.15, chilli 1.05). Reviewer decides."
+    },
+    {
+      "id": "G8",
+      "field": "kcStages[DEVELOPMENT].kc",
+      "problem": "Null for all nine crops.",
+      "tried": "n/a — this is not a sourcing failure.",
+      "resolution": "By design: FAO-56 publishes Kc at three points only and defines the development stage as the linear transition (Eq. 66). The engine must interpolate. Recorded as null rather than pre-computed so no invented number enters the data."
+    },
+    {
+      "id": "G9",
+      "field": "rootDepthM — single value from a range",
+      "problem": "Table 22 publishes Zr only as a range; no crop has a single published Zr.",
+      "tried": "Read Table 22 footnote 1 in full.",
+      "resolution": "Lower bound recorded for every crop, on the footnote's own guidance that smaller Zr values are for irrigation scheduling. The full published range is kept in `published` so a reviewer can switch to the upper bound for rainfed/stress modelling."
+    },
+    {
+      "id": "G10",
+      "field": "RICE depletionFraction semantics",
+      "problem": "Table 22 footnote 4 states the rice p of 0.20 is 'of saturation' — a different reference point from every other crop, where p is a fraction of total available water between field capacity and wilting point.",
+      "tried": "Footnote located and quoted verbatim in the citation and in `depletionFraction.caveat`.",
+      "resolution": "Recorded with a prominent caveat. This is an engine-correctness hazard, not a data gap: applying rice p through the standard TAW formula would be wrong."
+    },
+    {
+      "id": "G11",
+      "field": "Climate adjustment of Kc_mid / Kc_end",
+      "problem": "Table 12 values are for a subhumid climate (RHmin ~ 45%, u2 ~ 2 m/s). Much of India is arid to semi-arid, where FAO-56 Eq. 62 raises Kc_mid materially (FAO-56 Box 14 shows wheat Kc_mid ranging 1.02 to 1.25 by climate and wind).",
+      "tried": "Read Box 14 and the climate-classification tables in Chapter 6.",
+      "resolution": "NOT applied — Eq. 62 needs per-location RHmin and u2, which is engine input, not registry data. Recorded here so the engine design accounts for it rather than silently under-estimating ETc."
+    },
+    {
+      "id": "G12",
+      "field": "waterNeedMm, soilSuitability, sensitivity thresholds, fertilizer, diseases",
+      "problem": "Not sourced.",
+      "tried": "Out of scope for this task — not attempted.",
+      "resolution": "Remaining cropRegistry fields still need their own sourced research pass."
+    }
+  ]
+}

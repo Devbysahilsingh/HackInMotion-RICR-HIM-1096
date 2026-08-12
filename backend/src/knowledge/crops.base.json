@@ -1,0 +1,1089 @@
+{
+  "status": "RESEARCH OUTPUT — pure transcription of repo docs; requires human review before seeding cropRegistry",
+  "purpose": "Base agronomic registry fields (names, seasons, waterNeedMm, tempOpt, droughtSensitivity, soilSuitability, market mapping, confidence) for the 9 SPECIALIZED/GENERAL crops, transcribed from docs/crop-recommendation/scoring-model.md, docs/i18n/agricultural-terminology.md, docs/market/data-source.md, docs/market/market-architecture.md and docs/product/crop-support-matrix.md. Irrigation parameters (kcStages, rootDepthM, depletionFraction) live in crops.agronomy.json and are NOT repeated here.",
+  "accessed": "2026-08-13",
+  "rules": {
+    "transcriptionOnly": "Every value in this file is literally written in a document inside this repository. Nothing is estimated, averaged, converted, rounded or inferred. Where a value is not written down the field is ABSENT and the omission is listed in `gaps`.",
+    "noInventedAgronomy": "No agronomic number, Hindi term or soil score was authored here. Prose descriptions were NEVER converted into numeric scores.",
+    "publishedBlock": "Each crop carries a `published` object holding the verbatim cells of the source table row, so a reviewer can check every transcription against docs/crop-recommendation/scoring-model.md without opening the doc.",
+    "sourceRefShape": "{ org, title, url, accessed, confidence, note }. Held per field in the crop's `sourceRefs` object, keyed by the field name it justifies. `note` quotes the published text and names the repo doc path.",
+    "confidenceCodes": "P = primary/government verified. S = secondary (verify before viva). Codes are the ones used by scoring-model.md's Conf column.",
+    "urlsAsWritten": "Source URLs are reproduced EXACTLY as the repo doc writes them, including bare domains without a scheme (e.g. 'nhb.gov.in'). No scheme, path or deep link was added. `url: null` means the doc names a source but publishes no URL for it.",
+    "accessedSemantics": "`accessed: 2026-08-13` is the date these values were read out of the repo docs. docs/crop-recommendation/engine.md records the underlying external research as a 'subagent report 2026-08-12'. The external pages themselves were NOT re-fetched for this file.",
+    "soilVocabulary": "The farm soilType enum is alluvial|black|red|laterite|sandy|loamy|clay|unknown (docs/database/schema.md). soilSuitability is populated ONLY from explicit numeric 0-3 scores in the source table."
+  },
+  "sourceDocuments": {
+    "SCORING_MODEL": {
+      "org": "Repo doc",
+      "title": "docs/crop-recommendation/scoring-model.md — Crop Suitability Knowledge Table (sourced)",
+      "url": null,
+      "accessed": "2026-08-13",
+      "confidence": "S",
+      "note": "Internal compilation doc; the external sources it cites are recorded per field. Header line: 'Water needs from FAO Irrigation Water Management Manual Ch.3 (primary). This table seeds cropRegistry agronomic fields; every value carries sourceRef in the seed data.'"
+    },
+    "FAO_CH3": {
+      "org": "FAO",
+      "title": "FAO Irrigation Water Management Manual, Chapter 3 (crop water needs)",
+      "url": "fao.org/4/s2022e/s2022e07.htm",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "URL as published in the Sources line of docs/crop-recommendation/scoring-model.md."
+    },
+    "TNAU_CPG": {
+      "org": "TNAU",
+      "title": "TNAU Crop Production Guide (CPG) — Rice / Maize",
+      "url": "tnagriculture.in/dashboard/CPG/",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "URL as published in the Sources line of docs/crop-recommendation/scoring-model.md."
+    },
+    "DES_CROP_CALENDAR": {
+      "org": "DES (Directorate of Economics & Statistics)",
+      "title": "Crop Calendar of Major Crops",
+      "url": "desagri.gov.in/document-report/4-crop-calendar-of-major-crops/",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "scoring-model.md framework line: 'Kharif/Rabi per Govt. Arthapedia/DES; state sowing windows per DES Crop Calendar'."
+    },
+    "ARTHAPEDIA": {
+      "org": "Arthapedia (Indian Economic Service)",
+      "title": "Cropping seasons (Kharif / Rabi)",
+      "url": "ies.gov.in",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "Published in the Sources line as a bare domain: 'Arthapedia cropping seasons: ies.gov.in'."
+    },
+    "NHB": {
+      "org": "NHB (National Horticulture Board)",
+      "title": "NHB potato / onion PDFs",
+      "url": "nhb.gov.in",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "Published in the Sources line as a bare domain: 'NHB potato/onion PDFs: nhb.gov.in'. No deep link is given."
+    },
+    "KVK_SOYBEAN": {
+      "org": "KVK West Khasi Hills",
+      "title": "KVK soybean Package of Practices",
+      "url": "kvkwestkhasihills.nic.in",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "Published in the Sources line as a bare domain: 'KVK soybean PoP: kvkwestkhasihills.nic.in'."
+    },
+    "APNI_KHETI": {
+      "org": "Apni Kheti",
+      "title": "Apni Kheti chilli",
+      "url": null,
+      "accessed": "2026-08-13",
+      "confidence": "S",
+      "note": "Named in the Sources line as 'Apni Kheti chilli' with NO URL published. Commercial/secondary agri portal."
+    },
+    "AGROPEDIA": {
+      "org": "agropedia (IIT Kanpur)",
+      "title": "agropedia IIT-K paddy",
+      "url": null,
+      "accessed": "2026-08-13",
+      "confidence": "S",
+      "note": "Named in the Sources line as 'agropedia IIT-K paddy' with NO URL published."
+    },
+    "KERALA_AGRI": {
+      "org": "Kerala Agri",
+      "title": "Kerala Agri (cited only in the onion Conf cell)",
+      "url": null,
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "Named only inside the onion Conf cell 'P (NHB, Kerala Agri, FAO)'. It does NOT appear in the Sources line, so no URL exists anywhere in the repo for it."
+    },
+    "TERMINOLOGY": {
+      "org": "Repo doc",
+      "title": "docs/i18n/agricultural-terminology.md — Agricultural Terminology Layer (agri namespace)",
+      "url": null,
+      "accessed": "2026-08-13",
+      "confidence": "S",
+      "note": "Doc header: 'Draft entries below marked ✓ = common established usage, ? = verify with Hindi-literate teammate + agri glossaries (ICAR/DD Kisan usage) before demo. THIS TABLE REQUIRES HUMAN SIGN-OFF (team-plan task).'"
+    },
+    "MARKET_DATA_SOURCE": {
+      "org": "Repo doc",
+      "title": "docs/market/data-source.md — Market Data Sources",
+      "url": null,
+      "accessed": "2026-08-13",
+      "confidence": "S",
+      "note": "Commodity mapping line: \"cropRegistry.market.aliases e.g. RICE→[\\\"Paddy(Dhan)(Common)\\\",\\\"Rice\\\"], CHILLI→[\\\"Dry Chillies\\\",\\\"Green Chilli\\\"]; unmapped rows dropped + counted\". Underlying feed: data.gov.in 'Variety-wise Daily Market Prices' (Agmarknet-fed), GODL-India licence."
+    },
+    "MARKET_ARCHITECTURE": {
+      "org": "Repo doc",
+      "title": "docs/market/market-architecture.md — Market Intelligence Architecture",
+      "url": null,
+      "accessed": "2026-08-13",
+      "confidence": "S",
+      "note": "Scope line: 'Commodities: the 9 registry crops (mapped: Rice/Paddy, Wheat, Maize, Cotton, Tomato, Potato, Onion, Soybean, Dry Chillies — alias table handles Agmarknet naming variants).'"
+    },
+    "CROP_SUPPORT_MATRIX": {
+      "org": "Repo doc",
+      "title": "docs/product/crop-support-matrix.md — Crop Support Matrix & Registry Design",
+      "url": null,
+      "accessed": "2026-08-13",
+      "confidence": "S",
+      "note": "Defines the cropRegistry document shape used as the field layout for this file, including market:{commodityCode, aliases[]} and soilSuitability as '0–3 sourced scores'."
+    }
+  },
+  "enums": {
+    "seasons": ["KHARIF", "RABI", "ZAID"],
+    "droughtSensitivity": ["LOW", "LOW_MED", "MEDIUM", "MED_HIGH", "HIGH"],
+    "droughtSensitivityMapping": {
+      "Low": "LOW",
+      "Low–Med": "LOW_MED",
+      "Med": "MEDIUM",
+      "Med–High": "MED_HIGH",
+      "High": "HIGH",
+      "note": "MEDIUM is defined by the enum but is NOT used by any crop — no row of the source table publishes a plain 'Med'."
+    },
+    "soilTypes": ["alluvial", "black", "red", "laterite", "sandy", "loamy", "clay", "unknown"]
+  },
+  "openVerificationTasks": [
+    "Wheat temp/soil vs ICAR-IIWBR or PAU PoP",
+    "Cotton soil claims vs ICAR-CICR",
+    "Tomato pH via TNAU horticulture portal (until then: omitted)",
+    "Demo-state rainfall normals table sourced (IMD normals)"
+  ],
+  "crops": {
+    "RICE": {
+      "cropCode": "RICE",
+      "published": {
+        "season": "Kharif (+Rabi south/east)",
+        "bestSoils": "clay, clay-loam/alluvial (needs standing water) → sandy 0",
+        "tempOptC": "30–32 (germ ≥10–12, max 36–38)",
+        "waterNeedMmPerSeason": "450–700 (FAO; paddy-condition rainfall need much higher per TNAU)",
+        "droughtSensitivity": "High",
+        "conf": "P (TNAU CPG, FAO)"
+      },
+      "names": {
+        "en": "Rice",
+        "hi": "धान",
+        "hiVerified": true
+      },
+      "seasons": ["KHARIF", "RABI"],
+      "waterNeedMm": [450, 700],
+      "tempOpt": { "min": 30, "max": 32 },
+      "droughtSensitivity": "HIGH",
+      "market": {
+        "commodityCode": "RICE",
+        "aliases": ["Paddy(Dhan)(Common)", "Rice"]
+      },
+      "confidence": {
+        "grade": "P",
+        "published": "P (TNAU CPG, FAO)",
+        "caveats": []
+      },
+      "sourceRefs": {
+        "names": {
+          "org": "Repo doc",
+          "title": "docs/i18n/agricultural-terminology.md — Crops table",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Published as 'Rice धान ✓'. ✓ = 'common established usage' per the doc header, hence hiVerified true. The doc still states the whole table REQUIRES HUMAN SIGN-OFF."
+        },
+        "seasons": {
+          "org": "DES (Directorate of Economics & Statistics)",
+          "title": "Crop Calendar of Major Crops (with Arthapedia cropping-season framework)",
+          "url": "desagri.gov.in/document-report/4-crop-calendar-of-major-crops/",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Season column published verbatim as 'Kharif (+Rabi south/east)' in docs/crop-recommendation/scoring-model.md; the parenthetical regional qualifier ('south/east') is NOT representable in the KHARIF|RABI|ZAID enum and is preserved here only. Framework attribution: 'Kharif/Rabi per Govt. Arthapedia/DES'."
+        },
+        "waterNeedMm": {
+          "org": "FAO",
+          "title": "FAO Irrigation Water Management Manual, Chapter 3 (crop water needs)",
+          "url": "fao.org/4/s2022e/s2022e07.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as '450–700 (FAO; paddy-condition rainfall need much higher per TNAU)' in docs/crop-recommendation/scoring-model.md. The TNAU paddy-condition caveat is qualitative — no numeric paddy-condition figure is published anywhere in the repo."
+        },
+        "tempOpt": {
+          "org": "TNAU",
+          "title": "TNAU Crop Production Guide (CPG) — Rice",
+          "url": "tnagriculture.in/dashboard/CPG/",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as '30–32 (germ ≥10–12, max 36–38)'. Only the clean 30–32 optimum range is transcribed; the germination floor (≥10–12 °C) and maximum (36–38 °C) have no registry field in docs/product/crop-support-matrix.md and are preserved in `published` only. Attribution taken from the crop's Conf cell 'P (TNAU CPG, FAO)' — scoring-model.md does not attribute sources cell-by-cell (see gap G10)."
+        },
+        "droughtSensitivity": {
+          "org": "Repo doc",
+          "title": "docs/crop-recommendation/scoring-model.md — Drought sensitivity column",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as 'High'; mapped to the HIGH enum member. Crop-level attribution 'P (TNAU CPG, FAO)'."
+        },
+        "market": {
+          "org": "Repo doc",
+          "title": "docs/market/data-source.md — Commodity mapping (registry-driven)",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Aliases published verbatim as RICE→[\"Paddy(Dhan)(Common)\",\"Rice\"]. Underlying feed is data.gov.in 'Variety-wise Daily Market Prices' (Agmarknet-fed); the repo publishes no resource URL for it."
+        },
+        "confidence": {
+          "org": "Repo doc",
+          "title": "docs/crop-recommendation/scoring-model.md — Conf column",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Cell published as 'P (TNAU CPG, FAO)'."
+        }
+      }
+    },
+    "WHEAT": {
+      "cropCode": "WHEAT",
+      "published": {
+        "season": "Rabi",
+        "bestSoils": "well-drained loam/clay-loam, alluvial",
+        "tempOptC": "10–15 winter ideal",
+        "waterNeedMmPerSeason": "450–650",
+        "droughtSensitivity": "Low–Med",
+        "conf": "P water/season; **S temp/soil → verify ICAR-IIWBR**"
+      },
+      "names": {
+        "en": "Wheat",
+        "hi": "गेहूँ",
+        "hiVerified": true
+      },
+      "seasons": ["RABI"],
+      "waterNeedMm": [450, 650],
+      "tempOpt": { "min": 10, "max": 15 },
+      "droughtSensitivity": "LOW_MED",
+      "market": {
+        "commodityCode": "WHEAT",
+        "aliases": ["Wheat"]
+      },
+      "confidence": {
+        "grade": "MIXED",
+        "published": "P water/season; **S temp/soil → verify ICAR-IIWBR**",
+        "byField": {
+          "waterNeedMm": "P",
+          "seasons": "P",
+          "tempOpt": "S",
+          "soil": "S"
+        },
+        "caveats": [
+          "S temp/soil → verify ICAR-IIWBR",
+          "Open verification task (pre-viva) in docs/crop-recommendation/scoring-model.md: 'Wheat temp/soil vs ICAR-IIWBR or PAU PoP'"
+        ]
+      },
+      "sourceRefs": {
+        "names": {
+          "org": "Repo doc",
+          "title": "docs/i18n/agricultural-terminology.md — Crops table",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Published as 'Wheat गेहूँ ✓'. ✓ = established usage per the doc header; table still requires human sign-off."
+        },
+        "seasons": {
+          "org": "DES (Directorate of Economics & Statistics)",
+          "title": "Crop Calendar of Major Crops (with Arthapedia cropping-season framework)",
+          "url": "desagri.gov.in/document-report/4-crop-calendar-of-major-crops/",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Season column published verbatim as 'Rabi'. Conf cell grades season as P."
+        },
+        "waterNeedMm": {
+          "org": "FAO",
+          "title": "FAO Irrigation Water Management Manual, Chapter 3 (crop water needs)",
+          "url": "fao.org/4/s2022e/s2022e07.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as '450–650'. Conf cell grades water as P."
+        },
+        "tempOpt": {
+          "org": "Repo doc (secondary; primary not identified)",
+          "title": "docs/crop-recommendation/scoring-model.md — Temp opt °C column",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Published as '10–15 winter ideal'. The Conf cell explicitly grades temp/soil as SECONDARY and names no source for them: 'S temp/soil → verify ICAR-IIWBR'. No URL for a wheat temperature source exists anywhere in the repo. Qualifier 'winter ideal' preserved in `published`."
+        },
+        "droughtSensitivity": {
+          "org": "Repo doc",
+          "title": "docs/crop-recommendation/scoring-model.md — Drought sensitivity column",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Published as 'Low–Med'; mapped to LOW_MED. The Conf cell grades only water and season as P, so this value inherits no P attribution."
+        },
+        "market": {
+          "org": "Repo doc",
+          "title": "docs/market/market-architecture.md — Scope",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Commodity name 'Wheat' is the one written in the mapped-commodities list. No Agmarknet variant aliases are published for wheat anywhere in the repo (see gap G14)."
+        },
+        "confidence": {
+          "org": "Repo doc",
+          "title": "docs/crop-recommendation/scoring-model.md — Conf column",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Cell published as 'P water/season; **S temp/soil → verify ICAR-IIWBR**' (bold markers are the doc's own emphasis)."
+        }
+      }
+    },
+    "MAIZE": {
+      "cropCode": "MAIZE",
+      "published": {
+        "season": "Kharif (+Rabi/spring)",
+        "bestSoils": "well-drained loam/alluvial",
+        "tempOptC": "21–32 (max 40–44)",
+        "waterNeedMmPerSeason": "500–800",
+        "droughtSensitivity": "Med–High",
+        "conf": "P (TNAU CPG, FAO)"
+      },
+      "names": {
+        "en": "Maize",
+        "hi": "मक्का",
+        "hiVerified": true
+      },
+      "seasons": ["KHARIF", "RABI"],
+      "waterNeedMm": [500, 800],
+      "tempOpt": { "min": 21, "max": 32 },
+      "droughtSensitivity": "MED_HIGH",
+      "market": {
+        "commodityCode": "MAIZE",
+        "aliases": ["Maize"]
+      },
+      "confidence": {
+        "grade": "P",
+        "published": "P (TNAU CPG, FAO)",
+        "caveats": []
+      },
+      "sourceRefs": {
+        "names": {
+          "org": "Repo doc",
+          "title": "docs/i18n/agricultural-terminology.md — Crops table",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Published as 'Maize मक्का ✓'."
+        },
+        "seasons": {
+          "org": "DES (Directorate of Economics & Statistics)",
+          "title": "Crop Calendar of Major Crops (with Arthapedia cropping-season framework)",
+          "url": "desagri.gov.in/document-report/4-crop-calendar-of-major-crops/",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Season column published verbatim as 'Kharif (+Rabi/spring)'. KHARIF and RABI are transcribed. 'spring' is NOT one of KHARIF|RABI|ZAID and the doc never equates spring maize with Zaid, so ZAID is deliberately NOT asserted (see gap G5)."
+        },
+        "waterNeedMm": {
+          "org": "FAO",
+          "title": "FAO Irrigation Water Management Manual, Chapter 3 (crop water needs)",
+          "url": "fao.org/4/s2022e/s2022e07.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as '500–800'."
+        },
+        "tempOpt": {
+          "org": "TNAU",
+          "title": "TNAU Crop Production Guide (CPG) — Maize",
+          "url": "tnagriculture.in/dashboard/CPG/",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as '21–32 (max 40–44)'. Only the clean optimum range is transcribed; the published maximum band (40–44 °C) has no registry field and is preserved in `published`. Attribution from the crop Conf cell 'P (TNAU CPG, FAO)'."
+        },
+        "droughtSensitivity": {
+          "org": "Repo doc",
+          "title": "docs/crop-recommendation/scoring-model.md — Drought sensitivity column",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as 'Med–High'; mapped to MED_HIGH. Crop-level attribution 'P (TNAU CPG, FAO)'."
+        },
+        "market": {
+          "org": "Repo doc",
+          "title": "docs/market/market-architecture.md — Scope",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Commodity name 'Maize' as written in the mapped-commodities list. No Agmarknet variant aliases published (gap G14)."
+        },
+        "confidence": {
+          "org": "Repo doc",
+          "title": "docs/crop-recommendation/scoring-model.md — Conf column",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Cell published as 'P (TNAU CPG, FAO)'."
+        }
+      }
+    },
+    "COTTON": {
+      "cropCode": "COTTON",
+      "published": {
+        "season": "Kharif (long, 6–8mo)",
+        "bestSoils": "deep black (regur) 3, alluvial 2, red 1",
+        "tempOptC": "21–30, dry ripening",
+        "waterNeedMmPerSeason": "700–1300",
+        "droughtSensitivity": "Low (deep roots)",
+        "conf": "P water; S soil corroboration → verify ICAR-CICR"
+      },
+      "names": {
+        "en": "Cotton",
+        "hi": "कपास",
+        "hiVerified": true
+      },
+      "seasons": ["KHARIF"],
+      "waterNeedMm": [700, 1300],
+      "tempOpt": { "min": 21, "max": 30 },
+      "droughtSensitivity": "LOW",
+      "soilSuitability": {
+        "black": 3,
+        "alluvial": 2,
+        "red": 1
+      },
+      "market": {
+        "commodityCode": "COTTON",
+        "aliases": ["Cotton"]
+      },
+      "confidence": {
+        "grade": "MIXED",
+        "published": "P water; S soil corroboration → verify ICAR-CICR",
+        "byField": {
+          "waterNeedMm": "P",
+          "soilSuitability": "S"
+        },
+        "caveats": [
+          "S soil corroboration → verify ICAR-CICR",
+          "Open verification task (pre-viva) in docs/crop-recommendation/scoring-model.md: 'Cotton soil claims vs ICAR-CICR'"
+        ]
+      },
+      "sourceRefs": {
+        "names": {
+          "org": "Repo doc",
+          "title": "docs/i18n/agricultural-terminology.md — Crops table",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Published as 'Cotton कपास ✓'."
+        },
+        "seasons": {
+          "org": "DES (Directorate of Economics & Statistics)",
+          "title": "Crop Calendar of Major Crops (with Arthapedia cropping-season framework)",
+          "url": "desagri.gov.in/document-report/4-crop-calendar-of-major-crops/",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Season column published verbatim as 'Kharif (long, 6–8mo)'. The duration hint '6–8mo' is the only crop duration published in the table; there is no durationDays field populated here (see gap G12)."
+        },
+        "waterNeedMm": {
+          "org": "FAO",
+          "title": "FAO Irrigation Water Management Manual, Chapter 3 (crop water needs)",
+          "url": "fao.org/4/s2022e/s2022e07.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as '700–1300'. Conf cell grades water as P."
+        },
+        "tempOpt": {
+          "org": "Repo doc (secondary; primary not identified)",
+          "title": "docs/crop-recommendation/scoring-model.md — Temp opt °C column",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Published as '21–30, dry ripening'. The Conf cell grades only water as P; no primary source is named for cotton temperature. The 'dry ripening' qualifier has no registry field and is preserved in `published`. docs/crop-recommendation/engine.md flags: 'Wheat/cotton temp facts currently secondary-sourced → verify vs ICAR-IIWBR/CICR before viva'."
+        },
+        "droughtSensitivity": {
+          "org": "Repo doc",
+          "title": "docs/crop-recommendation/scoring-model.md — Drought sensitivity column",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Published as 'Low (deep roots)'; mapped to LOW. Rationale '(deep roots)' preserved in `published`."
+        },
+        "soilSuitability": {
+          "org": "ICAR soil classification (as compiled in the repo table)",
+          "title": "docs/crop-recommendation/scoring-model.md — 'Best soils (score 3) → unsuitable (0)' column",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Cotton is the ONLY row that publishes explicit numeric scores: 'deep black (regur) 3, alluvial 2, red 1'. Transcribed exactly. Scores for laterite, sandy, loamy, clay and unknown are NOT published and are therefore absent (see gap G3). Conf cell: 'S soil corroboration → verify ICAR-CICR'. Soil vocabulary attribution: 'ICAR 8 soil types as the soil vocabulary (mapped to our farm soilType enum)'."
+        },
+        "market": {
+          "org": "Repo doc",
+          "title": "docs/market/market-architecture.md — Scope",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Commodity name 'Cotton' as written in the mapped-commodities list. No Agmarknet variant aliases published (gap G14)."
+        },
+        "confidence": {
+          "org": "Repo doc",
+          "title": "docs/crop-recommendation/scoring-model.md — Conf column",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Cell published as 'P water; S soil corroboration → verify ICAR-CICR'."
+        }
+      }
+    },
+    "SOYBEAN": {
+      "cropCode": "SOYBEAN",
+      "published": {
+        "season": "Kharif (rainfed typical)",
+        "bestSoils": "loam/black belt, well-drained",
+        "tempOptC": "20–35 (germ ≥15)",
+        "waterNeedMmPerSeason": "450–700",
+        "droughtSensitivity": "Low–Med",
+        "conf": "P (KVK PoP, FAO)"
+      },
+      "names": {
+        "en": "Soybean",
+        "hi": "सोयाबीन",
+        "hiVerified": true
+      },
+      "seasons": ["KHARIF"],
+      "waterNeedMm": [450, 700],
+      "tempOpt": { "min": 20, "max": 35 },
+      "droughtSensitivity": "LOW_MED",
+      "market": {
+        "commodityCode": "SOYBEAN",
+        "aliases": ["Soybean"]
+      },
+      "confidence": {
+        "grade": "P",
+        "published": "P (KVK PoP, FAO)",
+        "caveats": []
+      },
+      "sourceRefs": {
+        "names": {
+          "org": "Repo doc",
+          "title": "docs/i18n/agricultural-terminology.md — Crops table",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Published as 'Soybean सोयाबीन ✓'."
+        },
+        "seasons": {
+          "org": "DES (Directorate of Economics & Statistics)",
+          "title": "Crop Calendar of Major Crops (with Arthapedia cropping-season framework)",
+          "url": "desagri.gov.in/document-report/4-crop-calendar-of-major-crops/",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Season column published verbatim as 'Kharif (rainfed typical)'. The '(rainfed typical)' qualifier is an irrigation-context note, not a season, and is preserved in `published` only."
+        },
+        "waterNeedMm": {
+          "org": "FAO",
+          "title": "FAO Irrigation Water Management Manual, Chapter 3 (crop water needs)",
+          "url": "fao.org/4/s2022e/s2022e07.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as '450–700'."
+        },
+        "tempOpt": {
+          "org": "KVK West Khasi Hills",
+          "title": "KVK soybean Package of Practices",
+          "url": "kvkwestkhasihills.nic.in",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as '20–35 (germ ≥15)'. Only the clean optimum range is transcribed; the germination floor (≥15 °C) has no registry field and is preserved in `published`. Attribution from the crop Conf cell 'P (KVK PoP, FAO)' — cell-level attribution is not published (gap G10)."
+        },
+        "droughtSensitivity": {
+          "org": "Repo doc",
+          "title": "docs/crop-recommendation/scoring-model.md — Drought sensitivity column",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as 'Low–Med'; mapped to LOW_MED. Crop-level attribution 'P (KVK PoP, FAO)'."
+        },
+        "market": {
+          "org": "Repo doc",
+          "title": "docs/market/market-architecture.md — Scope",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Commodity name 'Soybean' as written in the mapped-commodities list. No Agmarknet variant aliases published (gap G14)."
+        },
+        "confidence": {
+          "org": "Repo doc",
+          "title": "docs/crop-recommendation/scoring-model.md — Conf column",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Cell published as 'P (KVK PoP, FAO)'."
+        }
+      }
+    },
+    "TOMATO": {
+      "cropCode": "TOMATO",
+      "published": {
+        "season": "Multi-season",
+        "bestSoils": "well-drained sandy loam + organics",
+        "tempOptC": "fruit set 15–20 (hot-set >20)",
+        "waterNeedMmPerSeason": "400–800",
+        "droughtSensitivity": "Med–High",
+        "conf": "P water; pH conflict in sources — **do not quote pH**"
+      },
+      "names": {
+        "en": "Tomato",
+        "hi": "टमाटर",
+        "hiVerified": true
+      },
+      "waterNeedMm": [400, 800],
+      "tempOpt": { "min": 15, "max": 20 },
+      "droughtSensitivity": "MED_HIGH",
+      "market": {
+        "commodityCode": "TOMATO",
+        "aliases": ["Tomato"]
+      },
+      "confidence": {
+        "grade": "MIXED",
+        "published": "P water; pH conflict in sources — **do not quote pH**",
+        "byField": {
+          "waterNeedMm": "P"
+        },
+        "caveats": [
+          "pH conflict in sources — do not quote pH",
+          "tempOpt is published as a FRUIT-SET optimum, not a whole-season optimum (see gap G7)",
+          "Open verification task (pre-viva): 'Tomato pH via TNAU horticulture portal (until then: omitted)'",
+          "The Conf cell grades ONLY water; it publishes no confidence grade for tomato season, soil or temperature"
+        ]
+      },
+      "sourceRefs": {
+        "names": {
+          "org": "Repo doc",
+          "title": "docs/i18n/agricultural-terminology.md — Crops table",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Published as 'Tomato टमाटर ✓'."
+        },
+        "waterNeedMm": {
+          "org": "FAO",
+          "title": "FAO Irrigation Water Management Manual, Chapter 3 (crop water needs)",
+          "url": "fao.org/4/s2022e/s2022e07.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as '400–800'. Conf cell grades water as P."
+        },
+        "tempOpt": {
+          "org": "Repo doc (secondary; primary not identified)",
+          "title": "docs/crop-recommendation/scoring-model.md — Temp opt °C column",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Published verbatim as 'fruit set 15–20 (hot-set >20)'. 15–20 is a clean numeric range and is transcribed as-is, but it is explicitly scoped to FRUIT SET — it is NOT published as a whole-season optimum, which is what docs/crop-recommendation/engine.md's S_temp term ('overlap of district seasonal normals with crop optimum range') would treat it as. The '(hot-set >20)' variety note has no registry field. No source is named for tomato temperature anywhere in the repo. See gap G7."
+        },
+        "droughtSensitivity": {
+          "org": "Repo doc",
+          "title": "docs/crop-recommendation/scoring-model.md — Drought sensitivity column",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Published as 'Med–High'; mapped to MED_HIGH. The Conf cell grades only water as P."
+        },
+        "market": {
+          "org": "Repo doc",
+          "title": "docs/product/crop-support-matrix.md — cropRegistry document shape",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Published verbatim in the registry shape example as market: { commodityCode: \"TOMATO\", aliases:[\"Tomato\"] }, and corroborated by the mapped-commodities list in docs/market/market-architecture.md. NOTE: the registry shape block is an illustrative document template, not a sourced agronomic claim."
+        },
+        "confidence": {
+          "org": "Repo doc",
+          "title": "docs/crop-recommendation/scoring-model.md — Conf column",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Cell published as 'P water; pH conflict in sources — **do not quote pH**' (bold markers are the doc's own emphasis)."
+        }
+      }
+    },
+    "POTATO": {
+      "cropCode": "POTATO",
+      "published": {
+        "season": "Rabi (plains)",
+        "bestSoils": "sandy loam, slightly acidic",
+        "tempOptC": "~24 vegetative, ~20 tuberisation",
+        "waterNeedMmPerSeason": "500–700",
+        "droughtSensitivity": "High (shallow roots)",
+        "conf": "P (NHB, FAO)"
+      },
+      "names": {
+        "en": "Potato",
+        "hi": "आलू",
+        "hiVerified": true
+      },
+      "seasons": ["RABI"],
+      "waterNeedMm": [500, 700],
+      "droughtSensitivity": "HIGH",
+      "market": {
+        "commodityCode": "POTATO",
+        "aliases": ["Potato"]
+      },
+      "confidence": {
+        "grade": "P",
+        "published": "P (NHB, FAO)",
+        "caveats": [
+          "tempOpt omitted — the published cell gives two approximate stage-specific point values, not a range (see gap G6)"
+        ]
+      },
+      "sourceRefs": {
+        "names": {
+          "org": "Repo doc",
+          "title": "docs/i18n/agricultural-terminology.md — Crops table",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Published as 'Potato आलू ✓'."
+        },
+        "seasons": {
+          "org": "DES (Directorate of Economics & Statistics)",
+          "title": "Crop Calendar of Major Crops (with Arthapedia cropping-season framework)",
+          "url": "desagri.gov.in/document-report/4-crop-calendar-of-major-crops/",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Season column published verbatim as 'Rabi (plains)'. The '(plains)' qualifier is a regional scope note — the same crop is grown in the hills on a different calendar (docs/fertilizer/knowledge-base.md carries a 'Potato (TN hills)' fertilizer entry) — and is preserved in `published` only."
+        },
+        "waterNeedMm": {
+          "org": "FAO",
+          "title": "FAO Irrigation Water Management Manual, Chapter 3 (crop water needs)",
+          "url": "fao.org/4/s2022e/s2022e07.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as '500–700'."
+        },
+        "droughtSensitivity": {
+          "org": "NHB (National Horticulture Board)",
+          "title": "NHB potato PDFs",
+          "url": "nhb.gov.in",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as 'High (shallow roots)'; mapped to HIGH. Rationale '(shallow roots)' preserved in `published`. Attribution from the crop Conf cell 'P (NHB, FAO)'."
+        },
+        "market": {
+          "org": "Repo doc",
+          "title": "docs/market/market-architecture.md — Scope",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Commodity name 'Potato' as written in the mapped-commodities list. No Agmarknet variant aliases published (gap G14)."
+        },
+        "confidence": {
+          "org": "Repo doc",
+          "title": "docs/crop-recommendation/scoring-model.md — Conf column",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Cell published as 'P (NHB, FAO)'."
+        }
+      }
+    },
+    "ONION": {
+      "cropCode": "ONION",
+      "published": {
+        "season": "Rabi main (+Kharif MH)",
+        "bestSoils": "friable sandy loam–loam, humus",
+        "tempOptC": "13–25",
+        "waterNeedMmPerSeason": "350–550",
+        "droughtSensitivity": "Med–High",
+        "conf": "P (NHB, Kerala Agri, FAO)"
+      },
+      "names": {
+        "en": "Onion",
+        "hi": "प्याज",
+        "hiVerified": true
+      },
+      "seasons": ["RABI", "KHARIF"],
+      "waterNeedMm": [350, 550],
+      "tempOpt": { "min": 13, "max": 25 },
+      "droughtSensitivity": "MED_HIGH",
+      "market": {
+        "commodityCode": "ONION",
+        "aliases": ["Onion"]
+      },
+      "confidence": {
+        "grade": "P",
+        "published": "P (NHB, Kerala Agri, FAO)",
+        "caveats": [
+          "'Kerala Agri' is cited in the Conf cell but appears nowhere in the doc's Sources line, so no URL exists for it in the repo"
+        ]
+      },
+      "sourceRefs": {
+        "names": {
+          "org": "Repo doc",
+          "title": "docs/i18n/agricultural-terminology.md — Crops table",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Published as 'Onion प्याज ✓'."
+        },
+        "seasons": {
+          "org": "DES (Directorate of Economics & Statistics)",
+          "title": "Crop Calendar of Major Crops (with Arthapedia cropping-season framework)",
+          "url": "desagri.gov.in/document-report/4-crop-calendar-of-major-crops/",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Season column published verbatim as 'Rabi main (+Kharif MH)'. RABI is listed first because the doc marks it as the main season; the ordering carries no meaning in the enum. The state qualifier 'MH' (Maharashtra) for the kharif crop is not representable in the enum and is preserved in `published`."
+        },
+        "waterNeedMm": {
+          "org": "FAO",
+          "title": "FAO Irrigation Water Management Manual, Chapter 3 (crop water needs)",
+          "url": "fao.org/4/s2022e/s2022e07.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as '350–550' — the lowest seasonal water need of the nine crops."
+        },
+        "tempOpt": {
+          "org": "NHB (National Horticulture Board)",
+          "title": "NHB onion PDFs",
+          "url": "nhb.gov.in",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as '13–25' — a clean numeric range with no qualifiers. Attribution from the crop Conf cell 'P (NHB, Kerala Agri, FAO)'; cell-level attribution is not published (gap G10)."
+        },
+        "droughtSensitivity": {
+          "org": "Repo doc",
+          "title": "docs/crop-recommendation/scoring-model.md — Drought sensitivity column",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as 'Med–High'; mapped to MED_HIGH."
+        },
+        "market": {
+          "org": "Repo doc",
+          "title": "docs/market/market-architecture.md — Scope",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Commodity name 'Onion' as written in the mapped-commodities list; the same doc marks onion as the 'star mandi demo' crop in docs/product/crop-support-matrix.md. No Agmarknet variant aliases published (gap G14)."
+        },
+        "confidence": {
+          "org": "Repo doc",
+          "title": "docs/crop-recommendation/scoring-model.md — Conf column",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Cell published as 'P (NHB, Kerala Agri, FAO)'."
+        }
+      }
+    },
+    "CHILLI": {
+      "cropCode": "CHILLI",
+      "published": {
+        "season": "Kharif (+Rabi south)",
+        "bestSoils": "light fertile loam, pH 6–7",
+        "tempOptC": "20–30",
+        "waterNeedMmPerSeason": "600–900 (FAO \"pepper\" proxy — disclosed)",
+        "droughtSensitivity": "Med–High",
+        "conf": "P/S"
+      },
+      "names": {
+        "en": "Chilli",
+        "hi": "मिर्च",
+        "hiVerified": true
+      },
+      "seasons": ["KHARIF", "RABI"],
+      "waterNeedMm": [600, 900],
+      "tempOpt": { "min": 20, "max": 30 },
+      "droughtSensitivity": "MED_HIGH",
+      "market": {
+        "commodityCode": "CHILLI",
+        "aliases": ["Dry Chillies", "Green Chilli"]
+      },
+      "confidence": {
+        "grade": "P/S",
+        "published": "P/S",
+        "caveats": [
+          "FAO \"pepper\" proxy — disclosed (waterNeedMm is not a chilli-specific FAO figure)",
+          "The Conf cell publishes the compound grade 'P/S' without saying which fields are P and which are S"
+        ]
+      },
+      "sourceRefs": {
+        "names": {
+          "org": "Repo doc",
+          "title": "docs/i18n/agricultural-terminology.md — Crops table",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Published as 'Chilli मिर्च ✓'."
+        },
+        "seasons": {
+          "org": "DES (Directorate of Economics & Statistics)",
+          "title": "Crop Calendar of Major Crops (with Arthapedia cropping-season framework)",
+          "url": "desagri.gov.in/document-report/4-crop-calendar-of-major-crops/",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Season column published verbatim as 'Kharif (+Rabi south)'. The regional qualifier 'south' is not representable in the enum and is preserved in `published`."
+        },
+        "waterNeedMm": {
+          "org": "FAO",
+          "title": "FAO Irrigation Water Management Manual, Chapter 3 (crop water needs) — 'pepper' entry used as a proxy",
+          "url": "fao.org/4/s2022e/s2022e07.htm",
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Published as '600–900 (FAO \"pepper\" proxy — disclosed)'. This is FAO's PEPPER figure standing in for chilli, not a chilli measurement. docs/crop-recommendation/engine.md repeats the obligation: 'Chilli water need uses FAO \"pepper\" proxy — disclosed in sourceRef.' The proxy MUST remain disclosed on any surface that shows this number."
+        },
+        "tempOpt": {
+          "org": "Apni Kheti",
+          "title": "Apni Kheti chilli",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Published as '20–30' — a clean numeric range. The only chilli-specific source named anywhere in scoring-model.md is 'Apni Kheti chilli' in the Sources line, and NO URL is published for it (gap G11). The Conf cell is the compound 'P/S' and does not say which grade attaches to temperature."
+        },
+        "droughtSensitivity": {
+          "org": "Repo doc",
+          "title": "docs/crop-recommendation/scoring-model.md — Drought sensitivity column",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Published as 'Med–High'; mapped to MED_HIGH. Conf cell 'P/S'."
+        },
+        "market": {
+          "org": "Repo doc",
+          "title": "docs/market/data-source.md — Commodity mapping (registry-driven)",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Aliases published verbatim as CHILLI→[\"Dry Chillies\",\"Green Chilli\"]. docs/market/market-architecture.md's mapped-commodities list names 'Dry Chillies' only."
+        },
+        "confidence": {
+          "org": "Repo doc",
+          "title": "docs/crop-recommendation/scoring-model.md — Conf column",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Cell published as 'P/S' — the only compound, unsplit grade in the table."
+        }
+      }
+    }
+  },
+  "gaps": [
+    {
+      "id": "G1",
+      "field": "soilSuitability — WHEAT, MAIZE, SOYBEAN, TOMATO, POTATO, ONION, CHILLI (7 of 9 crops)",
+      "problem": "docs/crop-recommendation/scoring-model.md describes best soils in PROSE only, with no numeric 0-3 score for any soil: wheat 'well-drained loam/clay-loam, alluvial'; maize 'well-drained loam/alluvial'; soybean 'loam/black belt, well-drained'; tomato 'well-drained sandy loam + organics'; potato 'sandy loam, slightly acidic'; onion 'friable sandy loam–loam, humus'; chilli 'light fertile loam, pH 6–7'.",
+      "checked": "docs/crop-recommendation/scoring-model.md (full table + Sources + open tasks), docs/crop-recommendation/engine.md, docs/product/crop-support-matrix.md, docs/database/schema.md, docs/irrigation/irrigation-model.md. No numeric soil-suitability score table exists anywhere in the repo.",
+      "impact": "docs/crop-recommendation/engine.md defines a HARD GATE on 'soil suitability score 0' and weights S_soil at 0.25 of the total score. Neither can be evaluated for these 7 crops until scores are sourced.",
+      "resolution": "Field OMITTED for all 7. Converting prose ('well-drained loam') into 0-3 scores across the 8-soil enum would be invention and was not done. A human agronomist or an ICAR/SAU soil-suitability source must author the scores."
+    },
+    {
+      "id": "G2",
+      "field": "soilSuitability — RICE (contradicts the assumption that cotton is the only scored crop)",
+      "problem": "The rice row DOES publish one explicit numeric score: 'clay, clay-loam/alluvial (needs standing water) → sandy 0'. The column header is 'Best soils (score 3) → unsuitable (0)', which implies clay/clay-loam/alluvial are the 3s — but the row never writes the digit 3 against them, and 'clay-loam' is not a member of the farm soilType enum.",
+      "checked": "docs/crop-recommendation/scoring-model.md line 7; soil enum in docs/database/schema.md.",
+      "impact": "The single published fact 'sandy = 0' is a hard-gate value for rice under docs/crop-recommendation/engine.md and is currently NOT captured in the registry seed.",
+      "resolution": "Field OMITTED entirely rather than partially populated with {sandy: 0}, per the transcription rule for this file. FLAGGED FOR THE REVIEWER: this is a real published score that a follow-up decision should capture — either seed {sandy: 0} alone, or have a human complete the full 8-soil row."
+    },
+    {
+      "id": "G3",
+      "field": "soilSuitability — COTTON, missing 5 of 8 soils",
+      "problem": "Only black 3, alluvial 2 and red 1 are published. laterite, sandy, loamy, clay and unknown have no published score.",
+      "checked": "docs/crop-recommendation/scoring-model.md line 10.",
+      "impact": "An engine that treats 'absent' as 0 would hard-gate cotton out of loamy and clay soils with no source basis; one that treats absent as neutral would score it identically to a sourced value. The gate semantics for missing soils are not defined in docs/crop-recommendation/engine.md.",
+      "resolution": "Only the 3 published scores are recorded. Missing-key semantics must be decided by a human and documented; do not default to 0."
+    },
+    {
+      "id": "G4",
+      "field": "seasons — TOMATO",
+      "problem": "The Season cell publishes only the word 'Multi-season'. It does not name Kharif, Rabi or Zaid.",
+      "checked": "docs/crop-recommendation/scoring-model.md line 12; docs/crop-recommendation/engine.md; docs/product/crop-support-matrix.md.",
+      "impact": "docs/crop-recommendation/engine.md hard-gates on 'season ∉ crop's sowing windows for the state'. With seasons absent, tomato either never gates or always gates, depending on implementation.",
+      "resolution": "Field OMITTED. NOTE THE CONFLICT: docs/product/crop-support-matrix.md's registry-shape example shows seasons: [\"KHARIF\",\"RABI\"] — but that block is an illustrative document template (its comment reads '// per typical Indian calendar'), not a sourced agronomic claim, and it disagrees with 'Multi-season'. Needs a DES crop-calendar lookup and a human decision."
+    },
+    {
+      "id": "G5",
+      "field": "seasons — MAIZE, the word 'spring'",
+      "problem": "Published as 'Kharif (+Rabi/spring)'. 'Spring maize' is a real Indian cropping window but the repo never states whether it maps to the ZAID enum member.",
+      "checked": "docs/crop-recommendation/scoring-model.md line 9; searched the whole docs/ tree for 'Zaid' — it appears only as an enum/wizard option (docs/crop-recommendation/engine.md 'target season (Kharif/Rabi/Zaid)'), never assigned to a crop.",
+      "impact": "Maize may be wrongly gated out of a Zaid recommendation request.",
+      "resolution": "KHARIF and RABI transcribed; ZAID deliberately NOT asserted. A DES crop-calendar check should settle it."
+    },
+    {
+      "id": "G6",
+      "field": "tempOpt — POTATO",
+      "problem": "Published as '~24 vegetative, ~20 tuberisation' — two APPROXIMATE stage-specific point values, not a range. Reducing them to {min:20, max:24} would fabricate a range boundary the source never states, and would also silently discard the stage scoping and the '~' approximation markers.",
+      "checked": "docs/crop-recommendation/scoring-model.md line 13; docs/product/crop-support-matrix.md registry shape (which has no stage-scoped temperature field).",
+      "impact": "docs/crop-recommendation/engine.md's S_temp term (weight 0.15) cannot be computed for potato.",
+      "resolution": "Field OMITTED. The verbatim string is preserved in POTATO.published.tempOptC. Either source a true potato optimum range (NHB PDF), or add a stage-scoped temperature field to the registry shape — the latter is a schema change requiring approval."
+    },
+    {
+      "id": "G7",
+      "field": "tempOpt — TOMATO (scope mismatch, value transcribed)",
+      "problem": "Published as 'fruit set 15–20 (hot-set >20)'. 15–20 is a clean range and was transcribed, BUT the source scopes it to FRUIT SET, whereas docs/crop-recommendation/engine.md consumes tempOpt as a whole-season optimum ('S_temp = overlap of district seasonal normals with crop optimum range'). Indian tomato is widely grown where seasonal normals exceed 20 °C, so this value will score tomato harshly for a reason the source does not support.",
+      "checked": "docs/crop-recommendation/scoring-model.md line 12; docs/crop-recommendation/engine.md §Algorithm.",
+      "impact": "Systematic under-scoring of tomato in the crop recommendation engine; also the '(hot-set >20)' hot-set-variety note has nowhere to live in the registry shape.",
+      "resolution": "Value transcribed as published with the scope recorded in sourceRefs.tempOpt.note and in this gap. A human must decide whether the engine may use a fruit-set optimum as a season optimum."
+    },
+    {
+      "id": "G8",
+      "field": "seasons — the ZAID enum member is unused",
+      "problem": "No crop in the source table is assigned to Zaid. The wizard nonetheless offers Zaid as a target season.",
+      "checked": "docs/crop-recommendation/scoring-model.md (all 9 rows); docs/crop-recommendation/engine.md §Inputs.",
+      "impact": "A Zaid recommendation request would gate out all 9 crops and return an empty ranked list.",
+      "resolution": "Recorded as a knowledge gap, not patched. Either source Zaid crops from the DES crop calendar or handle the empty-result case explicitly in the engine."
+    },
+    {
+      "id": "G9",
+      "field": "pH — not transcribed for any crop",
+      "problem": "The source table publishes pH only twice: chilli 'pH 6–7' and potato 'slightly acidic' (qualitative). The tomato Conf cell carries an explicit instruction: 'pH conflict in sources — **do not quote pH**', and the doc's open tasks list 'Tomato pH via TNAU horticulture portal (until then: omitted)'.",
+      "checked": "docs/crop-recommendation/scoring-model.md lines 12-14 and the open-verification list.",
+      "impact": "None for the current engine — docs/product/crop-support-matrix.md's registry shape defines no pH field.",
+      "resolution": "No pH field created for any crop. The chilli 'pH 6–7' string is preserved verbatim in CHILLI.published.bestSoils so nothing is lost."
+    },
+    {
+      "id": "G10",
+      "field": "sourceRefs — per-cell attribution does not exist in the source",
+      "problem": "scoring-model.md attributes sources at CROP level (the Conf column, e.g. 'P (NHB, Kerala Agri, FAO)') plus one document-level statement ('Water needs from FAO ... Ch.3'). It never says which of a crop's named sources produced its temperature figure vs its drought rating.",
+      "checked": "docs/crop-recommendation/scoring-model.md in full, including the Sources line.",
+      "impact": "The per-field sourceRefs in this file assign the most plausible named source (e.g. TNAU CPG for rice/maize temperature, NHB for potato/onion) and say so in each note. Those assignments are the ONLY inference in this file and are labelled as such.",
+      "resolution": "Every such note contains the sentence 'Attribution from the crop Conf cell ... cell-level attribution is not published'. A reviewer re-verifying against the primary pages should replace them with exact page citations, as the fertilizer KB doc requires for its own numbers ('no number without source.url')."
+    },
+    {
+      "id": "G11",
+      "field": "sourceRefs[].url — missing or non-specific URLs",
+      "problem": "Three named sources have NO URL anywhere in the repo: 'Apni Kheti chilli', 'agropedia IIT-K paddy' (both named in the Sources line without links) and 'Kerala Agri' (named only inside the onion Conf cell and absent from the Sources line entirely). Four more are published as bare domains or index pages rather than deep links: nhb.gov.in, ies.gov.in, kvkwestkhasihills.nic.in, tnagriculture.in/dashboard/CPG/.",
+      "checked": "docs/crop-recommendation/scoring-model.md Sources line (line 20) and every Conf cell.",
+      "impact": "Provenance cannot be re-verified from the repo alone, which is exactly what the project's viva-defence posture requires. It also conflicts with the rule the sibling KB doc sets for itself: 'no number without source.url' (docs/fertilizer/knowledge-base.md).",
+      "resolution": "url recorded as null where none is published, and bare domains reproduced exactly as written with no scheme or path added. Deep links must be captured during primary re-verification."
+    },
+    {
+      "id": "G12",
+      "field": "durationDays — not populated for any crop",
+      "problem": "docs/crop-recommendation/engine.md §'Data requirements & storage' lists durationDays as a registry field 'all sourced per scoring-model.md', but scoring-model.md publishes a duration for exactly one crop, as prose inside the Season cell: cotton 'Kharif (long, 6–8mo)'. The engine's own output example also emits a duration caution with a concrete number ('cropRec.longDuration', days: 180) that appears in no knowledge document.",
+      "checked": "docs/crop-recommendation/scoring-model.md (all rows); docs/crop-recommendation/engine.md lines 24 and 31.",
+      "impact": "The 'long duration' caution cannot be emitted for any crop from sourced data.",
+      "resolution": "Field omitted for all 9 crops. Note that crops.agronomy.json holds FAO-56 stage lengths whose totals are a defensible duration proxy, but they are FAO growth-stage lengths, not Indian variety durations — a human must decide whether they may be reused as durationDays."
+    },
+    {
+      "id": "G13",
+      "field": "names.hi / hiVerified — the ✓ marks are self-declared and unsigned",
+      "problem": "All 9 crop names are marked ✓ in docs/i18n/agricultural-terminology.md, so hiVerified is true for all 9. But the same doc's header states the entries are DRAFT and that 'THIS TABLE REQUIRES HUMAN SIGN-OFF (team-plan task)'. CLAUDE.md rule 8 likewise requires human verification of agronomic Hindi before demo.",
+      "checked": "docs/i18n/agricultural-terminology.md lines 3 and 6.",
+      "impact": "hiVerified: true reflects the ✓ MARK ONLY — it does not mean a Hindi-literate reviewer has signed off.",
+      "resolution": "Transcribed as marked. No Hindi word was authored, altered or transliterated here. The distinction between '✓ in the draft table' and 'human-signed-off' should be preserved wherever this flag is consumed."
+    },
+    {
+      "id": "G14",
+      "field": "market.aliases — only 3 of 9 crops have real alias lists",
+      "problem": "Actual Agmarknet alias lists are published for RICE ([\"Paddy(Dhan)(Common)\",\"Rice\"]) and CHILLI ([\"Dry Chillies\",\"Green Chilli\"]) in docs/market/data-source.md, and for TOMATO ([\"Tomato\"]) inside the registry-shape example in docs/product/crop-support-matrix.md. For WHEAT, MAIZE, COTTON, SOYBEAN, POTATO and ONION the only written commodity strings are the plain names in the mapped-commodities list of docs/market/market-architecture.md §Scope ('Rice/Paddy, Wheat, Maize, Cotton, Tomato, Potato, Onion, Soybean, Dry Chillies').",
+      "checked": "docs/market/data-source.md, docs/market/market-architecture.md, docs/market/data-normalization.md, docs/product/crop-support-matrix.md.",
+      "impact": "docs/market/data-normalization.md drops any row whose commodity string misses the alias map, and aborts the batch above a 30% drop rate. Single-string alias lists for six crops make that drop rate a live risk on first run — Agmarknet's real strings (e.g. bracketed variety suffixes as seen in 'Paddy(Dhan)(Common)') are exactly the naming inconsistency the doc warns about.",
+      "resolution": "Only the written strings are transcribed. The real alias table must be built from an actual data.gov.in commodity listing before the first market job run; no alias was guessed."
+    },
+    {
+      "id": "G15",
+      "field": "soil vocabulary — no mapping from the table's prose soil terms to the farm soilType enum",
+      "problem": "scoring-model.md states 'ICAR 8 soil types as the soil vocabulary (mapped to our farm soilType enum)', but the prose soil descriptions use terms that are NOT enum members: 'clay-loam', 'sandy loam', 'loam', 'black belt', 'deep black (regur)', 'friable ... humus', 'light fertile loam'. The enum (docs/database/schema.md) is alluvial|black|red|laterite|sandy|loamy|clay|unknown. The mapping itself is never written down.",
+      "checked": "docs/crop-recommendation/scoring-model.md line 17, docs/database/schema.md line 22, docs/irrigation/irrigation-model.md (which does define AWC per enum member, i.e. the enum is used numerically elsewhere).",
+      "impact": "Even once soil scores are sourced, they cannot be keyed to the enum without this mapping — 'sandy loam' in particular sits between the 'sandy' and 'loamy' members.",
+      "resolution": "No mapping invented. Required input before G1/G2/G3 can be closed."
+    },
+    {
+      "id": "G16",
+      "field": "Open verification tasks carried over from the source doc",
+      "problem": "docs/crop-recommendation/scoring-model.md lists four unchecked pre-viva tasks: wheat temp/soil vs ICAR-IIWBR or PAU PoP; cotton soil claims vs ICAR-CICR; tomato pH via TNAU horticulture portal; demo-state rainfall normals table sourced (IMD normals).",
+      "checked": "docs/crop-recommendation/scoring-model.md lines 22-26; docs/crop-recommendation/engine.md §Risks (repeats the wheat/cotton flag).",
+      "impact": "Wheat tempOpt/soil and cotton tempOpt/soilSuitability in this file are SECONDARY-sourced and marked so in `confidence`. Separately, the district rainfall/temperature normals that engine.md's S_water and S_temp terms consume are not sourced at all yet and are not in scope for this file.",
+      "resolution": "Transcribed verbatim into the top-level openVerificationTasks array so the seed carries its own to-do list."
+    }
+  ]
+}

@@ -21,3 +21,20 @@
 | NFR-2 resilience | full navigation, APIs dead | — | cached everything | E2E journey 2 |
 | NFR-3/4 security/privacy | all ST suites | — | — | ST-01..70 |
 Full per-endpoint rows generated in the living version during implementation (kept in this file).
+
+## Implemented (P1) — 228 tests, all passing
+
+| Suite | File (`backend/tests/`) | Covers |
+|---|---|---|
+| ST-50 API hygiene | `security/st-50-api-hygiene.test.js` | forced-500 leaks nothing · unknown-route envelope · foreign origin denied · credentials only on `/api/v1/auth` · rate-limit headers · 413 oversized body · 422 malformed JSON · correlation id · hardened headers |
+| ST-01..05 Auth | `security/st-01-05-auth.test.js` | brute-force bucket (IP+email) · enumeration parity incl. a timing assertion · bcrypt 12 · cookie flags · hash-at-rest · rotation · **reuse → family revocation + audit** · idempotent logout · JWT tamper/alg-none/wrong-secret/expired/wrong-aud/wrong-iss/malformed/deleted-user |
+| ST-10 Authorization | `security/st-10-authorization.test.js` | generated from `src/routes/ownership-table.js`: 401 · 404 for another farmer's resource · 404 indistinguishable from absent · 404 on malformed id · tampered token · nested chain · list scoping · client-supplied `userId` ignored · every table row mounted |
+| ST-70 Log redaction | `security/st-70-log-redaction.test.js` | credentials, nested credentials, headers and config secrets never reach the log stream; audit `meta` scrubbed before persistence |
+| Models & indexes | `models/indexes.test.js` | 14 collections registered · 23 declared indexes with exact keys/order/uniqueness/TTL/partial filter · no undeclared indexes · TTL on exactly two collections · server-enforced uniqueness |
+| Farms API | `api/farms.test.js` | CRUD · validation · 10-farm cap · `locationKey` derivation · cascade delete · scoping |
+| Crops API | `api/crops.test.js` | CRUD · stage derivation · sowing window · 12-active cap · forward-only transitions · unknown crop → `OTHER` · cascade |
+| Registry | `api/registry.test.js` | deterministic composition · manifest-sourced ML classes · ADR-021 tiers · gaps recorded not invented · versioned `seedMeta` · idempotent re-run · **all-or-nothing validation** · public API with ETag/304 |
+| Stage engine | `engines/deriveStage.test.js` | boundaries · interpolation · unsourced Kc · malformed input · reason precedence · trace · purity · Kc(MID) > Kc(INITIAL) |
+| i18n keys | `i18n/message-keys.test.js` | every emitted messageKey resolves in en **and** hi · en/hi parity · no empty strings · non-canonical namespaces rejected |
+
+Not yet implemented: ST-20 (privacy — needs community aggregation), ST-30 (upload), ST-40 (injection — sanitizer exists, suite pending), ST-60 (services — needs ml-service), RES-01..12 (needs external integrations).

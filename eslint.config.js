@@ -26,7 +26,7 @@ export default [
 
   // ── Backend: Node, JavaScript ESM (ADR-019) ──────────────────────────────
   {
-    files: ['backend/**/*.js', 'scripts/**/*.mjs', 'scripts/**/*.js'],
+    files: ['backend/**/*.js', 'backend/**/*.mjs', 'scripts/**/*.mjs', 'scripts/**/*.js'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'module',
@@ -43,7 +43,7 @@ export default [
 
   // Standalone tooling scripts print to stdout by design.
   {
-    files: ['scripts/**/*.mjs', 'scripts/**/*.js'],
+    files: ['scripts/**/*.mjs', 'scripts/**/*.js', 'backend/scripts/**/*.mjs'],
     rules: { 'no-console': 'off' },
   },
 

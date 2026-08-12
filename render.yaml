@@ -1,0 +1,55 @@
+# Render service definition (docs/deployment/backend.md).
+#
+# Secrets are declared here but never valued here: `sync: false` tells Render
+# the variable must be supplied in the dashboard, and keeps it out of git. A
+# value written into this file would be a committed credential.
+#
+# Apply with Render Blueprints (New → Blueprint → point at this repo), or
+# create the service manually with the same settings.
+
+services:
+  - type: web
+    name: him-1096-backend-staging
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: node src/server.js
+    # Render restarts the instance if this stops answering 200.
+    healthCheckPath: /healthz
+    autoDeploy: false
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: info
+
+      # PORT is injected by Render; the app reads it and falls back to 4000.
+
+      # ── Required at boot in production ────────────────────────────────
+      # The process refuses to start without these, which is deliberate:
+      # a misconfigured deploy should fail loudly at boot, not at the first
+      # farmer request. Generate the two secrets with `openssl rand -hex 32`.
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: SERVICE_KEY
+        sync: false
+
+      # Exact origins, comma separated. No wildcards — required in production,
+      # so a forgotten value fails the boot rather than shipping a broken
+      # allowlist (docs/security/api-security.md).
+      - key: CORS_ORIGINS
+        sync: false
+
+      # ── Consumed by subsystems that land in later phases ──────────────
+      # Add these to the dashboard as each phase ships; the env schema only
+      # requires a variable once the code that reads it exists.
+      #   GEMINI_API_KEY, OPENROUTER_API_KEY, GROQ_API_KEY,
+      #   OPENWEATHER_API_KEY, DATAGOVIN_API_KEY, CLOUDINARY_URL,
+      #   ML_SERVICE_URL
+      #
+      # FORCE_FAIL_* / DISABLE_* failure-injection flags belong on a staging
+      # service ONLY and must be absent in production (production checklist).

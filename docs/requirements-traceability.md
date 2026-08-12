@@ -5,9 +5,9 @@ Every requirement line of the official problem statement → feature → archite
 ## Must-haves
 | Requirement (source §) | FR | Feature/Arch | API | DB | UI (web/mobile) | ML/AI | Testing | Priority | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| Secure sign-up/login (§1) | FR-A1..A4,A6 | JWT+refresh rotation (docs/security/authentication) | /auth/* | users, refreshTokens, auditLogs | Auth pages/screens | — | ST-01..05 | P0 | PLANNED |
-| Data private per account (§1) | FR-A5 | ownership middleware, AU-1..7 | all protected | userId on all owned docs | — | — | ST-10, ST-20 | P0 | PLANNED |
-| Farm profile: location/size/soil/crops (§2) | FR-F1..F2 | farm+crop domain, registry | /farms*, /crops*, /registry | farms, crops, cropRegistry | Farm/Crop forms both surfaces | — | API+RTL+matrix | P0 | PLANNED |
+| Secure sign-up/login (§1) | FR-A1..A4,A6 | JWT+refresh rotation (docs/security/authentication) | /auth/* | users, refreshTokens, auditLogs | Auth pages/screens | — | ST-01..05 | P0 | **BACKEND DONE (P1-3)** — ST-01..05 green; clients pending Phase 5/6 |
+| Data private per account (§1) | FR-A5 | ownership middleware, AU-1..7 | all protected | userId on all owned docs | — | — | ST-10, ST-20 | P0 | **BACKEND DONE (P1-4)** — ST-10 green (matrix from route table); ST-20 needs community data |
+| Farm profile: location/size/soil/crops (§2) | FR-F1..F2 | farm+crop domain, registry | /farms*, /crops*, /registry | farms, crops, cropRegistry | Farm/Crop forms both surfaces | — | API+RTL+matrix | P0 | **BACKEND DONE (P1-5/6/7)** — API suites green, registry seeded; UI pending Phase 5/6 |
 | Profile drives personalization, no generic advice (§2) | FR-F3..F4 | engines consume ≥3 profile factors; degradation notices | engine endpoints | — | why-traces, nudges | — | engine fixtures (soil changes → verdict changes) | P0 | PLANNED |
 | Real weather → irrigation guidance (§3, core) | FR-W1, FR-I1..I3 | Open-Meteo→OWM→cache; FAO-56 engine (docs/irrigation) | /farms/:id/weather, /crops/:id/irrigation(+log) | weatherSnapshots, irrigationLogs | Weather/Irrigation pages+cards | — | FAO vectors, RES-01..03 | P0 | PLANNED |
 | Weather risk alerts (rain/frost/heat) (§3) | FR-W2 | risk rules × registry sensitivity | in weather response + feed | recommendations | RiskStrip, feed items | — | per-risk fixtures | P0 | PLANNED |

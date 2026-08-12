@@ -1,0 +1,897 @@
+{
+  "status": "PROPOSED — requires approval",
+  "purpose": "Candidate list of additional LIMITED-support Indian crops for the cropRegistry seed, per docs/product/crop-support-matrix.md ('Other known crops (registry seed ~20 more) | LIMITED'). Nothing here is approved and nothing here should be seeded until a human signs off.",
+  "accessed": "2026-08-13",
+  "count": 21,
+  "rules": {
+    "noInventedNumbers": "No Kc, root depth, depletion fraction, yield, NPK or duration value appears in this file. LIMITED crops take crop-family Kc defaults, so only a sourced `family` is proposed.",
+    "citationShape": "{ org, title, url, accessed, confidence, note }. `sourceRef` is always an ARRAY of that shape.",
+    "hindi": "EVERY Hindi term is marked hiVerified: false. None of these 21 crops appears in docs/i18n/agricultural-terminology.md (that table covers only the 9 core crops), so no term here can be marked verified. CLAUDE.md rule 8 requires human sign-off on agronomic Hindi before demo.",
+    "seasonEnum": "KHARIF | RABI | ZAID. The Government of India sources print 'Kharif', 'Rabi', 'Summer', 'Spring/Summer', 'Pre Rabi' and 'Early kharif'. 'Summer' and 'Spring/Summer' are recorded as ZAID; that mapping is a naming decision, NOT a claim made by the source. The source's own wording is preserved in every citation note."
+  },
+  "selectionCriteria": [
+    "The crop is named in the Government of India MSP statement (the 22 MSP-mandated crops — GoI's own definition of the crops that are major by value), OR",
+    "the crop has its own sheet/column in the DES 'Crop Calendar of Major Crops' (Appendix IV, sourced to ICAR Crop Science Division), which is GoI's own definition of India's major crops.",
+    "The 9 crops already at SPECIALIZED/GENERAL level (rice, wheat, maize, cotton, soybean, tomato, potato, onion, chilli) are excluded.",
+    "Copra was excluded: it is a processed product (dried coconut kernel), not a field crop with a sowing season."
+  ],
+  "unverifiedClaims": [
+    "MANDI PRESENCE IS NOT VERIFIED. The brief asked to prefer crops that also appear in mandi price data. That could not be confirmed: agmarknet.gov.in is now a JavaScript single-page app that serves no server-rendered commodity list, and the data.gov.in Agmarknet resource needs an API key that this project does not yet have (OD-5 is still open). No `mandiCommodity` field is therefore asserted for any crop here.",
+    "MSP inclusion is used as evidence that a crop is major by value in India. It is NOT evidence that the crop appears in the Agmarknet commodity vocabulary."
+  ],
+  "sourceDocuments": {
+    "GOI_MSP_EN": {
+      "org": "Government of India",
+      "title": "Directorate of Economics & Statistics, DA&FW — Minimum Support Price (Marketing Season-wise), as on 12.12.2025 (English)",
+      "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_English_As-on-12.12.2025.pdf",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "Single-page table listing the 22 MSP-mandated commodities under the headings 'KHARIF CROPS' (Sr. 1-14), 'RABI CROPS' (Sr. 15-20) and 'COMMERCIAL CROPS' (Sr. 21-22). Reached from https://desagri.gov.in/statistics-type/latest-minimum-support-price-msp-statement/ . NOTE: desagri.gov.in presents an incomplete TLS chain; fetched with certificate verification relaxed."
+    },
+    "GOI_MSP_HI": {
+      "org": "Government of India",
+      "title": "Directorate of Economics & Statistics, DA&FW — न्यूनतम समर्थन मूल्य (विपणन मौसम वार), 12.12.2025 के अनुसार (Hindi)",
+      "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_Hindi_As-on-12.12.2025.pdf",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "Official Hindi edition of the same table — the source of every Devanagari crop name in this file. TRANSCRIPTION METHOD: the PDF embeds a legacy non-Unicode Devanagari font, so its text layer extracts corrupted (e.g. 'Ïवार', 'Ǔतल', 'कुसुʁ'). The names below were therefore read visually from a 6x render of page 1 of the official PDF, not from the text layer. This introduces a transcription-error risk on top of the normal need for agronomic-Hindi sign-off."
+    },
+    "GOI_CROP_CALENDAR": {
+      "org": "Government of India",
+      "title": "Directorate of Economics & Statistics, DA&FW — Appendix IV, Crop Calendar of Major Crops (spreadsheet, 12 sheets)",
+      "url": "https://desagri.gov.in/wp-content/uploads/2021/04/Appendix-IV-1.xls",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "The workbook linked from https://desagri.gov.in/document-report/4-crop-calendar-of-major-crops/ (page last updated 22-04-2021). Every sheet carries the footer 'Source : Indian Council of Agricultural Research (Crop Science Division)'. Season is read from the explicit column-header row of each sheet; the sheet number and header text are named in each citation below."
+    },
+    "FAO56_TABLE_12": {
+      "org": "FAO",
+      "title": "FAO Irrigation and Drainage Paper 56 — Crop Evapotranspiration, Chapter 6, TABLE 12. Single (time-averaged) crop coefficients, Kc, and mean maximum plant heights",
+      "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "Used ONLY for the `family` field. FAO-56 Table 12 organises crops into lettered groups (a. Small Vegetables, e. Legumes (Leguminosae), g. Fibre Crops, h. Oil Crops, i. Cereals, k. Sugar Cane, ...) and prints a representative Kc triple on each group heading row. That group is exactly the right handle for the 'crop-family Kc defaults' that LIMITED crops are specified to use."
+    }
+  },
+  "familyFieldConvention": {
+    "family": "The FAO-56 Table 12 group heading the crop sits under. Populated only where FAO-56 lists the crop (or its exact English name) itself.",
+    "faoTable12Row": "The literal Table 12 row name, when FAO-56 lists this crop by name.",
+    "proposedFaoProxy": "Set instead of faoTable12Row when FAO-56 has NO row for the crop and a related row is being proposed as the family-default donor. Every one of these is a proposal requiring approval — FAO-56 makes no such equivalence."
+  },
+  "crops": [
+    {
+      "cropCode": "SORGHUM",
+      "names": { "en": "Jowar", "hi": "ज्वार" },
+      "altNamesEn": ["Sorghum", "Great millet"],
+      "hiVerified": false,
+      "seasons": ["KHARIF"],
+      "family": "i. Cereals",
+      "faoTable12Row": "Sorghum - grain",
+      "sourceRef": [
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Minimum Support Price statement as on 12.12.2025, table row Sr. 2",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_English_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "'Jowar (Hybrid)' and 'Jowar (Maldandi)' at Sr. 2 under the heading 'KHARIF CROPS'. Source of both the English name and the KHARIF season."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — न्यूनतम समर्थन मूल्य statement as on 12.12.2025 (Hindi), table row Sr. 2",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_Hindi_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as 'ज्वार (हाइब्रिड)' and 'ज्वार (मालदंडी)'; the bare crop name ज्वार is the shared stem. Read from a page render — see GOI_MSP_HI transcription note."
+        },
+        {
+          "org": "FAO",
+          "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12",
+          "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Listed by the English name 'Sorghum' with sub-rows '- grain' and '- sweet' under group 'i. Cereals'. Jowar is sorghum; the grain sub-row is the relevant one."
+        }
+      ]
+    },
+    {
+      "cropCode": "PEARLMILLET",
+      "names": { "en": "Bajra", "hi": "बाजरा" },
+      "altNamesEn": ["Pearl millet"],
+      "hiVerified": false,
+      "seasons": ["KHARIF", "ZAID"],
+      "family": null,
+      "proposedFaoProxy": "Millet (group 'i. Cereals')",
+      "sourceRef": [
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Minimum Support Price statement as on 12.12.2025, table row Sr. 3",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_English_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "'Bajra' at Sr. 3 under 'KHARIF CROPS'."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Appendix IV, Crop Calendar of Major Crops, Sheet1",
+          "url": "https://desagri.gov.in/wp-content/uploads/2021/04/Appendix-IV-1.xls",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Sheet1 has two bajra columns headed 'Kharif / Bajra' and 'Summer / Bajra' (All India rows: kharif sowing Jun-Jul, harvest Sep-Nov; summer sowing Jan-Feb, harvest Apr-May). 'Summer' recorded as ZAID — the source word is 'Summer'."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — न्यूनतम समर्थन मूल्य statement as on 12.12.2025 (Hindi), table row Sr. 3",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_Hindi_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as 'बाजरा'. Read from a page render — see GOI_MSP_HI transcription note."
+        },
+        {
+          "org": "FAO",
+          "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12",
+          "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "PROPOSAL ONLY — FAO-56 has no bajra/pearl-millet row. It has a generic 'Millet' row under 'i. Cereals'. Using it as the family-default donor is a proposal; FAO-56 does not state that its 'Millet' row represents pearl millet."
+        }
+      ]
+    },
+    {
+      "cropCode": "FINGERMILLET",
+      "names": { "en": "Ragi", "hi": "रागी" },
+      "altNamesEn": ["Finger millet"],
+      "hiVerified": false,
+      "seasons": ["KHARIF"],
+      "family": null,
+      "proposedFaoProxy": "Millet (group 'i. Cereals')",
+      "sourceRef": [
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Minimum Support Price statement as on 12.12.2025, table row Sr. 4",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_English_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "'Ragi' at Sr. 4 under 'KHARIF CROPS'. Ragi has no sheet in the DES crop calendar, so MSP is the only season source."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — न्यूनतम समर्थन मूल्य statement as on 12.12.2025 (Hindi), table row Sr. 4",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_Hindi_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as 'रागी'. Read from a page render — see GOI_MSP_HI transcription note."
+        },
+        {
+          "org": "FAO",
+          "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12",
+          "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "PROPOSAL ONLY — no finger-millet row exists in FAO-56; the generic 'Millet' row is proposed as the family-default donor."
+        }
+      ]
+    },
+    {
+      "cropCode": "PIGEONPEA",
+      "names": { "en": "Arhar", "hi": "अरहर" },
+      "altNamesEn": ["Tur", "Red gram", "Pigeon pea"],
+      "hiVerified": false,
+      "seasons": ["KHARIF"],
+      "family": null,
+      "proposedFaoProxy": "Beans, dry and Pulses (group 'e. Legumes (Leguminosae)')",
+      "sourceRef": [
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Minimum Support Price statement as on 12.12.2025, table row Sr. 6",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_English_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "'Arhar' at Sr. 6 under 'KHARIF CROPS'."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Appendix IV, Crop Calendar of Major Crops, Sheet2",
+          "url": "https://desagri.gov.in/wp-content/uploads/2021/04/Appendix-IV-1.xls",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Sheet2 is dedicated to 'Arhar/Tur' with columns headed 'Early kharif' and 'Kharif' (All India kharif: sowing June(B)-July(E), harvesting Dec(M)-April(E)). 'Early kharif' is a sub-window of KHARIF, not a separate season, so only KHARIF is recorded."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — न्यूनतम समर्थन मूल्य statement as on 12.12.2025 (Hindi), table row Sr. 6",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_Hindi_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as 'अरहर'. Read from a page render — see GOI_MSP_HI transcription note."
+        }
+      ]
+    },
+    {
+      "cropCode": "GREENGRAM",
+      "names": { "en": "Moong", "hi": "मूंग" },
+      "altNamesEn": ["Green gram", "Mungbean"],
+      "hiVerified": false,
+      "seasons": ["KHARIF", "RABI", "ZAID"],
+      "family": "e. Legumes (Leguminosae)",
+      "faoTable12Row": "Green Gram and Cowpeas",
+      "sourceRef": [
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Minimum Support Price statement as on 12.12.2025, table row Sr. 7",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_English_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "'Moong' at Sr. 7 under 'KHARIF CROPS'."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Appendix IV, Crop Calendar of Major Crops, Sheet3",
+          "url": "https://desagri.gov.in/wp-content/uploads/2021/04/Appendix-IV-1.xls",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Sheet3 column headers are 'Kharif Mungbean/Urdbean', 'Rabi Mungbean/Urdbean' and 'Spring/Summer Mungbean/Urdbean' — the source of all three seasons. 'Spring/Summer' recorded as ZAID. Note the sheet treats mungbean and urdbean as one column pair."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — न्यूनतम समर्थन मूल्य statement as on 12.12.2025 (Hindi), table row Sr. 7",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_Hindi_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as 'मूंग'. Read from a page render — see GOI_MSP_HI transcription note."
+        },
+        {
+          "org": "FAO",
+          "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12",
+          "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Listed by name as 'Green Gram and Cowpeas' under group 'e. Legumes (Leguminosae)'."
+        }
+      ]
+    },
+    {
+      "cropCode": "BLACKGRAM",
+      "names": { "en": "Urad", "hi": "उड़द" },
+      "altNamesEn": ["Black gram", "Urdbean"],
+      "hiVerified": false,
+      "seasons": ["KHARIF", "RABI", "ZAID"],
+      "family": null,
+      "proposedFaoProxy": "Beans, dry and Pulses (group 'e. Legumes (Leguminosae)')",
+      "sourceRef": [
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Minimum Support Price statement as on 12.12.2025, table row Sr. 8",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_English_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "'Urad' at Sr. 8 under 'KHARIF CROPS'."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Appendix IV, Crop Calendar of Major Crops, Sheet3",
+          "url": "https://desagri.gov.in/wp-content/uploads/2021/04/Appendix-IV-1.xls",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Sheet3 column headers 'Kharif Mungbean/Urdbean', 'Rabi Mungbean/Urdbean', 'Spring/Summer Mungbean/Urdbean'. The sheet gives urdbean the same three season windows as mungbean; it does not separate them."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — न्यूनतम समर्थन मूल्य statement as on 12.12.2025 (Hindi), table row Sr. 8",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_Hindi_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as 'उड़द'. Read from a page render — see GOI_MSP_HI transcription note."
+        }
+      ]
+    },
+    {
+      "cropCode": "HORSEGRAM",
+      "names": { "en": "Horsegram", "hi": null },
+      "altNamesEn": ["Kulthi"],
+      "hiVerified": false,
+      "seasons": ["KHARIF"],
+      "family": null,
+      "proposedFaoProxy": "Beans, dry and Pulses (group 'e. Legumes (Leguminosae)')",
+      "sourceRef": [
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Appendix IV, Crop Calendar of Major Crops, Sheet3",
+          "url": "https://desagri.gov.in/wp-content/uploads/2021/04/Appendix-IV-1.xls",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Sheet3 column header 'Horsegram Kharif' — the source of both the English name and the season. Horsegram is not an MSP crop, so no GoI Hindi name was available; names.hi is null rather than guessed."
+        }
+      ]
+    },
+    {
+      "cropCode": "CHICKPEA",
+      "names": { "en": "Gram", "hi": "चना" },
+      "altNamesEn": ["Chickpea", "Chana", "Bengal gram"],
+      "hiVerified": false,
+      "seasons": ["RABI"],
+      "family": "e. Legumes (Leguminosae)",
+      "faoTable12Row": "Chick pea",
+      "sourceRef": [
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Minimum Support Price statement as on 12.12.2025, table row Sr. 17",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_English_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "'Gram' at Sr. 17 under 'RABI CROPS'."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Appendix IV, Crop Calendar of Major Crops, Sheet3 and Sheet5",
+          "url": "https://desagri.gov.in/wp-content/uploads/2021/04/Appendix-IV-1.xls",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Sheet3 column header 'Chickpea rabi'; Sheet5 column header 'Rabi / Gram'. Two independent sheets in the same workbook both classify it as rabi."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — न्यूनतम समर्थन मूल्य statement as on 12.12.2025 (Hindi), table row Sr. 17",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_Hindi_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as 'चना'. Read from a page render — see GOI_MSP_HI transcription note."
+        },
+        {
+          "org": "FAO",
+          "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12",
+          "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Listed by name as 'Chick pea' under group 'e. Legumes (Leguminosae)'."
+        }
+      ]
+    },
+    {
+      "cropCode": "LENTIL",
+      "names": { "en": "Masur", "hi": "मसूर" },
+      "altNamesEn": ["Lentil", "Masoor"],
+      "hiVerified": false,
+      "seasons": ["RABI"],
+      "family": "e. Legumes (Leguminosae)",
+      "faoTable12Row": "Lentil",
+      "sourceRef": [
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Minimum Support Price statement as on 12.12.2025, table row Sr. 18",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_English_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "'Masur' at Sr. 18 under 'RABI CROPS'."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Appendix IV, Crop Calendar of Major Crops, Sheet5",
+          "url": "https://desagri.gov.in/wp-content/uploads/2021/04/Appendix-IV-1.xls",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Sheet5 column headers 'Rabi / Masur' and 'Rabi / Pulses/Lentil'. CAVEAT: the same sheet also carries a 'Kharif / Pulses/Lentil' column with entries for Bihar, Goa, Meghalaya, Punjab and West Bengal. Only RABI is recorded because the crop-specific 'Masur' column is labelled rabi; a reviewer may wish to add KHARIF."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — न्यूनतम समर्थन मूल्य statement as on 12.12.2025 (Hindi), table row Sr. 18",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_Hindi_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as 'मसूर'. Read from a page render — see GOI_MSP_HI transcription note."
+        },
+        {
+          "org": "FAO",
+          "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12",
+          "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Listed by name as 'Lentil' under group 'e. Legumes (Leguminosae)'."
+        }
+      ]
+    },
+    {
+      "cropCode": "FIELDPEA",
+      "names": { "en": "Pea", "hi": null },
+      "altNamesEn": ["Field pea", "Matar"],
+      "hiVerified": false,
+      "seasons": ["RABI"],
+      "family": "e. Legumes (Leguminosae)",
+      "faoTable12Row": "Peas",
+      "sourceRef": [
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Appendix IV, Crop Calendar of Major Crops, Sheet5",
+          "url": "https://desagri.gov.in/wp-content/uploads/2021/04/Appendix-IV-1.xls",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Sheet5 column header 'Rabi / Pea' — source of the English name and the season. Pea is not an MSP crop, so no GoI Hindi name was available; names.hi is null rather than guessed."
+        },
+        {
+          "org": "FAO",
+          "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12",
+          "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Listed by name as 'Peas' under group 'e. Legumes (Leguminosae)', with sub-rows '- Fresh' and '- Dry/Seed' that carry different Kc values. Which sub-row applies to Indian field pea is NOT resolved here."
+        }
+      ]
+    },
+    {
+      "cropCode": "GROUNDNUT",
+      "names": { "en": "Groundnut", "hi": "मूंगफली" },
+      "altNamesEn": ["Peanut", "Moongphali"],
+      "hiVerified": false,
+      "seasons": ["KHARIF", "RABI", "ZAID"],
+      "family": "e. Legumes (Leguminosae)",
+      "faoTable12Row": "Groundnut (Peanut)",
+      "sourceRef": [
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Minimum Support Price statement as on 12.12.2025, table row Sr. 10",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_English_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "'Groundnut' at Sr. 10 under 'KHARIF CROPS'."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Appendix IV, Crop Calendar of Major Crops, Sheet6",
+          "url": "https://desagri.gov.in/wp-content/uploads/2021/04/Appendix-IV-1.xls",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Sheet6 is dedicated to groundnut with sub-headers 'Kharif', 'Rabi' and 'Summer/ Spring' — the source of all three seasons. 'Summer/Spring' recorded as ZAID."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — न्यूनतम समर्थन मूल्य statement as on 12.12.2025 (Hindi), table row Sr. 10",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_Hindi_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as 'मूंगफली'. Read from a page render — see GOI_MSP_HI transcription note."
+        },
+        {
+          "org": "FAO",
+          "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12",
+          "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Listed by name as 'Groundnut (Peanut)' under group 'e. Legumes (Leguminosae)'."
+        }
+      ]
+    },
+    {
+      "cropCode": "SESAME",
+      "names": { "en": "Sesamum", "hi": "तिल" },
+      "altNamesEn": ["Sesame", "Til", "Gingelly"],
+      "hiVerified": false,
+      "seasons": ["KHARIF", "RABI", "ZAID"],
+      "family": "h. Oil Crops",
+      "faoTable12Row": "Sesame",
+      "sourceRef": [
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Minimum Support Price statement as on 12.12.2025, table row Sr. 13",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_English_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "'Sesamum' at Sr. 13 under 'KHARIF CROPS'."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Appendix IV, Crop Calendar of Major Crops, Sheet8",
+          "url": "https://desagri.gov.in/wp-content/uploads/2021/04/Appendix-IV-1.xls",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Sheet8 is dedicated to sesame with four season sub-headers: 'Kharif', 'Pre Rabi', 'Rabi' and 'Summer' (All India: kharif sowing May-July; pre-rabi Aug(B)-Sept(M); rabi Oct(B)-Nov(M); summer Jan-March). 'Summer' recorded as ZAID; 'Pre Rabi' has no enum member and is not represented."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — न्यूनतम समर्थन मूल्य statement as on 12.12.2025 (Hindi), table row Sr. 13",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_Hindi_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as 'तिल'. Read from a page render — see GOI_MSP_HI transcription note (the text layer of this row extracts as the corrupted 'Ǔतल')."
+        },
+        {
+          "org": "FAO",
+          "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12",
+          "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Listed by name as 'Sesame' under group 'h. Oil Crops'."
+        }
+      ]
+    },
+    {
+      "cropCode": "NIGER",
+      "names": { "en": "Nigerseed", "hi": "रामतिल" },
+      "altNamesEn": ["Niger", "Ramtil"],
+      "hiVerified": false,
+      "seasons": ["KHARIF"],
+      "family": null,
+      "proposedFaoProxy": "group 'h. Oil Crops' heading row (no crop-specific donor available)",
+      "sourceRef": [
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Minimum Support Price statement as on 12.12.2025, table row Sr. 14",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_English_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "'Nigerseed' at Sr. 14 under 'KHARIF CROPS'."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Appendix IV, Crop Calendar of Major Crops, Sheet4",
+          "url": "https://desagri.gov.in/wp-content/uploads/2021/04/Appendix-IV-1.xls",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Sheet4 column headers 'Niger(Khaif)' [sic — the workbook's own typo for Kharif] and 'Niger(Late Kharif)'. Both are kharif windows."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — न्यूनतम समर्थन मूल्य statement as on 12.12.2025 (Hindi), table row Sr. 14",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_Hindi_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as 'रामतिल'. Read from a page render — see GOI_MSP_HI transcription note."
+        }
+      ]
+    },
+    {
+      "cropCode": "SUNFLOWER",
+      "names": { "en": "Sunflower Seed", "hi": "सूरजमुखी बीज" },
+      "altNamesEn": ["Sunflower"],
+      "hiVerified": false,
+      "seasons": ["KHARIF", "RABI", "ZAID"],
+      "family": "h. Oil Crops",
+      "faoTable12Row": "Sunflower",
+      "sourceRef": [
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Minimum Support Price statement as on 12.12.2025, table row Sr. 11",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_English_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "'Sunflower Seed' at Sr. 11 under 'KHARIF CROPS'. The published name includes 'Seed' because MSP is declared on the seed; the DES crop calendar names the crop simply 'Sunflower'."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Appendix IV, Crop Calendar of Major Crops, Sheet9",
+          "url": "https://desagri.gov.in/wp-content/uploads/2021/04/Appendix-IV-1.xls",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Sheet9 heads a sunflower block with sub-headers 'Kharif', 'Rabi' and 'Summer/ Spring' (All India: kharif Jun-Aug, rabi Oct, summer Feb). 'Summer/Spring' recorded as ZAID."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — न्यूनतम समर्थन मूल्य statement as on 12.12.2025 (Hindi), table row Sr. 11",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_Hindi_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as 'सूरजमुखी बीज' (literally 'sunflower seed'). The bare crop name without बीज is NOT sourced and has not been invented here. Read from a page render — see GOI_MSP_HI transcription note."
+        },
+        {
+          "org": "FAO",
+          "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12",
+          "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Listed by name as 'Sunflower' under group 'h. Oil Crops'."
+        }
+      ]
+    },
+    {
+      "cropCode": "SAFFLOWER",
+      "names": { "en": "Safflower", "hi": "कुसुम्भ" },
+      "altNamesEn": ["Kardi"],
+      "hiVerified": false,
+      "seasons": ["RABI"],
+      "family": "h. Oil Crops",
+      "faoTable12Row": "Safflower",
+      "sourceRef": [
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Minimum Support Price statement as on 12.12.2025, table row Sr. 20",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_English_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "'Safflower' at Sr. 20 under 'RABI CROPS'."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Appendix IV, Crop Calendar of Major Crops, Sheet9",
+          "url": "https://desagri.gov.in/wp-content/uploads/2021/04/Appendix-IV-1.xls",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Sheet9 column header 'Safflower / Rabi' (All India sowing October, harvesting February). Independently confirms the MSP rabi classification."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — न्यूनतम समर्थन मूल्य statement as on 12.12.2025 (Hindi), table row Sr. 20",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_Hindi_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as 'कुसुम्भ'. Read from a page render — see GOI_MSP_HI transcription note (the text layer of this row extracts as the corrupted 'कुसुʁ')."
+        },
+        {
+          "org": "FAO",
+          "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12",
+          "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Listed by name as 'Safflower' under group 'h. Oil Crops'."
+        }
+      ]
+    },
+    {
+      "cropCode": "CASTOR",
+      "names": { "en": "Castor", "hi": null },
+      "altNamesEn": ["Castor bean", "Arandi"],
+      "hiVerified": false,
+      "seasons": ["KHARIF"],
+      "family": "h. Oil Crops",
+      "faoTable12Row": "Castorbean (Ricinus)",
+      "sourceRef": [
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Appendix IV, Crop Calendar of Major Crops, Sheet9",
+          "url": "https://desagri.gov.in/wp-content/uploads/2021/04/Appendix-IV-1.xls",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Sheet9 column header 'Castor / Kharif' (All India sowing Jul-Aug, harvesting Jan-Feb). Castor is not an MSP crop, so no GoI Hindi name was available; names.hi is null rather than guessed."
+        },
+        {
+          "org": "FAO",
+          "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12",
+          "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Listed by name as 'Castorbean (Ricinus)' under group 'h. Oil Crops' (Table 11 names it 'Castor beans')."
+        }
+      ]
+    },
+    {
+      "cropCode": "MUSTARD",
+      "names": { "en": "Rapeseed & mustard", "hi": "रेपसीड और सरसों" },
+      "altNamesEn": [
+        "Mustard",
+        "Sarson",
+        "Toria",
+        "Yellow Sarson",
+        "Brown Sarson",
+        "Gobhi Sarson",
+        "Taramira",
+        "Karan rai"
+      ],
+      "hiVerified": false,
+      "seasons": ["RABI"],
+      "family": null,
+      "proposedFaoProxy": "Rapeseed, Canola (group 'h. Oil Crops')",
+      "sourceRef": [
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Minimum Support Price statement as on 12.12.2025, table row Sr. 19",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_English_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "'Rapeseed & mustard' at Sr. 19 under 'RABI CROPS' — a single MSP commodity covering the whole group."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Appendix IV, Crop Calendar of Major Crops, Sheet10",
+          "url": "https://desagri.gov.in/wp-content/uploads/2021/04/Appendix-IV-1.xls",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Sheet10 is dedicated to 'Rapeseed-Mustard' and lists seven state-level types: Mustard, Toria, Yellow Sarson, Brown Sarson, Gobhi Sarson, Taramira and Karan rai (sowing Sep(L)-Nov(L), harvesting Feb-May). CAVEAT: this sheet has no season column header, so the RABI classification is taken from the MSP statement above, not from the calendar."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — न्यूनतम समर्थन मूल्य statement as on 12.12.2025 (Hindi), table row Sr. 19",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_Hindi_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as 'रेपसीड और सरसों' — a transliteration of 'rapeseed' plus सरसों. The standalone farmer-facing term (सरसों alone) is the more natural UI label but is NOT what the source publishes; it has been recorded here only as part of the published string. Read from a page render — see GOI_MSP_HI transcription note."
+        },
+        {
+          "org": "FAO",
+          "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12",
+          "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "PROPOSAL ONLY — FAO-56 has no mustard row. Its nearest row is 'Rapeseed, Canola' under 'h. Oil Crops'. Canola is not Indian mustard; using this row as the family-default donor requires approval."
+        }
+      ]
+    },
+    {
+      "cropCode": "LINSEED",
+      "names": { "en": "Linseed", "hi": null },
+      "altNamesEn": ["Flaxseed", "Alsi"],
+      "hiVerified": false,
+      "seasons": ["RABI"],
+      "family": null,
+      "proposedFaoProxy": "Flax (group 'g. Fibre Crops')",
+      "sourceRef": [
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Appendix IV, Crop Calendar of Major Crops, Sheet7",
+          "url": "https://desagri.gov.in/wp-content/uploads/2021/04/Appendix-IV-1.xls",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Sheet7 is dedicated to linseed, single column headed 'Rabi linseed' (sowing Oct(B)-Nov(M), harvesting Mar-May across 14 states). Linseed is not an MSP crop, so no GoI Hindi name was available; names.hi is null rather than guessed."
+        },
+        {
+          "org": "FAO",
+          "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12",
+          "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "PROPOSAL ONLY — FAO-56 has no 'linseed' row. It has 'Flax' under 'g. Fibre Crops'. IMPORTANT CAVEAT: FAO-56 classes flax as a FIBRE crop, whereas Indian linseed is grown as an oilseed and managed very differently; the Kc curve for a fibre flax crop may not transfer. Requires approval."
+        }
+      ]
+    },
+    {
+      "cropCode": "BARLEY",
+      "names": { "en": "Barley", "hi": "जौ" },
+      "altNamesEn": ["Jau"],
+      "hiVerified": false,
+      "seasons": ["RABI"],
+      "family": "i. Cereals",
+      "faoTable12Row": "Barley",
+      "sourceRef": [
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Minimum Support Price statement as on 12.12.2025, table row Sr. 16",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_English_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "'Barley' at Sr. 16 under 'RABI CROPS'."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — न्यूनतम समर्थन मूल्य statement as on 12.12.2025 (Hindi), table row Sr. 16",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_Hindi_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as 'जौ'. Read from a page render — see GOI_MSP_HI transcription note."
+        },
+        {
+          "org": "FAO",
+          "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Tables 11, 12 and 22",
+          "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Listed by name as 'Barley' under group 'i. Cereals' in Table 12. Barley also shares the Table 11 'Barley/Oats/Wheat' row that carries the 'Central India, November' entry — so if this crop is ever promoted above LIMITED, real FAO stage lengths for India already exist."
+        }
+      ]
+    },
+    {
+      "cropCode": "SUGARCANE",
+      "names": { "en": "Sugarcane", "hi": null },
+      "altNamesEn": ["Ganna"],
+      "hiVerified": false,
+      "seasons": ["KHARIF", "RABI"],
+      "family": "k. Sugar Cane",
+      "faoTable12Row": "k. Sugar Cane",
+      "sourceRef": [
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Appendix IV, Crop Calendar of Major Crops, Sheet12",
+          "url": "https://desagri.gov.in/wp-content/uploads/2021/04/Appendix-IV-1.xls",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Sheet12 column headers 'Kharif / Sugarcane' and 'Rabi / Sugarcane' (All India: kharif sowing Feb(B)-Aug(E), harvesting Aug(B)-Nov(E); rabi sowing Jun(B)-Oct(E), harvesting Oct(B)-Jan(E)). The sheet footnote reads '*=Annual; **Early Kharif; ***Early sugarcane' — sugarcane is an annual/long-duration crop and the KHARIF/RABI labels here denote planting windows rather than a season that fits within one crop cycle. Sugarcane has an FRP rather than an MSP, so it is absent from the MSP statement and no GoI Hindi name was available; names.hi is null rather than guessed."
+        },
+        {
+          "org": "FAO",
+          "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12",
+          "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "FAO-56 gives sugar cane its own top-level group 'k. Sugar Cane' with values printed on the group row itself. Table 11 lists 'Sugarcane, virgin' and 'Sugarcane, ratoon' rows with 280-720 day totals — none for India."
+        }
+      ]
+    },
+    {
+      "cropCode": "JUTE",
+      "names": { "en": "Jute", "hi": "जूट" },
+      "altNamesEn": ["Pat"],
+      "hiVerified": false,
+      "seasons": ["KHARIF"],
+      "family": null,
+      "proposedFaoProxy": null,
+      "sourceRef": [
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Minimum Support Price statement as on 12.12.2025, table row Sr. 21",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_English_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "'Jute' at Sr. 21 under 'COMMERCIAL CROPS' — an MSP crop, but the MSP statement's commercial section carries no kharif/rabi label."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — Appendix IV, Crop Calendar of Major Crops, Sheet12",
+          "url": "https://desagri.gov.in/wp-content/uploads/2021/04/Appendix-IV-1.xls",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Sheet12 column header 'Kharif / Jute' (All India sowing Feb-Jun, harvesting Aug-Oct) — the source of the KHARIF season, since the MSP statement does not classify commercial crops by season."
+        },
+        {
+          "org": "Government of India",
+          "title": "DES DA&FW — न्यूनतम समर्थन मूल्य statement as on 12.12.2025 (Hindi), table row Sr. 21",
+          "url": "https://desagri.gov.in/wp-content/uploads/2025/12/MSP-Statement_Hindi_As-on-12.12.2025.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Published as 'जूट'. Read from a page render — see GOI_MSP_HI transcription note."
+        },
+        {
+          "org": "FAO",
+          "title": "FAO Irrigation and Drainage Paper 56, Chapter 6, Table 12",
+          "url": "https://www.fao.org/4/x0490e/x0490e0b.htm",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "NEGATIVE RESULT — jute appears nowhere in FAO-56 Tables 11, 12 or 22, and its 'g. Fibre Crops' group contains only Cotton, Flax and Sisal, none of which is a defensible donor for a tall bast-fibre crop. `family` deliberately left null; jute would need a non-FAO source before it can take any Kc default."
+        }
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "id": "L1",
+      "field": "mandiCommodity for all 21 crops",
+      "problem": "Could not verify that each proposed crop appears in the Agmarknet / data.gov.in commodity vocabulary.",
+      "tried": "Fetched https://agmarknet.gov.in/SearchCmmMkt.aspx — it now returns a 1 KB JavaScript SPA shell ('Agmarknet 2.0') with no server-rendered commodity list. The data.gov.in 'Variety-wise Daily Market Prices' resource requires an API key, which is open decision OD-5. Live scraping of agmarknet.gov.in is already ruled out in docs/market/data-source.md.",
+      "resolution": "No mandi mapping asserted. Re-run this check once the data.gov.in key exists."
+    },
+    {
+      "id": "L2",
+      "field": "names.hi for HORSEGRAM, FIELDPEA, CASTOR, LINSEED, SUGARCANE",
+      "problem": "These five are not MSP crops, so they do not appear in the bilingual MSP statement — the only Government of India document in this research pass that publishes Devanagari crop names.",
+      "tried": "Searched the DES crop calendar workbook (English only) and docs/i18n/agricultural-terminology.md (covers only the 9 core crops).",
+      "resolution": "names.hi recorded as null. Common Hindi terms exist for all five, but writing them here would be an unsourced agronomic translation, which CLAUDE.md rule 8 and the no-invention rule both forbid. A Hindi-literate reviewer should supply them."
+    },
+    {
+      "id": "L3",
+      "field": "names.hi transcription method",
+      "problem": "The official Hindi MSP PDF embeds a legacy non-Unicode Devanagari font; its text layer extracts corrupted (observed: 'Ïवार' for ज्वार, 'मÈका' for मक्का, 'Ǔतल' for तिल, 'रामǓतल' for रामतिल, 'कुसुʁ' for कुसुम्भ, 'सरसɉ' for सरसों).",
+      "tried": "pypdf/PyMuPDF text extraction (corrupted), then rendering page 1 of the official PDF at 6x and reading the glyphs visually.",
+      "resolution": "All 16 Devanagari names come from the visual read of the official document. This is a real transcription-risk surface and is an additional reason every term is marked hiVerified: false."
+    },
+    {
+      "id": "L4",
+      "field": "seasons — ZAID mapping",
+      "problem": "Neither GoI source uses the word 'Zaid'. They use 'Summer', 'Spring/Summer' and 'Pre Rabi'.",
+      "tried": "Read every season column header in all 12 sheets of the crop calendar workbook.",
+      "resolution": "'Summer' and 'Spring/Summer' mapped to ZAID; the source wording is preserved verbatim in each citation note. 'Pre Rabi' (sesame only) has no enum member and is dropped. If the registry needs to be faithful to the source vocabulary, the enum should gain a SUMMER member instead."
+    },
+    {
+      "id": "L5",
+      "field": "family for PEARLMILLET, FINGERMILLET, PIGEONPEA, BLACKGRAM, HORSEGRAM, MUSTARD, LINSEED, NIGER, JUTE",
+      "problem": "FAO-56 Table 12 has no row for these crops, so no family can be read off the source.",
+      "tried": "Read the full Table 12 crop list from the raw HTML of Chapter 6.",
+      "resolution": "`family` left null. A `proposedFaoProxy` donor row is suggested for eight of them and explicitly labelled a proposal; JUTE has no defensible donor at all and is left with nothing. None of these proxies may be used to derive a Kc default without approval."
+    },
+    {
+      "id": "L6",
+      "field": "Crop coverage — horticulture",
+      "problem": "This list is entirely field crops. High-value horticultural crops that are prominent in mandi data (banana, mango, turmeric, garlic, brinjal, okra, cabbage, cauliflower, coriander, cumin) are absent.",
+      "tried": "The two Government of India sources used here — the MSP statement and the DES crop calendar — cover field crops only. No equally citable GoI source giving both crop identity and season for horticultural crops was located in this pass.",
+      "resolution": "Deliberately omitted rather than added from memory. A follow-up pass against a horticulture source (e.g. NHB / 'Horticultural Statistics at a Glance') would be needed."
+    },
+    {
+      "id": "L7",
+      "field": "cropCode spelling",
+      "problem": "Codes are proposed, not sourced. The brief asked for UPPERCASE English codes, but several crops are known in India by their Hindi name (Jowar, Bajra, Ragi, Arhar, Moong, Urad, Masur) and the MSP statement itself uses those Hindi-origin names as its English labels.",
+      "tried": "n/a — a naming decision, not a data lookup.",
+      "resolution": "English botanical names used for the code (SORGHUM, PEARLMILLET, FINGERMILLET, PIGEONPEA, GREENGRAM, BLACKGRAM, LENTIL) with the GoI label kept in names.en and the alternatives in altNamesEn. A reviewer may prefer codes that match the MSP/Agmarknet labels instead — that choice interacts with the market alias map."
+    },
+    {
+      "id": "L8",
+      "field": "TLS",
+      "problem": "desagri.gov.in presents an incomplete certificate chain; WebFetch failed with 'unable to get local issuer certificate'.",
+      "tried": "WebFetch first, then curl with certificate verification relaxed.",
+      "resolution": "All desagri.gov.in documents in this file were fetched over HTTPS with verification relaxed. Contents were sanity-checked (correct GoI page structure, expected table shape, ICAR attribution footers), but this is worth knowing if these fetches are ever automated."
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "internal": "Something went wrong at our end. Please try again in a moment.",
+  "malformedJson": "That request could not be read. Please try again.",
+  "notFound": "We could not find that.",
+  "payloadTooLarge": "That request was too large. Please send less data.",
+  "rateLimited": "Too many attempts. Please wait a moment and try again.",
+  "routeNotFound": "We could not find that.",
+  "unsupportedEncoding": "That request used an unsupported format.",
+  "validation": "Please check the highlighted fields and try again."
+}
