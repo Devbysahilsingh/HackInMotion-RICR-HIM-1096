@@ -1,0 +1,11 @@
+# Intelligence APIs (fertilizer · crop-recommendation · community · yield · voice)
+
+| Endpoint | Auth · RL | Spec |
+|---|---|---|
+| GET `/crops/:id/fertilizer-guidance` | Auth | → current-stage card + full schedule + deficiency symptoms + sources + disclaimer. Pure registry read. Errors: 404. P1. |
+| POST `/crop-recommendation` | Auth · 20/day | Req `{farmId, season, preference?}` → ranked crops + reasons + cautions + sources (docs/crop-recommendation/engine.md). Errors: 404, 422. P1. |
+| GET `/community/alerts?district=&state=` | Auth | Active advisories for user's farm districts (auto from profile if params omitted) → `[{district, cropCode, diseaseCode, reportCount, level, windowEnd}]`. Zero reporter data by construction. P2. |
+| GET `/crops/:id/yield-estimate` | Auth | **P3 — contract reserved, returns 501 NOT_IMPLEMENTED until built.** Planned response: `{estimateRange:{low,high,unit:'quintal'}, basis:{districtAvgYield, year}, adjustments:[{factorKey, multiplier}], disclaimerKey}` (docs/yield/). |
+| POST `/voice/transcribe` | Auth · 20/day | P2 optional (mobile STT fallback path only): multipart audio ≤60s → Groq Whisper proxy → `{text, lang}`. Key server-side. Transcript not stored. |
+
+Community aggregation job (6h): cropHealthLogs where sharedToCommunity ∧ source∈{ml,gemini} ∧ confidence≥τ, grouped district+cropCode+diseaseCode over trailing 7d; distinctFarmers≥3 → upsert communityAlerts + fan-out INFO/HIGH recommendations (HIGH at ≥8 reports) to consenting users with matching crop+district. Single-report never alerts (panic prevention). Duplicate control: one counted report per farmer+crop+disease+window.
