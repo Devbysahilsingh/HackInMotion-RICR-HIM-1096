@@ -124,5 +124,59 @@ Additionally, the Google rule required the exact full key length (`AIza` + 35); 
 ### Operational note
 A deleted file can return if an editor still holds its buffer. Close the tab for any deleted test file. This is precisely why the commit-time gate exists rather than relying on a one-off clean scan — and why the gate is now stronger than before this incident.
 
+---
+
+## P0-4 · Dataset acquisition — 2026-08-12 · Status: COMPLETED (verified)
+
+**Scope:** download the approved source datasets, verify integrity, extract safely, capture licences, produce an inventory. No class census, deduplication, splitting, preprocessing or training — those remain P0-5 / P0-6 / Phase 4.
+
+### Outcome: 6 datasets, 83,422 images, 16.3 GB, zero corrupt files in sampling
+
+| Dataset | Images | Files | Decode | Checksum | Licence |
+|---|---|---|---|---|---|
+| plantvillage | 55,448 | 55,449 | 40/40 | ✅ publisher-matched | contested (see below) |
+| plantdoc | 2,573 | 2,576 | 40/40 | local only (no publisher hash) | CC BY 4.0 |
+| chilli_primary | 8,817 | 8,826 | 40/40 | ✅ publisher-matched | CC BY 4.0 |
+| chilli_secondary | 1,515 | 1,526 | 40/40 | ✅ publisher-matched | CC BY 4.0 |
+| cotton_sarcld2024 | 9,137 | 9,142 | 40/40 | ✅ publisher-matched | CC BY 4.0 |
+| rice_odisha | 5,932 | 5,935 | 40/40 | ✅ publisher-matched | CC BY 4.0 |
+| paddy_doctor_rice | — | — | — | — | **REJECTED** (no licence published) |
+
+Final run re-verified every checksum and skipped every completed download/extraction, confirming **idempotency**.
+
+### Files created / changed
+Created: `scripts/ml/download_datasets.py`, `scripts/ml/dataset-sources.json`, `datasets/manifest-raw.json`, `datasets/licenses/{plantvillage,plantdoc,mendeley-chilli-cotton,rice-odisha}.md`.
+Changed: `.gitignore` (un-ignore the licence records and manifest — they are the compliance evidence and must be committed), `docs/ml/dataset-research.md`, this log, `docs/development/MASTER-TODO.md`.
+
+### Engineering decisions
+1. **Explicit URLs + expected checksums in a declarative registry**, rather than API resolution. Mendeley's `public-api/datasets/{id}/files` returns 403 unauthenticated; explicit URLs also make provenance reviewable and integrity checkable.
+2. **curl transport with automatic fallback.** Mendeley sits behind a Cloudflare bot challenge that rejects Python's TLS fingerprint regardless of User-Agent (403 "Just a moment..."); curl is served normally and brings resume/retry with it.
+3. **Recursive nested extraction** (see findings) using the same traversal-safe extractor, with per-directory markers for idempotency.
+4. **`py7zr` added** — an acquisition-time-only dependency (not part of the product). The Odisha rice data ships as `.7z` and is otherwise unreachable; no system 7-Zip is installed.
+5. **macOS AppleDouble stubs excluded from inventory** — they are metadata, not data, and counting them silently doubled one dataset's apparent size.
+6. **Paddy Doctor rejected, not quietly swapped.** Its registry entry is retained with both blockers documented so the decision is traceable.
+
+### Problems found and fixed (each verified after fixing)
+1. **Mendeley API 403** → switched to explicit publisher URLs.
+2. **Windows cp1252 crash** on the script's Unicode output, mid-download → stream reconfiguration with `errors="replace"`.
+3. **Cloudflare bot challenge** blocking all Python requests → curl transport.
+4. **Windows-illegal filename** in PlantDoc (`IMG_1629.JPG?1507122477.jpg`, plus 86 others) aborted extraction after a successful 939 MB download → path-component sanitisation applied **after** the security checks, with every rename counted.
+5. **Buffered stdout** hid all progress on multi-GB runs → `flush=True` on progress output.
+6. **Nested archives left most data sealed** — cotton reported **0 images**, chilli_primary 2,053 of 8,817 → recursive extraction.
+7. **`.7z` archive unsupported** → rice extracted 0 images → py7zr support with the same path-traversal validation.
+8. **AppleDouble stubs counted as images** (3,030 apparent vs 1,515 real) → excluded, and the corrected count matches the publisher exactly.
+9. **`chilli_secondary` download failed** at 60.2% with `curl: (56) Recv failure: Connection was reset` — an upstream network fault, not a tooling defect. Resumed from the intact `.part` on the follow-up pass.
+10. **`--only` rewrote the manifest** with just the filtered datasets → resolved by running the full set last; noted so future partial runs are followed by a full run.
+
+### Security verification
+Before any real download: zip-slip rejected, absolute paths rejected, tar symlinks rejected, non-HTTPS refused, corrupt images surfaced not hidden. After adding sanitisation and 7z support, the traversal tests were **re-run and still pass** — safety checks execute against the original entry name, sanitisation only afterwards. Nothing downloaded is ever executed. Raw data and archives remain gitignored; only licences, the manifest and scripts are committable.
+
+### Limitations / open items for P0-5
+- **PlantVillage licence contested** (creators CC BY-SA 3.0 vs republication CC0 1.0); we comply with the strictest reading. Whether a trained model is a ShareAlike "adaptation" is unresolved and matters only for commercialisation.
+- **Rice has no healthy class** — a product-level gap requiring an explicit audit decision.
+- **PlantVillage includes `Background_without_leaves`** (~1,145 images) — keep or drop is an audit decision.
+- **Cotton mixes original and augmented** images in one release; augmented data must never enter val/test.
+- Earlier planning recorded a chilli set as CC BY-NC; **verification shows all three Mendeley sets are CC BY 4.0** with no NC or SA clause. ADR-012's swap-before-commercialisation obligation does not apply to them.
+
 ### What comes next
 Next recommended TODO is proposed separately for approval. Nothing beyond P0-3 was implemented.

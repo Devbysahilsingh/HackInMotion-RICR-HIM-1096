@@ -18,9 +18,13 @@ build/
 *.tsbuildinfo
 
 # ── Datasets & model artifacts (see datasets/README.md) ────────────
+# Raw data and archives stay out of git; the small provenance records
+# (manifest + captured licence texts) are committed for compliance.
 datasets/*
 !datasets/README.md
 !datasets/manifest.json
+!datasets/manifest-raw.json
+!datasets/licenses/
 !datasets/lookup/
 *.onnx
 *.pt

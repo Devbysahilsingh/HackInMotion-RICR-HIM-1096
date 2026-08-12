@@ -1,0 +1,217 @@
+{
+  "generated_at": "2026-08-12T17:00:33+00:00",
+  "generator": "scripts/ml/download_datasets.py",
+  "registry_version": 1,
+  "datasets": [
+    {
+      "id": "plantvillage",
+      "name": "PlantVillage (unaugmented) \u2014 tomato/potato/maize subsets used later",
+      "status": "ok",
+      "archives": [
+        {
+          "filename": "Plant_leaf_diseases_dataset_without_augmentation.zip",
+          "url": "https://data.mendeley.com/public-files/datasets/tywbtsjrjv/files/d5652a28-c1d8-4b76-97f3-72fb80f94efc/file_downloaded",
+          "bytes": 868032562,
+          "sha256": "ac3432453984d02a86197987e775a5429d0d59e7cc7c35bcf5a8f50349b90ff0",
+          "downloaded_at": "2026-08-12T17:00:14+00:00"
+        }
+      ],
+      "extracted_files": 55449,
+      "image_files": 55448,
+      "sample_decoded": 40,
+      "corrupt_files": [],
+      "renamed_for_filesystem": 0,
+      "nested_archives_extracted": 0,
+      "macos_stubs_ignored": 0,
+      "top_level_dirs": [
+        "Plant_leave_diseases_dataset_without_augmentation"
+      ],
+      "bytes_on_disk": 861528524,
+      "notes": [
+        "archive present, skipping download: Plant_leaf_diseases_dataset_without_augmentation.zip",
+        "checksum matches published value",
+        "Plant_leaf_diseases_dataset_without_augmentation.zip: 827.8MB sha256=ac3432453984d02a\u2026",
+        "already extracted, skipping",
+        "55448 images; sample-decoded 40/40"
+      ]
+    },
+    {
+      "id": "plantdoc",
+      "name": "PlantDoc (Cropped-PlantDoc classification set) \u2014 field-condition test domain",
+      "status": "ok",
+      "archives": [
+        {
+          "filename": "PlantDoc-Dataset-master.zip",
+          "url": "https://codeload.github.com/pratikkayal/PlantDoc-Dataset/zip/refs/heads/master",
+          "bytes": 984413268,
+          "sha256": "345548bb3659519f425608b428d8a2ca338032b7b02c3cb3c3bb2954fc8986d9",
+          "downloaded_at": "2026-08-12T17:00:22+00:00"
+        }
+      ],
+      "extracted_files": 2576,
+      "image_files": 2573,
+      "sample_decoded": 40,
+      "corrupt_files": [],
+      "renamed_for_filesystem": 0,
+      "nested_archives_extracted": 0,
+      "macos_stubs_ignored": 0,
+      "top_level_dirs": [
+        "PlantDoc-Dataset-master"
+      ],
+      "bytes_on_disk": 996162237,
+      "notes": [
+        "archive present, skipping download: PlantDoc-Dataset-master.zip",
+        "PlantDoc-Dataset-master.zip: 938.8MB sha256=345548bb3659519f\u2026",
+        "already extracted, skipping",
+        "2573 images; sample-decoded 40/40"
+      ]
+    },
+    {
+      "id": "chilli_primary",
+      "name": "Chilli Leaf Disease Image Dataset (Arifen & Islam 2025)",
+      "status": "ok",
+      "archives": [
+        {
+          "filename": "chilli-tm3v4zmh7c-v1.zip",
+          "url": "https://data.mendeley.com/public-api/zip/tm3v4zmh7c/download/1",
+          "bytes": 3037394349,
+          "sha256": "7b95cbbf3b725d3fc7f7315438efb374c5ce58e226473975a28e5079f7a08c4d",
+          "downloaded_at": "2026-08-12T17:00:25+00:00"
+        }
+      ],
+      "extracted_files": 8826,
+      "image_files": 8817,
+      "sample_decoded": 40,
+      "corrupt_files": [],
+      "renamed_for_filesystem": 0,
+      "nested_archives_extracted": 0,
+      "macos_stubs_ignored": 0,
+      "top_level_dirs": [
+        "Chilli Leaf Disease Image Dataset for Classificati"
+      ],
+      "bytes_on_disk": 5594842753,
+      "notes": [
+        "archive present, skipping download: chilli-tm3v4zmh7c-v1.zip",
+        "checksum matches published value",
+        "chilli-tm3v4zmh7c-v1.zip: 2.8GB sha256=7b95cbbf3b725d3f\u2026",
+        "already extracted, skipping",
+        "8817 images; sample-decoded 40/40"
+      ]
+    },
+    {
+      "id": "chilli_secondary",
+      "name": "Chili Leaf Disease Dataset, Bangladesh (Biswas et al.) \u2014 v3",
+      "status": "ok",
+      "archives": [
+        {
+          "filename": "chilli-wzc6r6w5w5-v3.zip",
+          "url": "https://data.mendeley.com/public-api/zip/wzc6r6w5w5/download/3",
+          "bytes": 3249913514,
+          "sha256": "ab81a8e87be3b2bd22aab34ba37aedb74270acc897f7b2b069aa6a6144da7c24",
+          "downloaded_at": "2026-08-12T17:00:29+00:00"
+        }
+      ],
+      "extracted_files": 1526,
+      "image_files": 1515,
+      "sample_decoded": 40,
+      "corrupt_files": [],
+      "renamed_for_filesystem": 0,
+      "nested_archives_extracted": 0,
+      "macos_stubs_ignored": 1519,
+      "top_level_dirs": [
+        "Chili Leaf Disease Dataset Annotated Smartphone Im"
+      ],
+      "bytes_on_disk": 6516934258,
+      "notes": [
+        "archive present, skipping download: chilli-wzc6r6w5w5-v3.zip",
+        "checksum matches published value",
+        "chilli-wzc6r6w5w5-v3.zip: 3.0GB sha256=ab81a8e87be3b2bd\u2026",
+        "already extracted, skipping",
+        "ignored 1519 macOS AppleDouble stub(s) (__MACOSX/._*) \u2014 not real data",
+        "1515 images; sample-decoded 40/40"
+      ]
+    },
+    {
+      "id": "cotton_sarcld2024",
+      "name": "SAR-CLD-2024 cotton leaf disease (Bishshash et al. 2024) \u2014 OD-1 gated",
+      "status": "ok",
+      "archives": [
+        {
+          "filename": "cotton-b3jy2p6k8w-v2.zip",
+          "url": "https://data.mendeley.com/public-api/zip/b3jy2p6k8w/download/2",
+          "bytes": 1568238230,
+          "sha256": "9cb2cca0669f7ff17cd65d16776296eb19dddb13073094d4da2693ca5530189c",
+          "downloaded_at": "2026-08-12T17:00:31+00:00"
+        }
+      ],
+      "extracted_files": 9142,
+      "image_files": 9137,
+      "sample_decoded": 40,
+      "corrupt_files": [],
+      "renamed_for_filesystem": 0,
+      "nested_archives_extracted": 0,
+      "macos_stubs_ignored": 0,
+      "top_level_dirs": [
+        "SAR-CLD-2024 A Comprehensive Dataset for Cotton Leaf Disease Detection"
+      ],
+      "bytes_on_disk": 3168673397,
+      "notes": [
+        "archive present, skipping download: cotton-b3jy2p6k8w-v2.zip",
+        "checksum matches published value",
+        "cotton-b3jy2p6k8w-v2.zip: 1.5GB sha256=9cb2cca0669f7ff1\u2026",
+        "already extracted, skipping",
+        "9137 images; sample-decoded 40/40"
+      ]
+    },
+    {
+      "id": "rice_odisha",
+      "name": "Rice Leaf Disease Image Samples, Odisha India (Sethy 2020)",
+      "status": "ok",
+      "archives": [
+        {
+          "filename": "rice-odisha-fwcj7stb8r-v1.zip",
+          "url": "https://data.mendeley.com/public-api/zip/fwcj7stb8r/download/1",
+          "bytes": 179406830,
+          "sha256": "698171eed58206229693ac90fa47931ed2f1e5796cdc746ce99e4adca88132b3",
+          "downloaded_at": "2026-08-12T17:00:32+00:00"
+        }
+      ],
+      "extracted_files": 5935,
+      "image_files": 5932,
+      "sample_decoded": 40,
+      "corrupt_files": [],
+      "renamed_for_filesystem": 0,
+      "nested_archives_extracted": 0,
+      "macos_stubs_ignored": 0,
+      "top_level_dirs": [
+        "Rice Leaf Disease Images"
+      ],
+      "bytes_on_disk": 386982443,
+      "notes": [
+        "archive present, skipping download: rice-odisha-fwcj7stb8r-v1.zip",
+        "checksum matches published value",
+        "rice-odisha-fwcj7stb8r-v1.zip: 171.1MB sha256=698171eed5820622\u2026",
+        "already extracted, skipping",
+        "5932 images; sample-decoded 40/40"
+      ]
+    },
+    {
+      "id": "paddy_doctor_rice",
+      "name": "Paddy Doctor (rice) \u2014 REJECTED, superseded by rice_odisha",
+      "status": "blocked",
+      "archives": [],
+      "extracted_files": 0,
+      "image_files": 0,
+      "sample_decoded": 0,
+      "corrupt_files": [],
+      "renamed_for_filesystem": 0,
+      "nested_archives_extracted": 0,
+      "macos_stubs_ignored": 0,
+      "top_level_dirs": [],
+      "bytes_on_disk": 0,
+      "notes": [
+        "BLOCKED: NOT ACQUIRED \u2014 team decision 2026-08-12 (option C) substituted rice_odisha. Two independent blockers, both verified: (1) ACCESS: IEEE DataPort requires a PAID subscription (not a free account); no Zenodo deposit exists; the official site links only to Kaggle and IEEE; the GitHub org holds code only. (2) LICENCE: no authoritative licence for the images is published anywhere \u2014 the frequently-cited CC BY-SA 4.0 is the arXiv ARTICLE licence, not the data licence, and the IEEE DataPort record states no licence in any field. Account-free Hugging Face mirrors of the 10,407-image Kaggle subset exist but are unofficial re-uploads that do not launder the upstream ambiguity. Retained here as the decision record; revisit only if the authors publish a licence."
+      ]
+    }
+  ]
+}

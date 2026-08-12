@@ -1,0 +1,147 @@
+{
+  "version": 1,
+  "note": "Declarative provenance registry for TODO P0-4. Every URL was verified reachable without authentication before being added. Licence findings are recorded verbatim in datasets/licenses/ and summarised in docs/ml/dataset-research.md. Acquisition only — class scope is decided by the P0-5 audit, not here.",
+  "sources": [
+    {
+      "id": "plantvillage",
+      "name": "PlantVillage (unaugmented) — tomato/potato/maize subsets used later",
+      "crops": ["tomato", "potato", "maize"],
+      "provenance": {
+        "publisher": "Mendeley Data",
+        "record": "https://data.mendeley.com/datasets/tywbtsjrjv/1",
+        "doi": "10.17632/tywbtsjrjv.1",
+        "original_authors": "Hughes & Salathé (2015); Mohanty, Hughes & Salathé (2016)",
+        "citation": "Mohanty, S.P., Hughes, D.P., Salathé, M. (2016). Using deep learning for image-based plant disease detection. Frontiers in Plant Science 7. DOI 10.3389/fpls.2016.01419",
+        "licence_disagreement": "Creators state CC BY-SA 3.0 (PlantVillage/PSU and Mohanty's own dataset card); this Mendeley republication asserts CC0 1.0; Zenodo mirror and TFDS catalog say CC BY 4.0. We comply with the strictest reading (attribution + share-alike) and do not redistribute the data. See datasets/licenses/plantvillage.txt.",
+        "selection_note": "The 'without augmentation' archive is used deliberately: the pre-augmented variant would leak near-duplicates across train/val splits."
+      },
+      "files": [
+        {
+          "filename": "Plant_leaf_diseases_dataset_without_augmentation.zip",
+          "url": "https://data.mendeley.com/public-files/datasets/tywbtsjrjv/files/d5652a28-c1d8-4b76-97f3-72fb80f94efc/file_downloaded",
+          "expected_bytes": 868032562,
+          "expected_sha256": "ac3432453984d02a86197987e775a5429d0d59e7cc7c35bcf5a8f50349b90ff0"
+        }
+      ]
+    },
+    {
+      "id": "plantdoc",
+      "name": "PlantDoc (Cropped-PlantDoc classification set) — field-condition test domain",
+      "crops": ["tomato", "potato", "maize", "other"],
+      "provenance": {
+        "publisher": "GitHub — pratikkayal/PlantDoc-Dataset (authors' own repository)",
+        "record": "https://github.com/pratikkayal/PlantDoc-Dataset",
+        "citation": "Singh, D., Jain, N., Jain, P., Kayal, P., Kumawat, S., Batra, N. (2020). PlantDoc: A Dataset for Visual Plant Disease Detection. CoDS-COMAD 2020, 249-253. DOI 10.1145/3371158.3371196",
+        "licence": "CC BY 4.0 — full legal code present as LICENSE.txt in the repository; GitHub API reports cc-by-4.0; README concurs. No disagreement found.",
+        "scope_note": "This repository hosts the CROPPED classification variant (train/ and test/ class folders), which is what a leaf-disease classifier needs. The 2,598-image figure in the paper refers to the detection dataset with bounding boxes, hosted separately."
+      },
+      "files": [
+        {
+          "filename": "PlantDoc-Dataset-master.zip",
+          "url": "https://codeload.github.com/pratikkayal/PlantDoc-Dataset/zip/refs/heads/master",
+          "expected_bytes": null,
+          "expected_sha256": null,
+          "integrity_note": "GitHub codeload responses are chunked and the archive is generated per-request, so no publisher checksum or Content-Length exists. Our own sha256 is recorded in the manifest for local reproducibility."
+        }
+      ]
+    },
+    {
+      "id": "chilli_primary",
+      "name": "Chilli Leaf Disease Image Dataset (Arifen & Islam 2025)",
+      "crops": ["chilli"],
+      "provenance": {
+        "publisher": "Mendeley Data",
+        "record": "https://data.mendeley.com/datasets/tm3v4zmh7c/1",
+        "doi": "10.17632/tm3v4zmh7c.1",
+        "version_used": 1,
+        "citation": "Arifen, R., & Islam, S. M. M. (2025). Chilli Leaf Disease Image Dataset for Classification and Early Diagnosis in Agriculture [Dataset]. Mendeley Data. https://doi.org/10.17632/tm3v4zmh7c.1",
+        "licence": "CC BY 4.0 (Creative Commons Attribution 4.0 International) — verified from the Mendeley licence object. Commercial use, redistribution and modification permitted with attribution.",
+        "structure_note": "Mixed layout: four disease classes ship as ZIPs at the archive root, two more (Nutrition_Deficiency, Powdery_Mildew) are loose image folders. The whole-dataset archive is used because the per-file API caps at 1000 entries and cannot fully enumerate Nutrition_Deficiency (claimed 1,207 images)."
+      },
+      "files": [
+        {
+          "filename": "chilli-tm3v4zmh7c-v1.zip",
+          "url": "https://data.mendeley.com/public-api/zip/tm3v4zmh7c/download/1",
+          "expected_bytes": 3037394349,
+          "expected_sha256": "7b95cbbf3b725d3fc7f7315438efb374c5ce58e226473975a28e5079f7a08c4d"
+        }
+      ]
+    },
+    {
+      "id": "chilli_secondary",
+      "name": "Chili Leaf Disease Dataset, Bangladesh (Biswas et al.) — v3",
+      "crops": ["chilli"],
+      "provenance": {
+        "publisher": "Mendeley Data",
+        "record": "https://data.mendeley.com/datasets/wzc6r6w5w5/3",
+        "doi": "10.17632/wzc6r6w5w5.3",
+        "version_used": 3,
+        "citation": "Biswas, J., Hossain, M. S., & Hasan, M. M. (2026). Chili Leaf Disease Dataset: Annotated Smartphone Images of Anthracnose, Cercospora Leaf Spot, Leaf Curl Disease, and Healthy Leaves in Bangladesh [Dataset]. Mendeley Data. https://doi.org/10.17632/wzc6r6w5w5.3",
+        "licence": "CC BY 4.0 — verified from the Mendeley licence object.",
+        "version_note": "v3 (latest) is used and pinned by DOI. It differs materially from v2: 1,515 images vs 1,544, and the healthy class was renamed 'Fresh Leaf' (v3 per-class: Anthracnose 347, Cercospora 367, Leaf Curl 369, Fresh Leaf 432). Earlier planning docs referenced v2's 1,544 figure; the P0-5 audit reconciles the label map.",
+        "geography_note": "Bangladesh-collected. Agroclimatically close to eastern India but a proxy, not Indian field data — disclosed in docs/ml/dataset-research.md."
+      },
+      "files": [
+        {
+          "filename": "chilli-wzc6r6w5w5-v3.zip",
+          "url": "https://data.mendeley.com/public-api/zip/wzc6r6w5w5/download/3",
+          "expected_bytes": 3249913514,
+          "expected_sha256": "ab81a8e87be3b2bd22aab34ba37aedb74270acc897f7b2b069aa6a6144da7c24"
+        }
+      ]
+    },
+    {
+      "id": "cotton_sarcld2024",
+      "name": "SAR-CLD-2024 cotton leaf disease (Bishshash et al. 2024) — OD-1 gated",
+      "crops": ["cotton"],
+      "provenance": {
+        "publisher": "Mendeley Data",
+        "record": "https://data.mendeley.com/datasets/b3jy2p6k8w/2",
+        "doi": "10.17632/b3jy2p6k8w.2",
+        "version_used": 2,
+        "citation": "Bishshash, P., Nirob, M. A. S., Shikder, M. H., & Sarower, A. (2024). SAR-CLD-2024: A Comprehensive Dataset for Cotton Leaf Disease Detection [Dataset]. Mendeley Data. https://doi.org/10.17632/b3jy2p6k8w.2",
+        "licence": "CC BY 4.0 — verified from the Mendeley licence object.",
+        "structure_note": "Archive contains BOTH 'Original Dataset.zip' (~270 MB, 2,137 images) and 'Augmented Dataset.zip' (~1.30 GB, 7,000 images). The augmented images MUST be excluded from validation and test splits, or near-duplicates will inflate metrics — enforced during P0-6 preparation.",
+        "gate_note": "Cotton's promotion to SPECIALIZED ML support is decision OD-1, resolved by the P0-5 audit on evidence. Acquisition here does not pre-judge it."
+      },
+      "files": [
+        {
+          "filename": "cotton-b3jy2p6k8w-v2.zip",
+          "url": "https://data.mendeley.com/public-api/zip/b3jy2p6k8w/download/2",
+          "expected_bytes": 1568238230,
+          "expected_sha256": "9cb2cca0669f7ff17cd65d16776296eb19dddb13073094d4da2693ca5530189c"
+        }
+      ]
+    },
+    {
+      "id": "rice_odisha",
+      "name": "Rice Leaf Disease Image Samples, Odisha India (Sethy 2020)",
+      "crops": ["rice"],
+      "provenance": {
+        "publisher": "Mendeley Data",
+        "record": "https://data.mendeley.com/datasets/fwcj7stb8r/1",
+        "doi": "10.17632/fwcj7stb8r.1",
+        "version_used": 1,
+        "citation": "Sethy, P. K. (2020). Rice Leaf Disease Image Samples [Dataset]. Mendeley Data. https://doi.org/10.17632/fwcj7stb8r.1",
+        "licence": "CC BY 4.0 (Creative Commons Attribution 4.0 International) — verified directly from the Mendeley licence object. Commercial use, redistribution and modification permitted with attribution.",
+        "selection_rationale": "Approved substitute for Paddy Doctor (team decision, option C). Chosen because it is real Indian field data — collected at Sambalpur/Bargarh, Odisha — with an unambiguous, verifiable licence. Paddy Doctor offers more classes but sits behind a paid IEEE DataPort subscription AND publishes no licence for its images, which we will not misrepresent.",
+        "scope_note": "Published as 5,932 images across 4 classes (bacterial blight, blast, brown spot, tungro). Note there is no 'healthy' class — the P0-5 audit must decide how rice healthy-leaf coverage is handled, since a classifier with no healthy class cannot report a healthy crop. Actual counts come from the audit, not this description."
+      },
+      "files": [
+        {
+          "filename": "rice-odisha-fwcj7stb8r-v1.zip",
+          "url": "https://data.mendeley.com/public-api/zip/fwcj7stb8r/download/1",
+          "expected_bytes": 179406830,
+          "expected_sha256": "698171eed58206229693ac90fa47931ed2f1e5796cdc746ce99e4adca88132b3"
+        }
+      ]
+    },
+    {
+      "id": "paddy_doctor_rice",
+      "name": "Paddy Doctor (rice) — REJECTED, superseded by rice_odisha",
+      "crops": ["rice"],
+      "blocked": "NOT ACQUIRED — team decision 2026-08-12 (option C) substituted rice_odisha. Two independent blockers, both verified: (1) ACCESS: IEEE DataPort requires a PAID subscription (not a free account); no Zenodo deposit exists; the official site links only to Kaggle and IEEE; the GitHub org holds code only. (2) LICENCE: no authoritative licence for the images is published anywhere — the frequently-cited CC BY-SA 4.0 is the arXiv ARTICLE licence, not the data licence, and the IEEE DataPort record states no licence in any field. Account-free Hugging Face mirrors of the 10,407-image Kaggle subset exist but are unofficial re-uploads that do not launder the upstream ambiguity. Retained here as the decision record; revisit only if the authors publish a licence.",
+      "files": []
+    }
+  ]
+}
