@@ -5,3 +5,7 @@ coverage/
 datasets/
 docs/**/*.md
 *.md
+
+# Design-tool exports kept as visual reference, not source we author.
+# Reformatting them would diverge from the tool output for no benefit.
+assets/
