@@ -1,0 +1,59 @@
+# ── Secrets (never commit; .env.example is tracked instead) ────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+!**/public/**/*.key
+
+# ── Dependencies ───────────────────────────────────────────────────
+node_modules/
+.pnp/
+.pnp.js
+
+# ── Build output ───────────────────────────────────────────────────
+dist/
+build/
+.vite/
+*.tsbuildinfo
+
+# ── Datasets & model artifacts (see datasets/README.md) ────────────
+datasets/*
+!datasets/README.md
+!datasets/manifest.json
+!datasets/lookup/
+*.onnx
+*.pt
+*.pth
+*.ckpt
+
+# ── Python (ml-service, training) ──────────────────────────────────
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# ── Test & coverage output ─────────────────────────────────────────
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+
+# ── Logs ───────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+logs/
+
+# ── Editors / OS ───────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# ── Mobile (Expo, added in Phase 6) ────────────────────────────────
+.expo/
+*.apk
+*.aab

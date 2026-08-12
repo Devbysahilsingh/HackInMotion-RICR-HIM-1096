@@ -1,0 +1,20 @@
+# Gitleaks configuration (depth layer — see .githooks/pre-commit and ADR-020).
+# Layer 1 (scripts/scan-staged-secrets.mjs) always runs; this adds gitleaks'
+# full rule set on machines where the binary is installed.
+#
+# Deliberately minimal allowlisting, verified against the full tree:
+#   * Documentation is NOT path-excluded — a credential pasted into a doc is caught here too.
+#   * No broad value regexes (e.g. matching the word "example"): such a rule silently
+#     hides real findings — during P0-3 verification it suppressed AWS's own published
+#     test access key, whose value ends in that word. Only whole files that exist to
+#     hold placeholders are excluded.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Template and detector-source files whose contents are placeholders or rule patterns"
+paths = [
+  '''\.env\.example$''',
+  '''^scripts/scan-staged-secrets\.mjs$''',
+]

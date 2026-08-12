@@ -1,0 +1,14 @@
+#!/bin/sh
+# Pre-commit gate. Enabled by `npm install` at the repo root (prepare script),
+# or manually: git config core.hooksPath .githooks
+set -e
+
+# Layer 1 (always runs, no external install required).
+node scripts/scan-staged-secrets.mjs
+
+# Layer 2 (depth): gitleaks, when available on this machine.
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks protect --staged --redact --config .gitleaks.toml
+else
+  echo "ℹ gitleaks not installed — layer 1 scan applied. Optional: https://github.com/gitleaks/gitleaks"
+fi

@@ -1,0 +1,29 @@
+{
+  "name": "him-1096-root",
+  "private": true,
+  "type": "module",
+  "description": "Repo-level tooling for the Smart Farm Decision Support System (HackInMotion HIM-1096). Apps keep their own package.json — see docs/decisions/ADR-019.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "prepare": "git config core.hooksPath .githooks",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "scan:secrets": "node scripts/scan-staged-secrets.mjs",
+    "verify": "npm run lint && npm run format:check"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.15.0",
+    "eslint": "^9.15.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.14",
+    "globals": "^15.12.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.15.0"
+  }
+}

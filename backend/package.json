@@ -1,0 +1,27 @@
+{
+  "name": "him-1096-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Express API for the Smart Farm Decision Support System (HIM-1096)",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --env-file=.env --watch src/server.js",
+    "lint": "eslint src",
+    "test": "node --test tests/**/*.test.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.0.1",
+    "helmet": "^8.0.0",
+    "pino": "^9.5.0",
+    "pino-http": "^10.3.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "pino-pretty": "^13.0.0"
+  }
+}
