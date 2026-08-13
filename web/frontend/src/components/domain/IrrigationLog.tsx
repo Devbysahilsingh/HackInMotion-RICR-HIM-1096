@@ -66,11 +66,14 @@ export function IrrigationLogForm({ cropId }: { cropId: string }) {
 
   const submit = handleSubmit((values) => {
     setFormError(null);
-    const amount = values.amountMm === '' || values.amountMm === undefined ? undefined : Number(values.amountMm);
+    const amount =
+      values.amountMm === '' || values.amountMm === undefined ? undefined : Number(values.amountMm);
 
     log.mutate({
       date: new Date(`${values.date}T12:00:00`).toISOString(),
-      ...(amount !== undefined && Number.isFinite(amount) && amount > 0 ? { amountMm: amount } : {}),
+      ...(amount !== undefined && Number.isFinite(amount) && amount > 0
+        ? { amountMm: amount }
+        : {}),
     });
   });
 

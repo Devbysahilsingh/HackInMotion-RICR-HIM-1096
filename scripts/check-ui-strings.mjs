@@ -28,11 +28,23 @@
  * Usage:
  *   node scripts/check-ui-strings.mjs [--json]
  */
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
-const SRC = fileURLToPath(new URL('../web/frontend/src/', import.meta.url));
+/**
+ * Both client surfaces. They are scanned together rather than by two scripts
+ * because the rule — no farmer-facing string outside `shared/i18n` — is one
+ * rule, and a second copy of this scanner would be a second place for it to rot.
+ */
+const ROOTS = [
+  {
+    label: 'web/frontend/src',
+    dir: fileURLToPath(new URL('../web/frontend/src/', import.meta.url)),
+  },
+  { label: 'mobile/src', dir: fileURLToPath(new URL('../mobile/src/', import.meta.url)) },
+];
+
 const asJson = process.argv.includes('--json');
 
 /** Files exempt, each for a stated reason. */
@@ -42,8 +54,20 @@ const EXEMPT = [
   { match: /[\\/]dev[\\/]/, why: 'dev-only surface, stripped from production builds' },
 ];
 
-/** Attributes whose literal value a farmer can read. */
-const VISIBLE_ATTRIBUTES = ['placeholder', 'title', 'alt', 'aria-label'];
+/**
+ * Attributes whose literal value a farmer can read — or hear. The last three
+ * are React Native's: a screen reader speaks `accessibilityLabel` exactly as
+ * written, so an English literal there is just as untranslated as visible text.
+ */
+const VISIBLE_ATTRIBUTES = [
+  'placeholder',
+  'title',
+  'alt',
+  'aria-label',
+  'accessibilityLabel',
+  'accessibilityHint',
+  'accessibilityValue',
+];
 
 /**
  * Prose test: a lowercase letter, a space, then a letter. `Add a crop` matches;
@@ -52,6 +76,7 @@ const VISIBLE_ATTRIBUTES = ['placeholder', 'title', 'alt', 'aria-label'];
 const looksLikeProse = (value) => /[a-z]\s+[A-Za-z]/.test(value.trim()) && value.trim().length > 3;
 
 function sourceFiles(dir) {
+  if (!existsSync(dir)) return [];
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) return sourceFiles(full);
@@ -62,9 +87,15 @@ function sourceFiles(dir) {
 const findings = [];
 const exempted = [];
 
-for (const file of sourceFiles(SRC)) {
-  const relative = path.relative(SRC, file).replace(/\\/g, '/');
+const scanned = ROOTS.flatMap((root) =>
+  sourceFiles(root.dir).map((file) => ({
+    file,
+    // Prefixed with the surface so a failure names the app it is in.
+    relative: `${root.label}/${path.relative(root.dir, file).replace(/\\/g, '/')}`,
+  })),
+);
 
+for (const { file, relative } of scanned) {
   const exemption = EXEMPT.find((rule) => rule.match.test(file));
   if (exemption) {
     exempted.push({ file: relative, why: exemption.why });
@@ -122,7 +153,7 @@ for (const file of sourceFiles(SRC)) {
 if (asJson) {
   console.log(JSON.stringify({ ok: findings.length === 0, findings, exempted }, null, 2));
 } else {
-  console.log('UI string check — web/frontend/src\n');
+  console.log(`UI string check — ${ROOTS.map((root) => root.label).join(', ')}\n`);
 
   if (findings.length === 0) {
     console.log(`No hardcoded user-facing strings found.`);

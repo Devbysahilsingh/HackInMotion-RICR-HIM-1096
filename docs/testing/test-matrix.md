@@ -22,7 +22,11 @@
 | NFR-3/4 security/privacy | all ST suites | — | — | ST-01..70 |
 Full per-endpoint rows generated in the living version during implementation (kept in this file).
 
-## Implemented (P1 + P2 + P3) — 1,203 backend tests + 141 ml-service pytest tests
+## Implemented — current totals (2026-08-14): **1,279 backend · 109 web · 90 mobile · 141 ml-service pytest**
+
+_The per-suite tables below were written at the phase that added them; the counts in their rows are the counts at that time. The totals above are from the most recent full run._
+
+### P1 + P2 + P3 (backend stood at 1,203 when these landed)
 
 | Suite | File (`backend/tests/`) | Covers |
 |---|---|---|
@@ -72,7 +76,7 @@ Full per-endpoint rows generated in the living version during implementation (ke
 | Disease KB i18n | `backend/tests/i18n/disease-keys.test.js` | every registry-referenced disease key resolves in English · no orphan/empty strings either way · Hindi shortfall reported rather than hidden (**0/408**) | 7 |
 | ml-service | `ml-service/tests/` (`test_config`, `test_health_and_docs`, `test_logging`, `test_manifest`, `test_policy`, `test_predict_api`, `test_predictor`, `test_preprocessing`, `test_security`) | config fail-fast · key required in every environment and compared over fixed-width digests · `/predict` 401 without/with wrong key, checked before the body is parsed · magic-byte and bomb guards · policy: a prediction is never forced (swept over every crop × confidence) · manifest class-contract drift · image bytes never reach a log line | 141 |
 
-**Resilience matrix:** RES-01 (primary down → fallback), RES-02 (both down → last-known-good, labelled), RES-03 (malformed payload → cache untouched) and RES-07 (mandi source down/stale → seeded history, labelled Historical) are implemented in the suites above. RES-04..06 (ml-service down → AI-assisted; ML+Gemini down → OpenRouter → rules; all AI down → rules) are covered **as behaviour** by the tier-router matrix, which asserts the source label, escalation flag and per-hop reason code for each of those states; what is not done is the RES procedure itself — toggling `FORCE_FAIL_ML`/`GEMINI`/`OPENROUTER` against a running deployment and observing the UI, which needs a deployed ml-service and the client apps. RES-09..12 (offline/mobile) are not implemented — they need the client apps.
+**Resilience matrix:** RES-01 (primary down → fallback), RES-02 (both down → last-known-good, labelled), RES-03 (malformed payload → cache untouched) and RES-07 (mandi source down/stale → seeded history, labelled Historical) are implemented in the suites above. RES-04..06 (ml-service down → AI-assisted; ML+Gemini down → OpenRouter → rules; all AI down → rules) are covered **as behaviour** by the tier-router matrix, which asserts the source label, escalation flag and per-hop reason code for each of those states; what is not done is the RES procedure itself — toggling `FORCE_FAIL_ML`/`GEMINI`/`OPENROUTER` against a running deployment and observing the UI, which needs a deployed ml-service.
 
 **Resolved:** the `varietyClass` defect that suite recorded is fixed — `CropRegistry`'s fertilizer sub-schema now declares the field, so TNAU's three rice doses and two cotton doses reach the farmer labelled with the variety class each applies to. The recording test was replaced with a positive end-to-end assertion (knowledge file → seed → wire).
 
@@ -84,7 +88,39 @@ Full per-endpoint rows generated in the living version during implementation (ke
 | ST-40 | instruction-injection in the health `description` | covered — `integrations/aiVision.test.js` adversarial fixtures: the injected instruction is both quarantined in the untrusted-note block **and** stripped, and the built prompt is asserted against it |
 | ST-40 | XSS payload round-trip (stored text escaped on render — RTL test) | **not covered** — needs the web client |
 | ST-60 | ml-service `/predict` without key → 401, wrong key → 401 | covered — `ml-service/tests/test_predict_api.py` + `test_security.py` (incl. auth-before-body-parse and fixed-width digest compare). The "+ audit" half is not: ml-service writes no audit record |
-| ST-60 | Gemini key absent from all client bundles (grep `dist`/APK) | **not covered** — no client bundle exists yet |
+| ST-60 | Gemini key absent from all client bundles (grep `dist`/APK) | **⚠ BLOCKED** — the client apps now exist and the scanner does too: `scripts/scan-apk-strings.mjs` (`npm run scan:apk <file.apk>`, also `--bundle <file>`) reads the archive with Node's zlib, decompresses every text member (`assets/index.android.bundle` above all) and matches credential *shapes* — Google/OpenRouter/OpenAI/Groq keys, a Cloudinary URL, a Mongo SRV URI, AWS ids, private-key blocks — rather than a denylist of this project's keys, so a secret nobody thought to list still matches. A finding reports member + byte offset + **pattern name** and never the matched text. **It has never been run against a real artefact: no APK has been built** (`eas init` not run, no Expo account linked). The web `dist` half is likewise unscanned. What holds by construction meanwhile: the mobile bundle carries exactly one `EXPO_PUBLIC_*` value, the API base URL (`mobile/src/config/env.ts`) |
 | ST-60 | kill-switch flags degrade without auth impact | covered — `utils/httpClient.test.js` (flags are routing-only and inert in production, incl. the Phase-3 providers) + the tier-router matrix rows that assert a `disabled` hop lands in `escalationPath` and the chain still answers |
 
-Not yet implemented: the ST-40 per-endpoint `$`-operator sweep, the ST-40 XSS round-trip, the ST-60 client-bundle key grep, RES-09..12, and the live RES-04..06 procedure — the last four need the client apps or a deployed ml-service.
+Not yet implemented: the ST-40 per-endpoint `$`-operator sweep, the ST-40 XSS round-trip, the ST-60 client-bundle key grep (blocked on a built artefact), RES-09..12 (device procedures — see below), and the live RES-04..06 procedure (needs a deployed ml-service).
+
+### Added in P6 — mobile (2026-08-14)
+
+**11 suites / 90 tests, all passing** (`npm --prefix mobile test`, jest-expo); `tsc --noEmit` clean. Web rose to **109 / 109** across 14 files, backend to **1,279 / 1,279** across 255 suites.
+
+| Suite | File (`mobile/src/`) | Covers | Tests |
+|---|---|---|---|
+| axios interceptors | `api/client.test.ts` | bearer header · `X-Request-Id` incl. the non-Hermes fallback · single-flight refresh under concurrent 401s · exactly one replay · rotated token stored before the access token is published · **a refusal clears the credential, a transport failure does not** · `Retry-After` parsing · the whole `toApiError` taxonomy · envelope unwrapping | 16 |
+| Token custody | `api/session.test.ts` | access token memory-only · refresh token SecureStore-only · SecureStore failures swallowed to null · the session-lost event bus | 8 |
+| Upload state machine | `hooks/useAnalyze.test.ts` | every stage transition · observed (never timed) progress · cancel aborts and orphans the run · **retry re-sends the same compressed bytes** (RES-10's testable half) · all seven failure classes against the exact envelopes `middleware/uploadImage.js` emits | 23 |
+| Analyzing screen | `screens/scan/AnalyzingScreen.test.tsx` | staged live-region copy · determinate progress only while measurable · cancel confirmation · per-kind failure panel incl. the `Retry-After` wait sentence | 5 |
+| Geolocation | `hooks/useGeolocation.test.ts` | the failure taxonomy kept distinct — services off vs. refusal vs. can't-ask-again vs. timeout vs. provider error vs. outside-India · six-decimal rounding · boundary accepted · a late fix discarded after `clear()` | 11 |
+| Network detection | `hooks/useOnlineManager.test.ts` | NetInfo → React Query's online manager · `isInternetReachable ?? isConnected` · the `known` flag before the first event | 5 |
+| Foreground refetch | `hooks/useAppStateRefetch.test.tsx` | fires only on the background→active edge · only when online · suppressible (the camera flow stands it down) · registry exempt | 6 |
+| Offline write guard | `hooks/useOfflineWriteGuard.test.tsx` | blocked only once NetInfo has answered · reason string | 3 |
+| Registry prefetch | `hooks/usePrefetchRegistry.test.tsx` | once per signed-in session · skipped offline · retried on reconnect · list then crops · not marked warmed on failure | 5 |
+| Domain components | `components/domain/{WhyTrace,IrrigationVerdictCard}.test.tsx` | heterogeneous trace steps render whatever numbers they carry · verdict copy · the three honesty labels · the null-verdict branch | 8 |
+
+Also added on the web, closing holes the old fixtures had been hiding (see the Phase 6 implementation-log entry — five wire-type drifts): `components/domain/FertilizerGuidanceView.test.tsx` (6), `components/domain/IrrigationVerdictCard.test.tsx` (3), `pages/health/SymptomCheckPage.test.tsx` (3), and a rewritten escalation-path assertion in `AnalysisResult.test.tsx` that requires each provider to appear by name and the string `undefined` to appear nowhere.
+
+**RES-09..12 — the client apps exist; the scenarios have not been run.**
+
+| # | Scenario | Status |
+|---|---|---|
+| RES-09 | mobile cold-start offline → cached dashboard renders + banners | **⏳ MANUAL DEVICE TEST PENDING.** The mechanism is built and partly unit-tested: `PersistQueryClientProvider` (AsyncStorage, 24h `maxAge`, success-only dehydration), NetInfo-driven online manager (5 tests), offline banner, and an `AuthContext` bootstrap that checks NetInfo *before* attempting a refresh. Rendering last session's dashboard on a handset with no signal is a device observation. |
+| RES-10 | connection drop mid-upload → retry UX, image retained, no orphan logs | **⚠ PARTIAL.** The client half is asserted in `hooks/useAnalyze.test.ts`: the compressed file is held in a ref and `retry()` re-sends the same bytes; a `network` failure sets `canRetrySameImage`. The orphan-log half is a backend property already covered by the tier-router matrix. The airplane-toggle-mid-flight procedure is ⏳ MANUAL DEVICE TEST PENDING. |
+| RES-11 | token expiry offline → read-only cached mode, no wipe | **⚠ PARTIAL.** Two guards are code-verified and one is unit-tested: `AuthContext` does not attempt the refresh at all while NetInfo reports offline, and `api/client.ts` clears the SecureStore token only when the server actually answered (`error.response != null`) — asserted in `api/client.test.ts`. The device scenario is ⏳ MANUAL DEVICE TEST PENDING. Known residual: a captive portal answers with an HTTP response and is therefore indistinguishable from a refusal. |
+| RES-12 | recovery (flags off) → labels flip to ● Live on next fetch, no stuck state | **⏳ MANUAL DEVICE TEST PENDING.** `refetchOnReconnect` is on and the online manager is NetInfo-driven (unit-tested), but "no stuck state" is a claim about the UI after a real reconnect. |
+
+**None of RES-09..12 may be reported as passing.** They are device scenarios and no physical device or emulator has run the app. The full scripted matrix is `docs/mobile/testing.md` (17 rows, **zero executed**).
+
+**ST-60 client half** — see the ST-60 rows above: the scanner exists, no APK does.

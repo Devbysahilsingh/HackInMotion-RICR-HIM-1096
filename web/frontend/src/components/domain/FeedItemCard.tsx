@@ -122,9 +122,7 @@ export function FeedItemCard({
  */
 function isFreshness(value: unknown): value is Freshness {
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    typeof (value as Freshness).status === 'string'
+    typeof value === 'object' && value !== null && typeof (value as Freshness).status === 'string'
   );
 }
 

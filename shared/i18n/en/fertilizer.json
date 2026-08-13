@@ -28,6 +28,7 @@
   "schedule.topdress.ureaProduct": "The published urea quantity",
   "scheduleHeading": "When to apply",
   "soilTestCta": "A free Soil Health Card gives figures for your own field. Visit soilhealth.dac.gov.in or call the Kisan Call Centre on 1800-180-1551.",
+  "timingNotPublished": "The source does not publish a day count for this application, so we cannot say when it falls.",
   "typeGeneralNoSoilTest": "General recommendation (no soil test) — compiled from published TNAU, PAU and ICAR sources",
   "unitNotPublished": "The source did not print a unit for this quantity, so it is shown exactly as published.",
   "varietyClassLabel": "For: {{varietyClass}}",

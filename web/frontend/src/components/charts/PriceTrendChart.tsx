@@ -30,13 +30,7 @@ import { AXIS_PROPS, CHART } from './theme';
  * value per day rather than a sawtooth of mandi-by-mandi noise. The averaging
  * is stated in the caption, not hidden.
  */
-export function PriceTrendChart({
-  series,
-  days,
-}: {
-  series: MarketPricePoint[];
-  days: number;
-}) {
+export function PriceTrendChart({ series, days }: { series: MarketPricePoint[]; days: number }) {
   const { t } = useTranslation(['market', 'common']);
   const { language } = useLanguage();
 

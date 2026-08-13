@@ -49,7 +49,9 @@ export function HealthLogList({ logs }: { logs: HealthLogSummary[] }) {
                 <div className="flex flex-wrap gap-1.5">
                   <SourceLabel sourceLabelKey={log.analysis.sourceLabelKey} />
                   {log.analysis.severityAssessment && (
-                    <Badge tone={log.analysis.severityAssessment === 'SEVERE' ? 'danger' : 'neutral'}>
+                    <Badge
+                      tone={log.analysis.severityAssessment === 'SEVERE' ? 'danger' : 'neutral'}
+                    >
                       {t(`health:severity${toTitleCase(log.analysis.severityAssessment)}`)}
                     </Badge>
                   )}

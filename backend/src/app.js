@@ -31,6 +31,7 @@ import { marketRouter } from './routes/market.js';
 import { registryRouter } from './routes/registry.js';
 import { cropHealthRouter } from './routes/cropHealth.js';
 import { communityRouter } from './routes/community.js';
+import { usersRouter } from './routes/users.js';
 
 export const API_PREFIX = '/api/v1';
 
@@ -82,6 +83,7 @@ export function createApp({ extraRouters = [] } = {}) {
   app.use(healthRouter);
 
   app.use(`${API_PREFIX}/auth`, authRouter);
+  app.use(`${API_PREFIX}/users`, usersRouter);
   // Crops are addressed both under their farm and directly, so this router
   // mounts at the API root and declares both path shapes itself. It is mounted
   // before the farms router because `/farms/:id/crops` shares that prefix:

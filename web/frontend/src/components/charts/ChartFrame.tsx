@@ -38,9 +38,7 @@ export function ChartFrame({
     return (
       <figure className="rounded-xl border border-line bg-surface p-4">
         <figcaption className="text-sm font-semibold">{title}</figcaption>
-        <p className="py-10 text-center text-sm text-ink-500">
-          {emptyMessage ?? t('state.empty')}
-        </p>
+        <p className="py-10 text-center text-sm text-ink-500">{emptyMessage ?? t('state.empty')}</p>
       </figure>
     );
   }

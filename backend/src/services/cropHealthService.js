@@ -459,6 +459,15 @@ function buildSnapshot({ analysis, disease, severity, asOf }) {
       aiObservations: analysis.visualFindings ?? [],
       imageAssessment: analysis.imageAssessment ?? null,
       supportLevel: analysis.supportLevel ?? analysis.registryCrop?.supportLevel ?? null,
+      /**
+       * Kept so the severity follow-up can re-run the engine over the *same*
+       * inputs it saw the first time. Without it, `POST /logs/:id/severity`
+       * re-assessed with `severityVisual: null` and silently discarded the AI
+       * tier's visual estimate — the farmer's answers alone decided the level,
+       * which is not the documented policy (severityEngine.js: the visual
+       * estimate is "one input among" several).
+       */
+      severityVisual: analysis.severityVisual ?? null,
       severityTrace: severity.trace,
       generatedAt: asOf.toISOString(),
     },

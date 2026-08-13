@@ -2,8 +2,10 @@
 
 | | |
 |---|---|
-| PATCH `/users/me` | Auth |
-Req any of `{name, language, units, voiceEnabled, communityConsent}` → 200 `{user}`. communityConsent toggling to false stops future sharing (existing aggregates are anonymous counts, unaffected — documented in privacy). Errors: 422.
+| PATCH `/users/me` | Auth · RL 30/h/user |
+Req any of `{language, units{land}, voiceEnabled, communityConsent}` → 200 `{user}` — the same `toPublicJSON` projection `GET /auth/me` returns. Body is **strict**: at least one field is required (empty → 422) and an undeclared field is rejected rather than stripped, so `id`, `email` and `passwordHash` cannot be smuggled in. `me` is a literal — the document written is always the token's own account, and there is no `:id` form. communityConsent toggling to false stops future sharing (existing aggregates are anonymous counts, unaffected — documented in privacy); a real transition writes the `consent_changed` audit event. Errors: 401, 422, 429.
+
+`name` is **not** yet accepted: no client edits it, and adding it here without that need would widen the write surface for nothing. Password and account deletion are the two endpoints below, not fields here.
 
 | | |
 |---|---|

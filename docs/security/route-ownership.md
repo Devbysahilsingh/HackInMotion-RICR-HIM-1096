@@ -20,6 +20,7 @@ The authoritative machine-readable copy is `backend/src/routes/ownership-table.j
 | POST | `/api/v1/auth/refresh` | public¹ | none | — | — |
 | POST | `/api/v1/auth/logout` | required | none | — | — |
 | GET | `/api/v1/auth/me` | required | none | — | — |
+| PATCH | `/api/v1/users/me` | required | none³ | — | — |
 | GET | `/api/v1/farms` | required | scoped | farms | — |
 | POST | `/api/v1/farms` | required | none² | — | — |
 | GET | `/api/v1/farms/:id` | required | direct | farm | `id` |
@@ -34,6 +35,7 @@ The authoritative machine-readable copy is `backend/src/routes/ownership-table.j
 
 ¹ Public in the sense that it carries no access token — it is authenticated by the refresh token itself (cookie or body).
 ² Creation has no existing document to own; ownership is *assigned* from the session, never accepted from the body.
+³ Self-owned: `me` is a literal, not an id. The document is the one `requireAuth` resolved from the access token, so there is no parent chain to verify and no id a caller could substitute — the same shape as `GET /auth/me`. `none` here means "nothing to own *through*", never "unchecked".
 
 `/api/v1/registry/crops` is public because the crop registry is reference knowledge: it contains no personal data and every farmer sees the same document. It is the only non-auth GET in the product.
 

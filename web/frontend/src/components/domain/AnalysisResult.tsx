@@ -51,8 +51,7 @@ export function AnalysisResult({ log }: { log: HealthLog }) {
   const analysis = log.analysis;
 
   const isUnknown = !analysis.diseaseCode || analysis.diseaseCode === 'UNKNOWN';
-  const unusablePhoto =
-    data.imageAssessment != null && data.imageAssessment !== 'OK';
+  const unusablePhoto = data.imageAssessment != null && data.imageAssessment !== 'OK';
 
   const title = translateMessageKey(t, log.recommendation.titleKey);
 
@@ -100,9 +99,7 @@ export function AnalysisResult({ log }: { log: HealthLog }) {
 
           <div className="flex flex-wrap items-center gap-3">
             <FreshnessDot freshness={log.freshness} />
-            <span className="text-xs text-ink-500">
-              {formatDateTime(log.createdAt, language)}
-            </span>
+            <span className="text-xs text-ink-500">{formatDateTime(log.createdAt, language)}</span>
           </div>
 
           {log.freshness.status === 'cached' && (
@@ -200,11 +197,16 @@ export function AnalysisResult({ log }: { log: HealthLog }) {
       {analysis.escalationPath.length > 0 && (
         <Section title={t('health:escalationHeading')} as="h2">
           {/*
-            The escalation path names the tier rather than a step, so it is
-            relabelled here rather than teaching WhyTrace a second shape.
+            The escalation path names the provider that declined rather than an
+            engine step, so it is relabelled here rather than teaching WhyTrace
+            a second shape. The remaining fields — `reason`, and `status` when
+            the hop failed with an HTTP code — become the step's rows.
           */}
           <WhyTrace
-            trace={analysis.escalationPath.map(({ tier, ...rest }) => ({ step: tier, ...rest }))}
+            trace={analysis.escalationPath.map(({ provider, ...rest }) => ({
+              step: provider,
+              ...rest,
+            }))}
           />
         </Section>
       )}

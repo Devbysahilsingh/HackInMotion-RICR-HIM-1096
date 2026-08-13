@@ -78,9 +78,19 @@ export async function marketWorkList() {
  *   fixture rows and no network at all.
  * @returns {Promise<object>} the drop-rate report
  */
-export async function runMarketRefresh({ asOf = new Date(), fetchImpl, records, states: statesOverride } = {}) {
+export async function runMarketRefresh({
+  asOf = new Date(),
+  fetchImpl,
+  records,
+  states: statesOverride,
+} = {}) {
   const startedAt = Date.now();
-  const { registryDocs, commodities, commodityFilters, states: derivedStates } = await marketWorkList();
+  const {
+    registryDocs,
+    commodities,
+    commodityFilters,
+    states: derivedStates,
+  } = await marketWorkList();
 
   /**
    * `statesOverride` narrows the run to one state. Used by the farm-creation

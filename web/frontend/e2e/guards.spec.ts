@@ -37,7 +37,10 @@ test.describe('guards', () => {
 
     await page.goto('/settings');
     await page.getByTestId('logout-button').click();
-    await page.getByTestId('modal').getByRole('button', { name: /sign out/i }).click();
+    await page
+      .getByTestId('modal')
+      .getByRole('button', { name: /sign out/i })
+      .click();
 
     await expect(page).toHaveURL(/\/login/);
 

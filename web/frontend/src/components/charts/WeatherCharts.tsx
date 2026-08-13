@@ -78,9 +78,7 @@ export function TemperatureChart({ daily }: { daily: WeatherDay[] }) {
                 label={props.label ? formatDayMonth(String(props.label), language) : undefined}
                 rows={(props.payload ?? []).map((entry) => ({
                   name:
-                    String(entry.dataKey) === 'tMaxC'
-                      ? t('weather:tempMax')
-                      : t('weather:tempMin'),
+                    String(entry.dataKey) === 'tMaxC' ? t('weather:tempMax') : t('weather:tempMin'),
                   value: `${formatNumber(Number(entry.value), language, { maximumFractionDigits: 0 })} ${t('common:unit.celsius')}`,
                   color: String(entry.dataKey) === 'tMaxC' ? CHART.series2 : CHART.series1,
                 }))}

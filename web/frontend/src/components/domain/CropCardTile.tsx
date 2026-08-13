@@ -31,16 +31,11 @@ export function CropCardTile({ card }: { card: CropCard }) {
 
   return (
     <Card data-testid="crop-card" data-crop-code={card.cropCode}>
-      <Link
-        to={`/crops/${card.cropId}`}
-        className="flex items-start gap-3 p-4 hover:bg-canvas/60"
-      >
+      <Link to={`/crops/${card.cropId}`} className="flex items-start gap-3 p-4 hover:bg-canvas/60">
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-base font-semibold">{name?.text ?? card.cropCode}</h3>
-            {card.stage && (
-              <Badge tone="brand">{t(`agri:stage.${card.stage}`)}</Badge>
-            )}
+            {card.stage && <Badge tone="brand">{t(`agri:stage.${card.stage}`)}</Badge>}
           </div>
 
           <div className="flex flex-wrap items-center gap-2">

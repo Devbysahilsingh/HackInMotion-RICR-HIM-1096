@@ -260,7 +260,13 @@ function StatusTab({ crop, registry }: { crop: CropWithStage; registry: Registry
 }
 
 /** A minimal progress bar through the published crop calendar. */
-function StageTimeline({ daysSinceSowing, totalDays }: { daysSinceSowing: number; totalDays: number }) {
+function StageTimeline({
+  daysSinceSowing,
+  totalDays,
+}: {
+  daysSinceSowing: number;
+  totalDays: number;
+}) {
   const fraction = totalDays > 0 ? Math.min(1, Math.max(0, daysSinceSowing / totalDays)) : 0;
 
   return (

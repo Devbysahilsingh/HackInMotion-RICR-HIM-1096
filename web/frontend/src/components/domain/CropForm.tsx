@@ -46,7 +46,8 @@ const makeSchema = (availableAcres: number | null) =>
       // same rule (`crop.areaExceedsFarm`), so this can only be kinder, never
       // more permissive: it refuses here with the remaining area named instead
       // of letting the farmer find out from a 422.
-      const area = value.areaValue === '' || value.areaValue == null ? NaN : Number(value.areaValue);
+      const area =
+        value.areaValue === '' || value.areaValue == null ? NaN : Number(value.areaValue);
       if (
         availableAcres != null &&
         Number.isFinite(area) &&

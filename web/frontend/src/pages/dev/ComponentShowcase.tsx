@@ -134,7 +134,10 @@ export default function ComponentShowcase() {
           <Notice tone="warning">A warning notice.</Notice>
           <Notice tone="danger">A failure notice.</Notice>
           <EmptyState title="Nothing here yet" body="With guidance and a way forward." />
-          <ErrorState message="A localized failure message." onRetry={() => toast.push('Retried')} />
+          <ErrorState
+            message="A localized failure message."
+            onRetry={() => toast.push('Retried')}
+          />
         </Section>
 
         <Section title="Loading" as="h2">

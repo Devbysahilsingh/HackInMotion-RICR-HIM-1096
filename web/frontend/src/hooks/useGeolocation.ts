@@ -3,11 +3,7 @@ import { useCallback, useState } from 'react';
 import { INDIA_BOUNDS } from '@/api/types';
 
 export type GeolocationErrorKind =
-  | 'not-supported'
-  | 'denied'
-  | 'unavailable'
-  | 'timeout'
-  | 'outside-india';
+  'not-supported' | 'denied' | 'unavailable' | 'timeout' | 'outside-india';
 
 export interface Coordinates {
   lat: number;

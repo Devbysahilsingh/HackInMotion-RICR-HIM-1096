@@ -53,8 +53,7 @@ export default function CropRecommendationPage() {
   const farmsQuery = useQuery({ queryKey: queryKeys.farms.list(), queryFn: farmsApi.list });
 
   const run = useMutation({
-    mutationFn: () =>
-      cropRecApi.run({ farmId: farmId!, season: season!, preference }),
+    mutationFn: () => cropRecApi.run({ farmId: farmId!, season: season!, preference }),
     onSuccess: setResult,
     onError: (mutationError) => setError(toMessage(mutationError)),
   });
@@ -227,7 +226,9 @@ function ResultView({ result, onRestart }: { result: CropRecResponse; onRestart:
                         <h4 className="text-sm font-semibold">{t('cropRec:reasonsHeading')}</h4>
                         <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-ink-700">
                           {item.reasons.map((reason) => (
-                            <li key={reason.key}>{translateMessageKey(t, reason.key, reason.data)}</li>
+                            <li key={reason.key}>
+                              {translateMessageKey(t, reason.key, reason.data)}
+                            </li>
                           ))}
                         </ul>
                       </section>

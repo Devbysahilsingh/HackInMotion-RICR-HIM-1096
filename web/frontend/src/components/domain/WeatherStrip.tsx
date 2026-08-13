@@ -23,9 +23,7 @@ export function ForecastStrip({ daily }: { daily: WeatherDay[] }) {
   const { language } = useLanguage();
 
   const today = startOfDay(new Date());
-  const forecast = daily
-    .filter((day) => startOfDay(new Date(day.date)) >= today)
-    .slice(0, 7);
+  const forecast = daily.filter((day) => startOfDay(new Date(day.date)) >= today).slice(0, 7);
 
   if (forecast.length === 0) return null;
 
@@ -53,7 +51,9 @@ export function ForecastStrip({ daily }: { daily: WeatherDay[] }) {
                   : '—'}
               </p>
               <p className="text-xs text-ink-500">
-                {day.rainProbPct != null ? `${formatNumber(day.rainProbPct, language, { maximumFractionDigits: 0 })}%` : '—'}
+                {day.rainProbPct != null
+                  ? `${formatNumber(day.rainProbPct, language, { maximumFractionDigits: 0 })}%`
+                  : '—'}
               </p>
             </Card>
           </li>

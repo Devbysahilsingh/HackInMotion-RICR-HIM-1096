@@ -78,7 +78,10 @@ describe('auth bootstrap', () => {
     server.use(
       http.post(url('/auth/refresh'), () =>
         HttpResponse.json(
-          { success: false, error: { code: 'AUTHENTICATION_ERROR', messageKey: 'auth.invalidToken' } },
+          {
+            success: false,
+            error: { code: 'AUTHENTICATION_ERROR', messageKey: 'auth.invalidToken' },
+          },
           { status: 401 },
         ),
       ),
@@ -100,7 +103,10 @@ describe('auth bootstrap', () => {
     server.use(
       http.get(url('/auth/me'), () =>
         HttpResponse.json(
-          { success: false, error: { code: 'AUTHENTICATION_ERROR', messageKey: 'auth.invalidToken' } },
+          {
+            success: false,
+            error: { code: 'AUTHENTICATION_ERROR', messageKey: 'auth.invalidToken' },
+          },
           { status: 401 },
         ),
       ),

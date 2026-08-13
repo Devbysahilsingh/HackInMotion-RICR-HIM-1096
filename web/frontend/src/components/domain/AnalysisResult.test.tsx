@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { renderWithProviders } from '@/test/render';
 import * as fixtures from '@/test/fixtures';
@@ -73,9 +74,28 @@ describe('AnalysisResult · uncertain branch', () => {
     expect(screen.getByTestId('expert-referral').textContent).toMatch(/Kisan Call Centre/i);
   });
 
-  it('shows the escalation path — which tier declined, and why', () => {
+  /**
+   * The stored path is `{provider, reason}` (`cropHealthService.js`,
+   * `aiVision.js`, `models/CropHealthLog.js`) — not `{tier, outcome}`, which no
+   * code path has ever emitted. The component relabels `provider` as the trace
+   * step name, so a wrong field name here printed the literal string
+   * "undefined" as the heading of every hop.
+   */
+  it('shows the escalation path — which tier declined, and why', async () => {
     renderWithProviders(<AnalysisResult log={fixtures.uncertainLog} />);
     expect(screen.getByText(/How we reached this/i)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByTestId('why-toggle'));
+    const trace = screen.getByTestId('why-trace');
+
+    for (const provider of ['ml-service', 'gemini', 'openrouter']) {
+      expect(screen.getByText(provider)).toBeInTheDocument();
+    }
+    // "a missing API key and a model that said UNKNOWN are never the same
+    // string" — both reasons reach the panel, and neither hop is nameless.
+    expect(trace.textContent).toContain('uncertain');
+    expect(trace.textContent).toContain('not_configured');
+    expect(trace.textContent).not.toContain('undefined');
   });
 
   /**
@@ -96,7 +116,9 @@ describe('AnalysisResult · uncertain branch', () => {
 describe('AnalysisResult · unusable photo branch', () => {
   it('says what was wrong with the photo', () => {
     renderWithProviders(<AnalysisResult log={fixtures.unusablePhotoLog} />);
-    expect(screen.getByTestId('image-assessment').textContent).toMatch(/does not appear to show a plant/i);
+    expect(screen.getByTestId('image-assessment').textContent).toMatch(
+      /does not appear to show a plant/i,
+    );
   });
 
   it('keeps AI observations under their own attributed heading, tagged English', () => {

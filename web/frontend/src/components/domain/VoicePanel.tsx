@@ -7,7 +7,14 @@ import { useSpeechRecognition } from '@/hooks/useSpeech';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Notice } from '@/components/ui/states';
-import { IconChart, IconCamera, IconCloud, IconDroplet, IconHome, IconMic } from '@/components/ui/icons';
+import {
+  IconChart,
+  IconCamera,
+  IconCloud,
+  IconDroplet,
+  IconHome,
+  IconMic,
+} from '@/components/ui/icons';
 
 /**
  * Ask-by-voice (P2, ADR-017 — device-native, no cloud transcription).

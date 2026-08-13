@@ -68,10 +68,7 @@ export function WhyTrace({
         className="touch-target flex w-full items-center justify-between gap-2 px-3 text-left text-sm font-medium text-ink-700"
       >
         <span>{open ? t('action.hideWhy') : t('action.showWhy')}</span>
-        <IconChevronDown
-          size={18}
-          className={cn('transition-transform', open && 'rotate-180')}
-        />
+        <IconChevronDown size={18} className={cn('transition-transform', open && 'rotate-180')} />
       </button>
 
       {open && (

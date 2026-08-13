@@ -9,6 +9,7 @@ docs/**/*.md
 # Design-tool exports kept as visual reference, not source we author.
 # Reformatting them would diverge from the tool output for no benefit.
 assets/
+Design-refrences/
 
 # Machine-generated ML artefacts. Each is rewritten verbatim by the script that
 # produces it (calibrate.py, evaluate.py, error-analysis.py, export_onnx.py,

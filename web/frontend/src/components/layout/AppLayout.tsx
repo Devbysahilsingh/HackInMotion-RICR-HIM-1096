@@ -57,10 +57,7 @@ export function AppLayout() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar />
-        <main
-          id="main"
-          className="mx-auto w-full max-w-4xl flex-1 px-4 pb-24 pt-4 sm:px-6 md:pb-8"
-        >
+        <main id="main" className="mx-auto w-full max-w-4xl flex-1 px-4 pb-24 pt-4 sm:px-6 md:pb-8">
           <Outlet />
         </main>
       </div>
@@ -80,14 +77,12 @@ function Sidebar() {
     >
       <p className="px-3 pb-3 text-lg font-semibold text-brand-700">{t('app.name')}</p>
 
-      {[...NAV.slice(0, 4), ...NAV_DESKTOP_EXTRA, ...NAV.slice(4)].map(
-        ({ to, labelKey, Icon }) => (
-          <NavLink key={to} to={to} className={sidebarLinkClass}>
-            <Icon size={20} />
-            {t(labelKey)}
-          </NavLink>
-        ),
-      )}
+      {[...NAV.slice(0, 4), ...NAV_DESKTOP_EXTRA, ...NAV.slice(4)].map(({ to, labelKey, Icon }) => (
+        <NavLink key={to} to={to} className={sidebarLinkClass}>
+          <Icon size={20} />
+          {t(labelKey)}
+        </NavLink>
+      ))}
 
       <div className="mt-auto">
         <NavLink to="/settings" className={sidebarLinkClass}>

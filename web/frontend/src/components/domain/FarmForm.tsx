@@ -77,7 +77,11 @@ const makeSchema = (allocatedAcres: number | null) =>
         Number.isFinite(value.sizeValue) &&
         toAcres(value.sizeValue, value.sizeUnit) + 1e-9 < allocatedAcres
       ) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['sizeValue'], message: 'belowCropArea' });
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['sizeValue'],
+          message: 'belowCropArea',
+        });
       }
     });
 

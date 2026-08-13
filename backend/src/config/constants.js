@@ -76,6 +76,13 @@ export const AUDIT_EVENTS = {
   LOGOUT: 'logout',
   RATE_LIMITED: 'rate_limited',
   UPLOAD_REJECTED: 'upload_rejected',
+  /**
+   * Community-sharing consent granted or withdrawn (CLAUDE.md rule 12). The
+   * only *preference* change that is audited: the rest are display settings,
+   * while this one decides whether a farmer's reports may be counted at all,
+   * so the record of when it moved has to outlive the current value.
+   */
+  CONSENT_CHANGED: 'consent_changed',
 };
 
 /** Enumerations shared by schemas, Zod validators and the seed scripts. */

@@ -57,12 +57,14 @@ const PLACEHOLDER = /\{\{\s*([\w.]+)\s*[^}]*\}\}/g;
 
 function namespaces() {
   const dir = path.join(I18N_DIR, BASE);
-  return readdirSync(dir)
-    .filter((file) => file.endsWith('.json'))
-    // `_`-prefixed files are ledgers and manifests, not namespaces.
-    .filter((file) => !file.startsWith('_'))
-    .map((file) => file.replace(/\.json$/, ''))
-    .sort();
+  return (
+    readdirSync(dir)
+      .filter((file) => file.endsWith('.json'))
+      // `_`-prefixed files are ledgers and manifests, not namespaces.
+      .filter((file) => !file.startsWith('_'))
+      .map((file) => file.replace(/\.json$/, ''))
+      .sort()
+  );
 }
 
 /**
@@ -175,9 +177,7 @@ for (const namespace of namespaces()) {
     failures.push(`${namespace}: ${row.empty.length} empty value(s) — ${row.empty.join(', ')}`);
   }
   if (row.placeholderMismatch.length > 0) {
-    failures.push(
-      `${namespace}: interpolation mismatch — ${row.placeholderMismatch.join(' · ')}`,
-    );
+    failures.push(`${namespace}: interpolation mismatch — ${row.placeholderMismatch.join(' · ')}`);
   }
 
   if (row.missingHi.length > 0) {
@@ -208,7 +208,15 @@ const totalMissing = report.reduce((sum, row) => sum + row.missingHi.length, 0);
 if (asJson) {
   console.log(
     JSON.stringify(
-      { ok: failures.length === 0, totalKeys, totalVerified, totalMissing, report, failures, warnings },
+      {
+        ok: failures.length === 0,
+        totalKeys,
+        totalVerified,
+        totalMissing,
+        report,
+        failures,
+        warnings,
+      },
       null,
       2,
     ),
@@ -222,7 +230,12 @@ if (asJson) {
       `${'namespace'.padEnd(width)}  ${'keys'.padStart(5)}  ${'missing hi'.padStart(10)}  ${'verified'.padStart(8)}`,
     );
     for (const row of report) {
-      const flag = row.verifiedBy === 'claude' ? '  ← machine-translated, awaiting human review' : row.knownGap ? '  ← known gap' : '';
+      const flag =
+        row.verifiedBy === 'claude'
+          ? '  ← machine-translated, awaiting human review'
+          : row.knownGap
+            ? '  ← known gap'
+            : '';
       console.log(
         `${row.namespace.padEnd(width)}  ${String(row.total).padStart(5)}  ${String(row.missingHi.length).padStart(10)}  ${String(row.verified).padStart(8)}${flag}`,
       );

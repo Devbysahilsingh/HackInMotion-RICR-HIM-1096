@@ -121,17 +121,12 @@
       "note": "UI vocabulary. Reviewed and accepted by the owner. The blanket \"*\" was replaced with the explicit key list on 2026-08-13, when the productization pass added new keys: those additions are machine-translated and are NOT covered by this sign-off. They are listed in unverifiedAdditions below.",
       "unverifiedAdditions": {
         "verifiedBy": "claude",
-        "keys": [
-          "greeting.title",
-          "history.advice"
-        ]
+        "keys": ["greeting.title", "history.advice"]
       }
     },
     "auth": {
       "verifiedBy": "owner",
-      "verified": [
-        "*"
-      ],
+      "verified": ["*"],
       "note": "UI vocabulary. Reviewed and accepted by the owner."
     },
     "farm": {
@@ -247,23 +242,17 @@
     },
     "health": {
       "verifiedBy": "owner",
-      "verified": [
-        "*"
-      ],
+      "verified": ["*"],
       "note": "Tier labels and severity wording. Reviewed and accepted by the owner."
     },
     "weather": {
       "verifiedBy": "owner",
-      "verified": [
-        "*"
-      ],
+      "verified": ["*"],
       "note": "Risk titles and bodies. Reviewed and accepted by the owner."
     },
     "irrigation": {
       "verifiedBy": "owner",
-      "verified": [
-        "*"
-      ],
+      "verified": ["*"],
       "note": "Verdict wording. Reviewed and accepted by the owner."
     },
     "landing": {
@@ -326,15 +315,50 @@
     "fertilizer": {
       "verifiedBy": "owner",
       "verified": [
-        "*"
+        "basisBlanket",
+        "basisSoilTest",
+        "deficiencyHeading",
+        "disclaimerGeneral",
+        "dueNow",
+        "limitations",
+        "micronutrientsHeading",
+        "notCovered",
+        "npkHeading",
+        "organicsHeading",
+        "pageTitle",
+        "schedule.basal.full",
+        "schedule.basal.fullNpk",
+        "schedule.basal.fullNpkPlusMicronutrients",
+        "schedule.basal.fullNpkPlusOrganicsAndMicronutrients",
+        "schedule.basal.fullPhosphorusPlusFirstNkSplit",
+        "schedule.basal.fullPhosphorusProduct",
+        "schedule.basal.halfDose",
+        "schedule.basal.quarterNitrogenFullPk",
+        "schedule.basal.thirdDose",
+        "schedule.split.nitrogenPotassiumUnspecifiedFraction",
+        "schedule.topdress.fixedNitrogen",
+        "schedule.topdress.halfDose",
+        "schedule.topdress.halfNitrogen",
+        "schedule.topdress.quarterNitrogen",
+        "schedule.topdress.thirdDose",
+        "schedule.topdress.ureaProduct",
+        "scheduleHeading",
+        "soilTestCta",
+        "typeGeneralNoSoilTest",
+        "unitNotPublished",
+        "varietyClassLabel",
+        "varietyClassUnspecified",
+        "verificationPending"
       ],
-      "note": "Schedule labels and the mandatory disclaimer. Reviewed and accepted by the owner."
+      "note": "Schedule labels and the mandatory disclaimer. Reviewed and accepted by the owner. The blanket \"*\" was replaced with the explicit key list on 2026-08-13, when the schedule-shape fix added a key for an entry whose published timing carries no day count: that addition is machine-translated and is NOT covered by this sign-off. It is listed in unverifiedAdditions below.",
+      "unverifiedAdditions": {
+        "verifiedBy": "claude",
+        "keys": ["timingNotPublished"]
+      }
     },
     "cropRec": {
       "verifiedBy": "owner",
-      "verified": [
-        "*"
-      ],
+      "verified": ["*"],
       "note": "Ranking reasons and gates. Reviewed and accepted by the owner."
     },
     "community": {
@@ -356,17 +380,12 @@
       "note": "UI vocabulary. Reviewed and accepted by the owner. The blanket \"*\" was replaced with the explicit key list on 2026-08-13, when the productization pass added new keys: those additions are machine-translated and are NOT covered by this sign-off. They are listed in unverifiedAdditions below.",
       "unverifiedAdditions": {
         "verifiedBy": "claude",
-        "keys": [
-          "consentOff",
-          "consentOn"
-        ]
+        "keys": ["consentOff", "consentOn"]
       }
     },
     "voice": {
       "verifiedBy": "owner",
-      "verified": [
-        "*"
-      ],
+      "verified": ["*"],
       "note": "UI vocabulary. Reviewed and accepted by the owner."
     },
     "errors": {
@@ -396,23 +415,143 @@
       "note": "UI vocabulary. Reviewed and accepted by the owner. The blanket \"*\" was replaced with the explicit key list on 2026-08-13, when the productization pass added new keys: those additions are machine-translated and are NOT covered by this sign-off. They are listed in unverifiedAdditions below.",
       "unverifiedAdditions": {
         "verifiedBy": "claude",
-        "keys": [
-          "notFoundBody",
-          "notFoundTitle"
-        ]
+        "keys": ["notFoundBody", "notFoundTitle"]
       }
     },
     "agri": {
       "verifiedBy": "owner",
-      "verified": [
-        "*"
-      ],
+      "verified": ["*"],
       "note": "The terminology layer, drawn from docs/i18n/agricultural-terminology.md. Note that the source table itself marks several entries '?' (laterite, some stage names, several disease terms) as needing confirmation against ICAR/DD-Kisan usage."
     },
     "disease": {
       "verifiedBy": "claude",
       "verified": [],
       "note": "408/408 present — translated from the English strings already sourced from TNAU/ICAR, so no agronomic fact, threshold, practice or product appears in the Hindi that is not in the English it renders. No pesticide dose is given in either language. What has NOT happened is a Hindi-literate reviewer reading them. Until `verifiedBy` here reads `owner`, ADR-021's bilingual gate for cotton is mechanically satisfied but not editorially signed off."
+    },
+    "mobile": {
+      "verifiedBy": "claude",
+      "note": "Mobile-only surface copy (permission rationales, camera guidance, offline banner, intro slides, dashboard/market/irrigation surface copy). Machine-authored Hindi, parity-complete, NOT yet read by a Hindi-literate reviewer. Four additions from the dashboard/intelligence pass do touch agronomic or data-provenance content and need an agronomic reviewer, not only a language one: irrigation.soilUncertaintyWide, irrigation.harvestApproaching, fertilizer.timingUnknown, market.dailyAverageNote.",
+      "verified": [],
+      "unverifiedAdditions": [
+        "camera.capture",
+        "camera.flip",
+        "camera.guidanceHint",
+        "camera.guidanceTitle",
+        "camera.pickFromGallery",
+        "camera.retake",
+        "camera.starting",
+        "camera.unavailableBody",
+        "camera.unavailableTitle",
+        "camera.usePhoto",
+        "dashboard.feedEmptyBody",
+        "dashboard.feedEmptyTitle",
+        "dashboard.mlDown",
+        "dashboard.mlPending",
+        "dashboard.systemStatusHeading",
+        "date.day",
+        "date.month",
+        "date.year",
+        "errorBoundary.body",
+        "errorBoundary.restart",
+        "errorBoundary.title",
+        "fertilizer.quotedSourceHeading",
+        "fertilizer.timingUnknown",
+        "history.emptyBody",
+        "history.emptyTitle",
+        "intro.chooseLanguage",
+        "intro.continue",
+        "intro.slide1Body",
+        "intro.slide1Title",
+        "intro.slide2Body",
+        "intro.slide2Title",
+        "intro.slide3Body",
+        "intro.slide3Title",
+        "irrigation.harvestApproaching",
+        "irrigation.nextCheckDays_one",
+        "irrigation.nextCheckDays_other",
+        "irrigation.soilUncertaintyWide",
+        "irrigation.targetDepthLabel",
+        "market.dailyAverageNote",
+        "offline.banner",
+        "offline.bannerBody",
+        "offline.reconnected",
+        "offline.sessionUnverified",
+        "offline.writeBlocked",
+        "permission.cameraBody",
+        "permission.cameraCta",
+        "permission.cameraDeniedBody",
+        "permission.cameraDeniedTitle",
+        "permission.cameraTitle",
+        "permission.locationBody",
+        "permission.locationCta",
+        "permission.locationDeniedBody",
+        "permission.locationDeniedTitle",
+        "permission.locationTitle",
+        "permission.openSettings",
+        "recommendation.acknowledgedAt",
+        "recommendation.createdAt",
+        "recommendation.notFoundBody",
+        "recommendation.notFoundTitle",
+        "recommendation.validUntil",
+        "result.confidenceKindBAND",
+        "result.confidenceKindCALIBRATED",
+        "result.confidenceKindMATCH_SCORE",
+        "result.retakeTipsTitle",
+        "result.severityUpdated",
+        "scan.noCropsBody",
+        "scan.noCropsCta",
+        "scan.noCropsTitle",
+        "scan.pickCropBody",
+        "scan.pickCropTitle",
+        "scan.startCameraCta",
+        "settings.aboutTitle",
+        "settings.accountTitle",
+        "settings.apiUrl",
+        "settings.consentBody",
+        "settings.consentTitle",
+        "settings.disclaimer",
+        "settings.unitsBody",
+        "settings.unitsTitle",
+        "settings.version",
+        "settings.voiceBody",
+        "settings.voiceTitle",
+        "symptom.hideGuidance",
+        "symptom.reasonCROP_UNSUPPORTED",
+        "symptom.reasonDISEASE_KB_UNAVAILABLE",
+        "symptom.reasonKB_TAGS_UNAVAILABLE",
+        "symptom.reasonNO_CANDIDATE_MATCH",
+        "symptom.reasonNO_SYMPTOMS_ANSWERED",
+        "symptom.reasonREGISTRY_CROP_UNAVAILABLE",
+        "symptom.reviewTitle",
+        "symptom.showGuidance",
+        "symptom.startOver",
+        "symptom.stepOf",
+        "symptom.weatherHeading",
+        "tts.unavailable",
+        "upload.analyzing",
+        "upload.cancel",
+        "upload.cancelConfirmBody",
+        "upload.cancelConfirmKeep",
+        "upload.cancelConfirmTitle",
+        "upload.compressing",
+        "upload.failedBody",
+        "upload.failedTitle",
+        "upload.newPhotoCta",
+        "upload.photoRejectedTitle",
+        "upload.prepareFailedBody",
+        "upload.prepareFailedTitle",
+        "upload.preparing",
+        "upload.progress",
+        "upload.rateLimitedBody",
+        "upload.rateLimitedTitle",
+        "upload.rateLimitedWaitHours_one",
+        "upload.rateLimitedWaitHours_other",
+        "upload.rateLimitedWaitMinutes_one",
+        "upload.rateLimitedWaitMinutes_other",
+        "upload.rateLimitedWaitSeconds_one",
+        "upload.rateLimitedWaitSeconds_other",
+        "upload.uploading"
+      ]
     }
   }
 }

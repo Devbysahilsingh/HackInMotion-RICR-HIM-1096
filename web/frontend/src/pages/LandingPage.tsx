@@ -105,10 +105,7 @@ export default function LandingPage() {
                 { step: 3, Icon: IconCheck, title: 'how3Title', body: 'how3Body' },
               ] as const
             ).map(({ step, Icon, title, body }) => (
-              <li
-                key={step}
-                className="rounded-2xl border border-line bg-surface p-6"
-              >
+              <li key={step} className="rounded-2xl border border-line bg-surface p-6">
                 <span
                   className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-50 text-brand-700"
                   aria-hidden="true"

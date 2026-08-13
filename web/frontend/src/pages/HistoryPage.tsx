@@ -77,8 +77,7 @@ function AdviceHistory() {
         const total = data.meta.total;
         // A missing total must not dead-end the pagination: a full page is
         // read as "there may be more", an under-full one as the end.
-        const hasMore =
-          total != null ? page * 20 < total : data.data.recommendations.length === 20;
+        const hasMore = total != null ? page * 20 < total : data.data.recommendations.length === 20;
 
         return (
           <div className="space-y-3" data-testid="advice-history">

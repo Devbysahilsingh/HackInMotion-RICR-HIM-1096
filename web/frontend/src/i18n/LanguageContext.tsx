@@ -14,7 +14,15 @@
  * account language is adopted unless the farmer has since chosen differently
  * on this device.
  */
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { Language } from '@/api/types';

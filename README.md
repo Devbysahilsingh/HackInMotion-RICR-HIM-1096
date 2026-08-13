@@ -1,7 +1,11 @@
 # 🌾 KrishiSaarthi — Smart Farm Decision Support System
 
 > *Working name (final name pending — OD-4). HackInMotion 2026 · Team HIM-1096.*
-> **STATUS: PLANNING COMPLETE — implementation not yet started.** Sections marked ⏳ fill in during/after implementation; no placeholder claims are made below.
+> **STATUS: IMPLEMENTATION IN PROGRESS.** Backend, ML training, web client and the Android app are built and tested; **nothing is deployed and no phone has run the app.** Sections marked ⏳ are still owed. No placeholder claims are made below.
+>
+> **Built and verified (2026-08-14):** backend API (**1,279 / 1,279 tests**) · React web client (**109 / 109**) · Expo Android client (**90 / 90**) · ml-service FastAPI + ONNX (**140 / 141 pytest** — one known failure, below) · trained EfficientNet-B0 with calibrated thresholds. **Not done:** deployment (Render / Vercel / HF Spaces), the APK build, and every device- and demo-day verification that depends on them.
+>
+> The one failing test is `test_generator_reports_the_committed_manifest_as_current`: `ml-service/model/model-manifest.json` records a `datasetManifest.sha256` that does not match the committed `datasets/manifest.json`. Both files are unchanged since the Phase-4 commit `29543d1`, so the drift was committed there — it is not a regression, and it is deliberately left for the ML owner rather than silently regenerated, because regenerating a model manifest rewrites recorded metrics.
 
 *"A farmer's biggest risk isn't hard work — it's making the wrong decision at the wrong time."*
 
@@ -25,7 +29,21 @@ See `docs/architecture/overview.md` (+ `architecture-diagram.png` ⏳ rendered a
 React (Vercel) + React Native/Expo (Android) → Express API (Render; JWT + refresh rotation, ownership enforcement, rate limits) → MongoDB Atlas → FastAPI + ONNX ml-service (internal). Jobs ingest weather (Open-Meteo→OpenWeatherMap) and mandi prices (data.gov.in→cache→seed) with validate-then-cache; engines are pure, tested functions.
 
 ## Custom ML (honest summary)
-Datasets: Paddy Doctor (16k real Indian field images), PlantVillage subsets, Mendeley field chilli sets, SAR-CLD cotton (audit-gated); PlantDoc held out as a field-domain test set. ~34–44 classes, unified EfficientNet-B0 with crop-aware masking, temperature-calibrated confidence, validation-derived thresholds. **Metrics: ⏳ published from evaluation artifacts after training — including the field-domain (lab→field gap) number, whatever it is.** Known limitations are documented in `docs/ml/` and stated in our pitch.
+Datasets: PlantVillage subsets, Mendeley field chilli sets, SAR-CLD cotton (audit-gated), and a CC BY 4.0 Odisha rice set — **Paddy Doctor was rejected** on licence grounds (paid-subscription access, no published image licence) and replaced. PlantDoc is held out entirely as a field-domain test set. After deduplication and source-stratified splitting: **39,960 unique images, 36 classes**. Unified EfficientNet-B0 with crop-aware masking and temperature-calibrated confidence.
+
+Metrics, from committed artifacts only (`docs/ml/evaluation-results/`, `ml-service/training/`):
+
+| | |
+|---|---|
+| Best validation macro-F1 | **0.9556** |
+| Calibration | T = **0.5863**, ECE 0.0837 → **0.0042** |
+| Shipped thresholds | τ = 0.70 · τ_healthy = 0.80 (recorded policy override, re-validated against all 6 documented criteria) |
+| Ship gates | **5 / 5 pass** |
+| ONNX parity | max \|Δprob\| **1.55e-05** over 100 golden images, 0 argmax mismatches |
+| In-domain test accuracy | **0.9632** |
+| **Field-domain (PlantDoc) accuracy** | **0.1257** |
+
+That last row is the number most projects omit. A model at 0.96 in-domain scores **0.13** on real field photographs, so the Gemini Vision tier is load-bearing for actual farmer photos rather than a decorative fallback — and rice's perfect healthy/brown-spot separation is a background-shortcut signature, not evidence of skill. Known limitations are documented in `docs/ml/` and stated in our pitch.
 
 ## Third-party services (all free, no credit card — research & justification in docs)
 | Service | Role | Why chosen | Doc |
@@ -48,8 +66,25 @@ docs/ (23 domains — start at docs/FINAL-PLAN-SPEC.md) · datasets/ (gitignored
 scripts/ · assets/ · CLAUDE.md · .env.example
 ```
 
+## Android app
+`mobile/` — Expo SDK 54 · React Native 0.81 · React 19 · TypeScript. Same `/api/v1` contract as the web, no duplicated business logic: engines stay on the server, translations come from `shared/i18n`, wire types from `shared/types/api.ts`. 23 screens across four tabs — camera-first, offline-cached reads, Hindi/English, text-to-speech. The SDK is **pinned to 54 to match the Expo Go build on the demo handset** — do not upgrade it (`docs/mobile/technology-decision.md`).
+
+**`mobile/README.md` is the runbook** — setup, the API-base-URL table (a phone's `localhost` is not your laptop), LAN/tunnel workflows, firewall rules, the EAS build recipe and the security notes. It is not duplicated here.
+
+Two things worth knowing before you open it: voice **input** does not ship (`RECORD_AUDIO` is blocked — the shipped voice feature is text-to-speech only; the reasoning is in `docs/mobile/technology-decision.md`), and **no APK has been built and no phone has run the app** — the scripted device matrix in `docs/mobile/testing.md` has zero executed rows.
+
+Design and decision records: `docs/mobile/` (architecture, navigation, screen map, authentication, offline strategy, camera & upload, i18n, security, testing, deployment).
+
 ## Setup / Environment / Local development ⏳
-Filled at implementation: per-app install & run commands, .env.example walkthrough (variable names already documented in docs/deployment/environment.md), seed scripts, test commands.
+Per-app install & run commands, .env.example walkthrough (variable names documented in docs/deployment/environment.md), seed scripts and test commands. Today, the short version:
+
+```bash
+npm install                        # repo tooling + the pre-commit secret hook
+npm --prefix backend install && npm --prefix backend run dev     # needs backend/.env
+npm --prefix web/frontend install && npm --prefix web/frontend run dev
+npm --prefix mobile install && npm --prefix mobile start         # see mobile/README.md first
+npm run verify                     # lint · format · i18n parity · UI strings · all three test suites
+```
 
 ## API documentation
 Complete endpoint specs: `docs/api/` (summarized into `api-documentation.md` ⏳ at submission).

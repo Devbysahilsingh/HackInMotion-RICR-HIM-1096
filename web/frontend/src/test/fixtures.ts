@@ -227,9 +227,23 @@ export const irrigationAdvice: IrrigationAdvice = {
   rawMm: 36.9,
   tawMm: 92.4,
   splitAdvised: false,
-  soil: { soilType: 'black', awcMmPerM: 200, published: true, basis: 'FAO-56 Table 19' },
+  // The engine returns no top-level `soil` object — only this flag. The soil
+  // inputs live in the `SOIL` trace step below (computeIrrigation.js).
+  soilUncertaintyWide: false,
   trace: [
     { step: 'INPUT', soilType: 'black', weatherDays: 14, logCount: 2 },
+    {
+      step: 'SOIL',
+      soilType: 'black',
+      awcMmPerM: 200,
+      published: '~200',
+      basis: 'published point value',
+      wideUncertainty: false,
+      rootDepthM: 0.462,
+      stageFactor: 1,
+      effectiveRootDepthM: 0.462,
+      tawMm: 92.4,
+    },
     { step: 'RESERVOIR', tawMm: 92.4, rawMm: 36.9, p: 0.4 },
     { step: 'VERDICT', verdict: 'IRRIGATE_TODAY', depletionMm: 38.2, amountMm: 40 },
   ],
@@ -239,8 +253,8 @@ export const irrigationAdvice: IrrigationAdvice = {
 export const fertilizerGuidance: FertilizerGuidance = {
   cropCode: 'TOMATO',
   names: { en: 'Tomato', hi: 'टमाटर' },
-  stage: 'MID',
-  daysSinceSowing: 45,
+  stage: 'DEVELOPMENT',
+  daysSinceSowing: 30,
   disclaimerKey: 'fertilizer.disclaimerGeneral',
   covered: true,
   guidanceTypeKey: 'fertilizer.typeGeneralNoSoilTest',
@@ -253,11 +267,40 @@ export const fertilizerGuidance: FertilizerGuidance = {
       totalNpk: { N: '200 kg/ha', P: '250 kg/ha', K: '200 kg/ha' },
       organics: { FYM: '25 t/ha' },
       micronutrients: null,
+      /*
+       * Transcribed from the TOMATO row of `backend/src/knowledge/
+       * crops.fertilizer.json` and annotated the way `fertilizerService.js`
+       * annotates it: `timing`/`note` are the source's own prose, `fractionKey`
+       * is an i18n key, and `window`/`isCurrent`/`timingUnknown` are derived
+       * from `parseTiming()`. The basal entry publishes no timing at all, so it
+       * is the `timingUnknown` case; the topdress entry parses to day 30, which
+       * is where `daysSinceSowing` sits, so it is the current one.
+       */
       schedule: [
-        { labelKey: 'fertilizer.schedule.basal.fullNpkPlusOrganicsAndMicronutrients', due: false },
-        { labelKey: 'fertilizer.schedule.topdress.halfNitrogen', due: true },
+        {
+          stage: 'BASAL',
+          timing: null,
+          fractionKey: 'fertilizer.schedule.basal.fullNpkPlusOrganicsAndMicronutrients',
+          note: "Published: 'FYM 25t + 75:100:50 kg/ha + borax 10 + ZnSO₄ 50 basal' — the whole NPK dose, the FYM and both micronutrients go in at basal.",
+          window: null,
+          isCurrent: false,
+          timingUnknown: true,
+        },
+        {
+          stage: 'TOPDRESS_1',
+          timing: '30 d',
+          fractionKey: 'fertilizer.schedule.topdress.fixedNitrogen',
+          note: "Published: '+75 N @30d' — an ADDITIONAL 75 kg N/ha at 30 days, stated as an absolute dose, not a fraction.",
+          window: { fromDay: 30, toDay: 30, basis: '30 d' },
+          isCurrent: true,
+          timingUnknown: false,
+        },
       ],
-      source: { org: 'TNAU', title: 'Crop production guide — tomato', url: 'https://agritech.tnau.ac.in/' },
+      source: {
+        org: 'TNAU',
+        title: 'Crop production guide — tomato',
+        url: 'https://agritech.tnau.ac.in/',
+      },
     },
   ],
   deficiencySymptoms: [],
@@ -294,12 +337,16 @@ export const confidentLog: HealthLog = {
     severityAssessment: 'MODERATE',
     escalated: false,
     modelVersion: 'model-v1.0',
+    // `integrations/mlService.js` normalises the model's ranked alternatives to
+    // `{diseaseCode, confidence}` before they are stored.
     top3: [
-      { code: 'TOMATO_EARLY_BLIGHT', prob: 0.91 },
-      { code: 'TOMATO_LATE_BLIGHT', prob: 0.05 },
-      { code: 'TOMATO_SEPTORIA_LEAF_SPOT', prob: 0.02 },
+      { diseaseCode: 'TOMATO_EARLY_BLIGHT', confidence: 0.91 },
+      { diseaseCode: 'TOMATO_LATE_BLIGHT', confidence: 0.05 },
+      { diseaseCode: 'TOMATO_SEPTORIA_LEAF_SPOT', confidence: 0.02 },
     ],
-    escalationPath: [{ tier: 'ml', outcome: 'answered', reasonCode: 'CONFIDENT' }],
+    // Empty on this branch, and that is the point: `runChain()` pushes an entry
+    // only for a tier that *declined*, and the local model answered first here.
+    escalationPath: [],
   },
   recommendation: {
     titleKey: 'health.titleMl',
@@ -315,7 +362,9 @@ export const confidentLog: HealthLog = {
       inspectKeys: ['disease.TOMATO_EARLY_BLIGHT.inspect.1'],
       nextStepKeys: ['disease.TOMATO_EARLY_BLIGHT.nextStep.1'],
       preventionKeys: ['disease.TOMATO_EARLY_BLIGHT.prevention.1'],
-      sourceRefs: [{ org: 'TNAU', title: 'Tomato early blight', url: 'https://agritech.tnau.ac.in/' }],
+      sourceRefs: [
+        { org: 'TNAU', title: 'Tomato early blight', url: 'https://agritech.tnau.ac.in/' },
+      ],
       aiObservations: [],
       imageAssessment: 'OK',
       supportLevel: 'SPECIALIZED',
@@ -338,10 +387,17 @@ export const uncertainLog: HealthLog = {
     escalated: true,
     modelVersion: 'model-v1.0',
     top3: [],
+    /*
+     * The real walk on an installation with no AI credentials: the local model
+     * ran and was not confident enough to serve, then both AI tiers were
+     * skipped for want of a key. Provider ids are `AI_PROVIDERS` values and the
+     * reasons are `AI_FAILURE` values — the terminal rules tier answers, so it
+     * never appears here.
+     */
     escalationPath: [
-      { tier: 'ml', outcome: 'declined', reasonCode: 'BELOW_TAU' },
-      { tier: 'gemini', outcome: 'declined', reasonCode: 'NOT_CONFIGURED' },
-      { tier: 'rules', outcome: 'declined', reasonCode: 'NO_SYMPTOMS_ANSWERED' },
+      { provider: 'ml-service', reason: 'uncertain' },
+      { provider: 'gemini', reason: 'not_configured' },
+      { provider: 'openrouter', reason: 'not_configured' },
     ],
   },
   recommendation: {
@@ -376,6 +432,9 @@ export const unusablePhotoLog: HealthLog = {
     ...uncertainLog.analysis,
     source: 'gemini',
     sourceLabelKey: 'health.sourceAiAssisted',
+    // Gemini answered on this branch, so only the local model's decline is on
+    // the path — a tier that answers is never recorded as an escalation hop.
+    escalationPath: [{ provider: 'ml-service', reason: 'uncertain' }],
   },
   recommendation: {
     titleKey: 'health.titleUnknown',
@@ -414,9 +473,41 @@ export const healthyLog: HealthLog = {
 };
 
 export const symptomCheck: SymptomCheckResponse = {
+  /*
+   * `symptomEngine.js#toCandidate` — the engine returns no disease *name*: the
+   * client resolves one from the registry by `diseaseCode`. The score field is
+   * `matchScore`, and the matched evidence is `matchedTags` (closed vocabulary,
+   * in axis order), not an axis list.
+   */
   candidates: [
-    { diseaseCode: 'TOMATO_EARLY_BLIGHT', score: 0.72, band: 'LIKELY' },
-    { diseaseCode: 'TOMATO_SEPTORIA_LEAF_SPOT', score: 0.48, band: 'POSSIBLE' },
+    {
+      diseaseCode: 'TOMATO_EARLY_BLIGHT',
+      matchScore: 0.72,
+      band: 'LIKELY',
+      matchedTags: ['part:LEAF', 'pattern:SPOTS', 'color:BROWN'],
+      symptomKeys: ['disease.TOMATO_EARLY_BLIGHT.symptom.1'],
+      inspectKeys: ['disease.TOMATO_EARLY_BLIGHT.inspect.1'],
+      nextStepKeys: ['disease.TOMATO_EARLY_BLIGHT.nextStep.1'],
+      preventionKeys: ['disease.TOMATO_EARLY_BLIGHT.prevention.1'],
+      sourceRefs: [
+        { org: 'TNAU', title: 'Tomato early blight', url: 'https://agritech.tnau.ac.in/' },
+      ],
+      expertThreshold: 0.4,
+    },
+    {
+      diseaseCode: 'TOMATO_SEPTORIA_LEAF_SPOT',
+      matchScore: 0.48,
+      band: 'POSSIBLE',
+      matchedTags: ['part:LEAF', 'pattern:SPOTS'],
+      symptomKeys: ['disease.TOMATO_SEPTORIA_LEAF_SPOT.symptom.1'],
+      inspectKeys: ['disease.TOMATO_SEPTORIA_LEAF_SPOT.inspect.1'],
+      nextStepKeys: ['disease.TOMATO_SEPTORIA_LEAF_SPOT.nextStep.1'],
+      preventionKeys: ['disease.TOMATO_SEPTORIA_LEAF_SPOT.prevention.1'],
+      sourceRefs: [
+        { org: 'TNAU', title: 'Tomato Septoria leaf spot', url: 'https://agritech.tnau.ac.in/' },
+      ],
+      expertThreshold: 0.4,
+    },
   ],
   guidance: {
     hasVerdict: true,

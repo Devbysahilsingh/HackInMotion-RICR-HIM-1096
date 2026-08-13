@@ -96,11 +96,7 @@ export function FreshnessDot({ freshness, compact = false, className }: Freshnes
       <span aria-hidden="true" className="text-[0.9em] leading-none">
         ●
       </span>
-      {compact ? (
-        <span className="sr-only">{label}</span>
-      ) : (
-        <span>{label}</span>
-      )}
+      {compact ? <span className="sr-only">{label}</span> : <span>{label}</span>}
       {isStale && (
         <span className="sr-only" data-testid="freshness-stale-warning">
           {t('freshness.staleWarning')}
@@ -127,7 +123,10 @@ export function SourceLabel({
 
   if (!sourceLabelKey) return null;
   const dot = sourceLabelKey.indexOf('.');
-  const full = dot === -1 ? `common:${sourceLabelKey}` : `${sourceLabelKey.slice(0, dot)}:${sourceLabelKey.slice(dot + 1)}`;
+  const full =
+    dot === -1
+      ? `common:${sourceLabelKey}`
+      : `${sourceLabelKey.slice(0, dot)}:${sourceLabelKey.slice(dot + 1)}`;
 
   return (
     <span

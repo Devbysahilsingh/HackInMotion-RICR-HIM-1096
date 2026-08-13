@@ -1,0 +1,26 @@
+{
+  "cli": {
+    "version": ">= 5.9.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": { "buildType": "apk" },
+      "env": { "EXPO_PUBLIC_API_URL": "http://10.0.2.2:4000/api/v1" }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": { "buildType": "apk" },
+      "env": { "EXPO_PUBLIC_API_URL": "http://10.0.2.2:4000/api/v1" }
+    },
+    "production": {
+      "distribution": "internal",
+      "android": { "buildType": "apk" }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

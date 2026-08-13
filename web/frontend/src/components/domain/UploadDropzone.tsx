@@ -140,9 +140,7 @@ export function UploadDropzone({
 
       {rejection && (
         <Notice tone="danger" data-testid="upload-rejection">
-          {rejection === 'TOO_LARGE'
-            ? t('errors:uploadTooLarge')
-            : t('errors:uploadNotAnImage')}
+          {rejection === 'TOO_LARGE' ? t('errors:uploadTooLarge') : t('errors:uploadNotAnImage')}
         </Notice>
       )}
     </div>

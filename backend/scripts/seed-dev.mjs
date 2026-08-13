@@ -65,9 +65,7 @@ const email = (process.env.SEED_DEMO_EMAIL ?? 'demo@example.com').toLowerCase();
 const password = process.env.SEED_DEMO_PASSWORD;
 
 if (!password || password.length < 8) {
-  console.error(
-    'SEED_DEMO_PASSWORD must be set to at least 8 characters (see .env.example).',
-  );
+  console.error('SEED_DEMO_PASSWORD must be set to at least 8 characters (see .env.example).');
   process.exit(1);
 }
 
@@ -158,9 +156,20 @@ try {
   // have something to say), a paddy crop (the standing-water branch of the
   // irrigation engine), and a planned crop (the not-yet-in-the-ground branch).
   const cropSpecs = [
-    { cropCode: 'TOMATO', sowingDate: daysAgo(45), variety: 'Pusa Ruby', areaValue: 1, status: 'active' },
+    {
+      cropCode: 'TOMATO',
+      sowingDate: daysAgo(45),
+      variety: 'Pusa Ruby',
+      areaValue: 1,
+      status: 'active',
+    },
     { cropCode: 'RICE', sowingDate: daysAgo(60), variety: 'IR-64', areaValue: 1, status: 'active' },
-    { cropCode: 'WHEAT', sowingDate: new Date(Date.now() + 20 * DAY_MS), areaValue: 0.5, status: 'planned' },
+    {
+      cropCode: 'WHEAT',
+      sowingDate: new Date(Date.now() + 20 * DAY_MS),
+      areaValue: 0.5,
+      status: 'planned',
+    },
   ];
 
   for (const spec of cropSpecs) {

@@ -45,9 +45,7 @@ export default function SettingsPage() {
                       consent flag is shown as the account holds it.
                     */}
                     <Badge tone={user.communityConsent ? 'success' : 'neutral'}>
-                      {user.communityConsent
-                        ? t('community:consentOn')
-                        : t('community:consentOff')}
+                      {user.communityConsent ? t('community:consentOn') : t('community:consentOff')}
                     </Badge>
                   </dd>
                 </div>
@@ -65,11 +63,7 @@ export default function SettingsPage() {
         </Section>
 
         <Section title={t('auth:logout')} as="h2">
-          <Button
-            variant="danger"
-            onClick={() => setConfirmOpen(true)}
-            data-testid="logout-button"
-          >
+          <Button variant="danger" onClick={() => setConfirmOpen(true)} data-testid="logout-button">
             {t('auth:logout')}
           </Button>
         </Section>

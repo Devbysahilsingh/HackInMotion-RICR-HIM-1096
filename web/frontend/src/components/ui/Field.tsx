@@ -138,8 +138,10 @@ export const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(funct
   );
 });
 
-export interface TextAreaFieldProps
-  extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'id'> {
+export interface TextAreaFieldProps extends Omit<
+  TextareaHTMLAttributes<HTMLTextAreaElement>,
+  'id'
+> {
   label: ReactNode;
   hint?: ReactNode;
   error?: ReactNode;
@@ -194,10 +196,7 @@ export const CheckboxField = forwardRef<HTMLInputElement, CheckboxFieldProps>(
             id={id}
             type="checkbox"
             aria-describedby={hintId}
-            className={cn(
-              'mt-0.5 h-5 w-5 shrink-0 rounded border-line text-brand-600',
-              className,
-            )}
+            className={cn('mt-0.5 h-5 w-5 shrink-0 rounded border-line text-brand-600', className)}
             {...rest}
           />
           <label htmlFor={id} className="text-sm text-ink-700">

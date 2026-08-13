@@ -32,7 +32,14 @@ export function MarketSignalCard({
   signal,
   title,
 }: {
-  signal: MyCropSignal | { signal: MarketSignal; freshness: MyCropSignal['freshness']; names?: MyCropSignal['names']; district?: string | null };
+  signal:
+    | MyCropSignal
+    | {
+        signal: MarketSignal;
+        freshness: MyCropSignal['freshness'];
+        names?: MyCropSignal['names'];
+        district?: string | null;
+      };
   title?: string;
 }) {
   const { t } = useTranslation(['market', 'common']);

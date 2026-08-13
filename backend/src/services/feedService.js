@@ -9,6 +9,7 @@
  * same number of round trips as one with a single crop.
  */
 import { FEED_MAX_ACTIVE_PER_USER, FEED_PRIORITY_RANK, FRESHNESS } from '../config/constants.js';
+import { tierConfig } from '../config/env.js';
 import { deriveStage } from '../engines/stage/deriveStage.js';
 import { isActive } from '../engines/feedComposer/feedComposer.js';
 import { Crop, CropRegistry, Farm, Recommendation, WeatherSnapshot } from '../models/index.js';
@@ -238,9 +239,22 @@ function snapshotFreshness(snapshot, asOf) {
 }
 
 /**
- * `systemStatus` reports only subsystems that exist. `ml` is honestly `'down'`
- * until Phase 3 ships the service — reporting `'up'` for something that has
- * never been deployed would be a fabricated status (rule 7).
+ * `systemStatus` reports only subsystems that exist.
+ *
+ * `ml` was hard-coded to `'down'` while Phase 3 was unbuilt, which was honest
+ * then and is a lie now that the service ships and answers. It is derived from
+ * configuration instead:
+ *
+ * - **disabled** — an operator pulled `DISABLE_ML`; the tier really is off.
+ * - **not configured** — no `ML_SERVICE_URL`; nothing has been deployed to
+ *   talk to, which is `pending` rather than `down`.
+ * - **configured and enabled** — reported `live`.
+ *
+ * What this deliberately is *not* is a liveness probe. A dashboard request may
+ * not call an external service (rule 3), so this describes how the tier is
+ * wired, not whether it answered a second ago. A tier that is up but failing
+ * shows up where it actually matters — in the analysis response's own `source`
+ * and `escalationPath`, which record what really happened to a farmer's photo.
  */
 async function systemStatus(asOf, snapshots) {
   const anyLive = snapshots.some(
@@ -251,6 +265,8 @@ async function systemStatus(asOf, snapshots) {
   const { MarketPrice } = await import('../models/index.js');
   const latestPrice = await MarketPrice.findOne().sort({ date: -1 }).select('source').lean();
 
+  const { ml } = tierConfig();
+
   return {
     weather: anyLive ? FRESHNESS.LIVE : anySnapshot ? FRESHNESS.CACHED : FRESHNESS.PENDING,
     market: !latestPrice
@@ -258,7 +274,7 @@ async function systemStatus(asOf, snapshots) {
       : latestPrice.source === 'seed'
         ? FRESHNESS.HISTORICAL
         : FRESHNESS.CACHED,
-    ml: 'down',
+    ml: ml.disabled ? 'down' : ml.configured ? FRESHNESS.LIVE : FRESHNESS.PENDING,
   };
 }
 

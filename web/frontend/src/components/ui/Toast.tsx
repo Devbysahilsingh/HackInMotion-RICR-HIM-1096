@@ -33,7 +33,10 @@ const DISMISS_AFTER_MS = 6000;
 
 const TONE: Record<ToastTone, { className: string; Icon: typeof IconCheck }> = {
   success: { className: 'border-brand-300 bg-brand-50 text-brand-800', Icon: IconCheck },
-  error: { className: 'border-danger-600/30 bg-danger-50 text-danger-600', Icon: IconAlertTriangle },
+  error: {
+    className: 'border-danger-600/30 bg-danger-50 text-danger-600',
+    Icon: IconAlertTriangle,
+  },
   info: { className: 'border-line bg-surface text-ink-700', Icon: IconCheck },
 };
 
@@ -90,7 +93,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   );
 }
 
-function ToastViewport({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id: number) => void }) {
+function ToastViewport({
+  toasts,
+  onDismiss,
+}: {
+  toasts: Toast[];
+  onDismiss: (id: number) => void;
+}) {
   const { t } = useTranslation('common');
 
   return (

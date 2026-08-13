@@ -12,10 +12,7 @@ import { after, before, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import mongoose from 'mongoose';
 
-import {
-  allocatedCropAcres,
-  assertAreaWithinFarm,
-} from '../../src/services/cropService.js';
+import { allocatedCropAcres, assertAreaWithinFarm } from '../../src/services/cropService.js';
 import { updateFarm } from '../../src/services/farmService.js';
 import { Crop, Farm } from '../../src/models/index.js';
 import { clearCollections, startTestDatabase, stopTestDatabase } from '../helpers/db.js';
@@ -105,15 +102,11 @@ describe('crop area · the land ledger', () => {
   describe('assertAreaWithinFarm', () => {
     it('accepts a planting that exactly fills the farm', async () => {
       await plant({ areaValue: 30 });
-      await assert.doesNotReject(
-        assertAreaWithinFarm(farm, { areaValue: 20, areaUnit: 'acre' }),
-      );
+      await assert.doesNotReject(assertAreaWithinFarm(farm, { areaValue: 20, areaUnit: 'acre' }));
     });
 
     it('refuses a single crop larger than the farm', async () => {
-      const err = await rejection(
-        assertAreaWithinFarm(farm, { areaValue: 60, areaUnit: 'acre' }),
-      );
+      const err = await rejection(assertAreaWithinFarm(farm, { areaValue: 60, areaUnit: 'acre' }));
 
       assert.equal(err.code, 'VALIDATION_ERROR');
       assert.equal(err.messageKey, 'crop.areaExceedsFarm');
@@ -124,9 +117,7 @@ describe('crop area · the land ledger', () => {
 
     it('refuses when the total across crops would exceed the farm', async () => {
       await plant({ areaValue: 30 });
-      const err = await rejection(
-        assertAreaWithinFarm(farm, { areaValue: 25, areaUnit: 'acre' }),
-      );
+      const err = await rejection(assertAreaWithinFarm(farm, { areaValue: 25, areaUnit: 'acre' }));
 
       assert.equal(err.messageKey, 'crop.areaExceedsFarm');
       assert.deepEqual(err.details, [
@@ -165,9 +156,7 @@ describe('crop area · the land ledger', () => {
       // 8 hectare ≈ 19.77 acres on a 50-acre farm → ~30.23 acres left.
       await plant({ areaValue: 8, areaUnit: 'hectare' });
 
-      await assert.doesNotReject(
-        assertAreaWithinFarm(farm, { areaValue: 30, areaUnit: 'acre' }),
-      );
+      await assert.doesNotReject(assertAreaWithinFarm(farm, { areaValue: 30, areaUnit: 'acre' }));
       const err = await rejection(
         assertAreaWithinFarm(farm, { areaValue: 49, areaUnit: 'bigha' }), // 30.625 ac
       );
@@ -176,9 +165,7 @@ describe('crop area · the land ledger', () => {
 
     it('ignores harvested crops — finished crops free their ground', async () => {
       await plant({ areaValue: 50, status: 'harvested' });
-      await assert.doesNotReject(
-        assertAreaWithinFarm(farm, { areaValue: 50, areaUnit: 'acre' }),
-      );
+      await assert.doesNotReject(assertAreaWithinFarm(farm, { areaValue: 50, areaUnit: 'acre' }));
     });
 
     it('never blocks a crop with no recorded area', async () => {

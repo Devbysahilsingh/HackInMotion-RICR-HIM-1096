@@ -223,7 +223,9 @@ describe('Dashboard, recommendations and the feed jobs', () => {
       assert.deepEqual(data.feed, []);
       assert.deepEqual(data.cropCards, []);
       assert.deepEqual(data.farmSummary, { farmCount: 0, activeCropCount: 0, districts: [] });
-      assert.equal(data.systemStatus.ml, 'down');
+      // No ML_SERVICE_URL is set under test, so there is nothing deployed to
+      // talk to — 'pending', not 'down'. See the ml-status test below.
+      assert.equal(data.systemStatus.ml, 'pending');
     });
 
     it('drops the onboarding payload as soon as one farm exists', async () => {
@@ -389,9 +391,11 @@ describe('Dashboard, recommendations and the feed jobs', () => {
         districts: ['Nagpur', 'Wardha'],
       });
 
-      // systemStatus reports only subsystems that exist. The ml service has
-      // never been deployed, so 'up' would be a fabricated status.
-      assert.equal(data.systemStatus.ml, 'down');
+      // systemStatus reports only subsystems that exist. This suite runs with
+      // no `ML_SERVICE_URL`, which is 'pending' — nothing has been deployed to
+      // reach. It used to be hard-coded 'down', which stopped being true when
+      // Phase 3 shipped the service.
+      assert.equal(data.systemStatus.ml, 'pending');
       assert.equal(data.systemStatus.weather, 'live');
       assert.equal(data.systemStatus.market, 'pending');
 

@@ -102,9 +102,7 @@ describe('CropForm', () => {
 
   it('refuses a crop larger than the remaining farm area, and names what is left', async () => {
     const onSubmit = vi.fn();
-    renderWithProviders(
-      <CropForm isSubmitting={false} onSubmit={onSubmit} availableAcres={20} />,
-    );
+    renderWithProviders(<CropForm isSubmitting={false} onSubmit={onSubmit} availableAcres={20} />);
 
     // The remaining ground is stated up front, not discovered on rejection.
     expect(screen.getByText(/20 .*available for crops/i)).toBeInTheDocument();
@@ -121,9 +119,7 @@ describe('CropForm', () => {
 
   it('accepts a crop that fits, converting units into one ledger', async () => {
     const onSubmit = vi.fn();
-    renderWithProviders(
-      <CropForm isSubmitting={false} onSubmit={onSubmit} availableAcres={20} />,
-    );
+    renderWithProviders(<CropForm isSubmitting={false} onSubmit={onSubmit} availableAcres={20} />);
 
     await userEvent.selectOptions(await readyCropSelect(), 'TOMATO');
     // 8 hectare ≈ 19.77 acres — inside the 20 remaining.

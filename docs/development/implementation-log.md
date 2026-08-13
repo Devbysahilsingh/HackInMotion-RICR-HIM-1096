@@ -764,3 +764,187 @@ Owner-directed full-product pass ("audit → fix → verify, do not stop at pret
 **E2E suite run (first time since Phase 5 deferred it) — one suite defect found and fixed.** First full run: 26 passed, 12 failed — 11 of the 12 in the `mobile-chromium` project, every one failing at the fixture's sign-in with the page parked on `/login`. Direct probe confirmed the API answering `429 RATE_LIMITED`: `guards.spec.ts` documents a budget of "two of the login limiter's five attempts", but that accounting predates the two-project config — run in both projects, the suite spends 6+ logins per 15-minute window, and each failure's worker restart spends another, which is the cascade. Per rule 2 the limiter is untouched; the suite now spends less instead: guards (viewport-independent by subject — redirects, revocation, 404) run on desktop only via `testIgnore` on the mobile project, bringing the budget to 4 of 5. Not a regression from this pass — the suite had never been run in this configuration.
 
 **Second E2E finding — the suite is not idempotent.** A re-run against the same seed failed on every feed-dependent test: the previous run's acknowledge test had permanently acked the demo account's feed items (correct product behaviour — acked advice stays acked), `feedRefresh` deliberately does not resurrect them, so `feed-item` never rendered — and each of those failures restarted its worker, spent another fixture login, and re-triggered the limiter cascade downstream. Not a product bug: the reset is `npm run seed:dev -- --reset` + `weatherRefresh` + `feedRefresh` — the `--reset` flag matters, because without it the seed is deliberately additive (it must not reset a changed password), the demo user keeps its id, the day's dedup keys keep matching the acked rows, and `feedRefresh` reports `updated` rather than `inserted` for every candidate. Recorded here because the failure mode — "everything after test N failed at sign-in" — looks like an auth regression and is actually a spent budget.
+
+---
+
+## PHASE 6 — Android app (P6-1..P6-8) — 2026-08-14
+
+**Mobile: 11 suites / 90 tests / 90 pass**, `tsc --noEmit` clean. **Backend 1,279 / 1,279 pass** across 255 suites (Phase 5 finished at 1,260). **Web 109 / 109 pass** across 14 files (was 97). Repo lint **0 errors**, 4 warnings — all four the pre-existing `react-refresh/only-export-components` HMR warnings in the web app. `check:i18n`: **1,152 keys · 0 missing in hi · 568 human-verified**, parity check passed. `check:ui-strings`: **0 hardcoded user-facing strings** across `web/frontend/src` **and** `mobile/src`, 30 files exempt.
+
+The app is Expo SDK 57 / React Native 0.86.2 / React 19.2.3 / TypeScript **(superseded the same day — migrated down to SDK 54; see the migration entry at the end of this file)**: 24 screen files (23 navigator routes plus the crop-detail tab host) across 4 tabs and 5 stacks, consuming the same `/api/v1` contract as the web with no mobile-only endpoint except the one that had to be built (below). Nothing outside the Expo managed module set, so the Expo Go demo route survives.
+
+**Nothing in this entry has been run on a phone.** No APK exists, no device or emulator has launched the app, and no row of the manual matrix in `docs/mobile/testing.md` has been executed. Everything claimed below was verified by a command that was run or read out of a file.
+
+### The decision that shaped the phase: `shared/` grew
+
+The mobile client is the second consumer of a contract that had exactly one. Five modules moved up out of `web/frontend/src`:
+
+| Module | Contents |
+|---|---|
+| `shared/types/api.ts` | every wire type and enum; `web/frontend/src/api/types.ts` is now a one-line `export *` so the ~40 existing `@/api/types` imports keep resolving |
+| `shared/client/errors.ts` | `ApiError`, `isApiError`, `isApiErrorBody`, `isRetryable`, plus a new `retryAfterSeconds` |
+| `shared/client/queryKeys.ts` | the query-key registry and the `STALE_TIME` tiers |
+| `shared/client/units.ts` | acre-equivalent land-ledger arithmetic |
+| `shared/client/format.ts` | Intl date/number/currency formatting and `localizedName` |
+
+Metro reaches them through `watchFolders: ['../shared']` plus an `@shared` alias in `resolver.extraNodeModules`, spelled identically in `tsconfig.json` and `jest.config.js`. That single move produced the most valuable finding of the phase: a transcription with one consumer is unfalsifiable.
+
+### What the API actually returns, versus what the web client had been typing
+
+The Phase 5 entry records three assumptions caught by running the thing. Extracting the types found **five more** — and every one had a *matching* error in the web's own test fixtures, so the suite was green against a contract the server does not implement. All five reached the screen:
+
+| # | Field | Typed as | Actually served | Consequence on the **web** |
+|---|---|---|---|---|
+| 1 | `analysis.escalationPath[]` | `{tier, outcome, reasonCode}` | `{provider, reason, status?}` (`cropHealthService.js`, `aiVision.js`, `models/CropHealthLog.js`) | the component relabels the hop as the trace step name, so **every escalation heading rendered the literal string `undefined`** |
+| 2 | fertilizer `recommendations[].schedule[]` | `{labelKey, due, timingKey, daysAfterSowing}` | `{stage, timing, fractionKey, note, window, isCurrent, timingUnknown}` (`fertilizerService.js`) | the label fell through to `String(step.stage)`, so the schedule printed **raw enum codes** — `BASAL`, `TOPDRESS_1` — and no entry was ever marked due |
+| 3 | `symptomCheck.candidates[].score` | `score` | `matchScore` (`symptomEngine.js#toCandidate`) | `candidate.score * 100` over `undefined` → **`NaN%`** beside every candidate |
+| 4 | `analysis.top3[]` | `{code, prob}` | `{diseaseCode, confidence}` — `integrations/mlService.js` normalises the model's own shape before storing | the ranked alternatives were unreadable |
+| 5 | `irrigation.soil` | `{soilType, awcMmPerM, published, basis}` | **no top-level `soil` object at all** — only `soilUncertaintyWide: boolean`, with the inputs inside the `SOIL` trace step (`computeIrrigation.js`) | the "we are less sure on unspecified soil" notice **could never fire**: it tested `advice.soil?.soilType === 'unknown'` on a field that does not exist |
+
+Fixtures were rebuilt from the emitting code rather than patched to agree with the new types, and three new web test files close the holes the old fixtures had been hiding: `FertilizerGuidanceView.test.tsx` (6), `IrrigationVerdictCard.test.tsx` (3), `SymptomCheckPage.test.tsx` (3). The escalation test now asserts positively that `ml-service`, `gemini` and `openrouter` each appear by name, that both `uncertain` and `not_configured` reach the panel, and that the string `undefined` does not.
+
+Two properties nobody had written down surfaced while rebuilding those fixtures: `escalationPath` is **empty** when the local model answers, because `runChain()` pushes an entry only for a tier that *declined*, and it never contains the terminal rules tier.
+
+### Defects found and fixed in already-shipped code
+
+| Severity | Finding | Fix |
+|---|---|---|
+| **HIGH** | **`severityVisual` was never persisted into the health snapshot.** `buildSnapshot()` dropped the AI tier's visual severity estimate, so `POST /crop-health/logs/:id/severity` re-ran the engine with `severityVisual: null` and the farmer's two answers alone decided the level — silently discarding an input `severityEngine.js` documents as "one input among" several. Nothing failed; the number just quietly got worse. | Carried into the snapshot alongside `severityTrace`. |
+| **MEDIUM** | **`systemStatus.ml` was hard-coded `'down'`.** Honest while Phase 3 was unbuilt, a lie once the service ships and answers — the dashboard told every farmer the disease model was down while it was classifying their photographs. | Derived from `tierConfig()`: `DISABLE_ML` → `down`; no `ML_SERVICE_URL` → `pending`, because nothing has been deployed to talk to; configured and enabled → `live`. Deliberately **not** a liveness probe — a dashboard request may not call an external service (rule 3) — so it reports how the tier is wired. A tier that is up but failing shows where it matters: the analysis response's own `source` and `escalationPath`. |
+| **MEDIUM** | **`communityConsent` had a service function and no route.** `setCommunityConsent` has existed in `communityService.js` since P3-8 and `communityConsent` is on the user model, but nothing was ever mounted in front of it — community sharing was **unreachable from any client**, which is exactly why the web settings page shows the flag read-only (recorded in the Phase 5 "Not done, deliberately" list). | `PATCH /api/v1/users/me` — `backend/src/routes/users.js`, strict Zod body, `requireAuth`, ownership row `none³` (`me` is a literal, not an id), RL 30/h/user, `consent_changed` audit written only on a real transition, consent routed through `communityService` rather than assigned inline. 18 tests. |
+| **MEDIUM** | **`disableHierarchicalLookup` broke the Metro build.** The standard monorepo recipe, applied to stop a duplicate React resolving from a parent — but this repo root carries only lint and formatting tooling, no React and no React Native, so there was nothing to shadow. Expo's own transitive dependencies (`expo-asset`, `expo-font`, …) are installed **nested** under `node_modules/expo/node_modules`, which a flat-only resolver cannot see. | Removed, with the reasoning written into `metro.config.js` so it is not re-added from a blog post. `nodeModulesPaths` alone is what `shared/` actually needs. |
+| **LOW** | **Two mobile tests asserted impossible things.** One used **Kathmandu** as its example of a coordinate outside India — but `INDIA_BOUNDS` is a crude rectangle, not a border, and Kathmandu (27.7, 85.3) sits *inside* it, as do Colombo and most of Bangladesh; the test would have failed against a correct implementation. The other expected a **six**-decimal rounding but wrote the expectation out to **five** digits. | Dubai replaces Kathmandu, with a comment stating that the check asserts agreement with the server's rectangle and not knowledge of where India ends; the rounding expectation now carries the six decimals the code produces. |
+
+### Engineering decisions
+
+| # | Decision | Why |
+|---|---|---|
+| 1 | Refresh token in **SecureStore, sent in the request body** | React Native has no cookie jar. The server already accepts a body token on every route that takes one, so the contract did not change to accommodate the phone. The rotated successor is written to SecureStore **before** the new access token is published — a failed write fails the refresh rather than handing out a session whose successor has already been consumed server-side. |
+| 2 | Single-flight refresh, one replay | Presenting a rotated refresh token twice is precisely what the server's reuse detector correctly treats as theft. A fan-out of parallel refreshes on a rural connection would revoke the family and sign the farmer out for having bad signal. A security property, not an optimisation. |
+| 3 | **A refusal ends the session; a transport failure does not** | The web can treat every refresh failure as terminal because a browser that cannot reach the API has nothing cached to show. A phone has a persisted cache, a farmer standing in a field, and a radio that drops. `refreshSession()` clears SecureStore only when `error.response != null`. Which *kind* of 4xx it was is still never exposed to the caller, so revoked / expired / unknown remain indistinguishable on the wire. |
+| 4 | NetInfo checked **before** the bootstrap refresh (RES-11) | The distinction in #3 can only be drawn after an attempt. Offline, no attempt is made at all: the credential survives, the app opens on the persisted cache, and `sessionUnverified` says out loud that nothing has been checked with the server. A NetInfo listener re-runs the real refresh on reconnect, and only a server refusal destroys anything. |
+| 5 | **STT: intents-only. No microphone.** | The dev-build path (`expo-speech-recognition`) forfeits the Expo Go demo route `docs/mobile/deployment.md` names as primary; the Groq path needs `POST /voice/transcribe`, which does not exist in `backend/src/routes/` and which no TODO approved. The voice doc's intent layer is input-agnostic by design ("voice, tap, or typed text"), so the intents ship as large tappable targets — an accessibility feature for a low-literacy user, not a consolation prize. `RECORD_AUDIO` is in `blockedPermissions` so it cannot arrive transitively. |
+| 6 | **No `locales` block in `app.config.ts`** | `docs/mobile/i18n.md` called for one to localize the OS permission strings. Expo's `locales` compiles to iOS `InfoPlist.strings` **only**, and Android's permission-sheet text is system-generated and cannot be overridden by an app. Android is the only shipped target, so the block would have been inert — a config line that reads like a feature and does nothing. The doc has been corrected. What the farmer reads in their language is our own in-context rationale screen. |
+| 7 | `production` EAS profile carries **no** `EXPO_PUBLIC_API_URL` | The staging host does not exist (Render deploy, still owner A). Defaulting it to a domain nobody owns would ship an APK that talks to a stranger. It is passed at build time; the `app.config.ts` fallback is the emulator alias `10.0.2.2`, which cannot leave the machine. |
+| 8 | No client idempotency key on upload | The plan called for one with a "server dedupe field reserved P3". The server already does this differently — a `(userId, cropId, imageHash)` cache over the re-encoded bytes answering **200** on a hit (ADR-024 §3–4). A client key would be a second, weaker mechanism for the same job. |
+| 9 | The signed-in profile lives in the Query cache, not a third store | It rides the existing persister, is dropped by the same `queryClient.clear()` on logout, and lets an offline cold start greet the farmer by name. |
+| 10 | Upload progress is **observed, never timed** | `compressing` ends when the manipulator resolves; `uploading` ends when axios reports every byte delivered; `analyzing` is the real window while the server-side conductor runs. A progress bar that moves without progress is a fabricated status (rule 7). |
+
+### Verification performed (all executed, results real)
+
+| Check | Result |
+|---|---|
+| `npm --prefix mobile test` | **90 / 90 pass**, 11 suites, ~4s |
+| `npm --prefix mobile run typecheck` (`tsc --noEmit`) | clean |
+| `npm --prefix backend test` | **1,279 / 1,279 pass**, 255 suites, ~79s (was 1,260) |
+| `npm --prefix web/frontend test` | **109 / 109 pass**, 14 files, ~18s (was 97) |
+| `npm run lint` (repo) | **0 errors**, 4 warnings — all pre-existing web `react-refresh` HMR warnings |
+| `npm run check:i18n` | **1,152 keys · 0 missing in hi · 568 human-verified**; parity check passed |
+| `npm run check:ui-strings` | **0 hardcoded user-facing strings** across both client surfaces; 30 files exempt |
+
+Mobile coverage by file: `hooks/useAnalyze.test.ts` 23 · `api/client.test.ts` 16 · `hooks/useGeolocation.test.ts` 11 · `api/session.test.ts` 8 · `hooks/useAppStateRefetch.test.tsx` 6 · `hooks/useOnlineManager.test.ts` 5 · `hooks/usePrefetchRegistry.test.tsx` 5 · `screens/scan/AnalyzingScreen.test.tsx` 5 · `components/domain/WhyTrace.test.tsx` 4 · `components/domain/IrrigationVerdictCard.test.tsx` 4 · `hooks/useOfflineWriteGuard.test.tsx` 3. (An earlier run during this documentation pass read 10 suites / 83 tests and 1,145 i18n keys; the mobile source was being edited concurrently, and every figure in this entry is from the final run.)
+
+Tooling changed to serve two clients rather than one: `scripts/check-ui-strings.mjs` now scans `mobile/src` alongside `web/frontend/src`, and its visible-attribute list gained `accessibilityLabel` / `accessibilityHint` / `accessibilityValue` — a screen reader speaks those verbatim, so an English literal there is as untranslated as visible text. `eslint.config.js` gained `shared/**` and `mobile/**` blocks: RN globals plus bundler-injected `__DEV__`, the `react-hooks` rules, and deliberately **no** `react-refresh/only-export-components`, which describes Vite's fast-refresh boundary and not Metro's. The root `package.json` gained `scan:apk`, `check:ui-strings`, `test:mobile`, `typecheck:mobile`, and a `verify` that runs them.
+
+### Honest limitations shipped in this phase
+
+- **No device has run this app.** No APK has been built, `eas init` has not been run, `extra.eas.projectId` is null, and none of the 17 manual-matrix rows in `docs/mobile/testing.md` has been executed. The bug bar — P0 screens crash-free through the matrix ×2 consecutive runs — has zero runs against it. Everything only a real handset can prove is marked ⏳ MANUAL DEVICE TEST PENDING in the mobile docs and in MASTER-TODO, and nothing anywhere claims it passed.
+- **RES-09..12 are not passed.** The pieces they rest on are unit-tested (online manager, write guard, foreground refetch, registry prefetch, the upload machine's retry-same-bytes behaviour, the offline bootstrap branch), but the scenarios themselves are device procedures and are recorded as such in `docs/testing/test-matrix.md`.
+- **ST-60's client half is blocked, not done.** `scripts/scan-apk-strings.mjs` exists and searches credential *shapes* rather than a denylist of this project's keys — reporting member, offset and pattern name, never the matched text — but it has never been run against a real APK, because none exists.
+- **`mobile` Hindi is 118 keys / 0 human-verified.** Machine-authored, parity-complete, ledgered under `unverifiedAdditions` in `shared/i18n/hi/_verification.json`, with four additions flagged as needing an *agronomic* reviewer rather than only a language one (`irrigation.soilUncertaintyWide`, `irrigation.harvestApproaching`, `fertilizer.timingUnknown`, `market.dailyAverageNote`). `disease` remains 408 / 0 and remains ADR-021 §1's cotton gate.
+- **No `@formatjs` ICU polyfill.** `shared/client/format.ts` uses `Intl` unchanged on both surfaces and no handset has been checked for `hi-IN` data. If a low-end Hermes build lacks it, that decision reopens.
+- **Devanagari rendering, 1.3× text scaling, thumb reach and every other layout claim are unverified.**
+- **`expo-image-manipulator` is untested.** It has no JS-side implementation under `jest-expo`; the compression parameters are code-verified against the server constants they mirror (`MAX_EDGE_PX` 1600 = `MAX_STORED_EDGE_PX`, JPEG q85, an 8 MiB ceiling matching `MAX_UPLOAD_BYTES`).
+- **A captive portal still ends the session.** It answers with an HTTP response of its own, which `error.response != null` cannot distinguish from the API saying no. Dead DNS and dropped sockets are now safe; this case is not.
+
+### Not done, deliberately
+
+- **No Detox, no on-device E2E.** Unchanged from the scope `docs/mobile/testing.md` commits to.
+- **No deep linking.** `NavigationContainer` is mounted with no `linking` prop, so the plan's "whitelisted screens only, no token-bearing links" holds by construction — there is no surface to whitelist and no parameter to validate. The `krishisaarthi` scheme is reserved in `app.config.ts`; the whitelist requirement returns with the feature.
+- **No offline write queue.** Writes are blocked and explained, never queued and silently replayed. Still the P3 backlog item it always was.
+- **No community write surface on mobile.** The alerts screen is read-only because there is no write route, and a "report this" button that posted nowhere would be worse than its absence.
+- **No `name` field on `PATCH /users/me`.** No client edits it, and each of `name`/`email` would need its own verification story. Password change and account deletion stay the separate endpoints `docs/api/users.md` describes.
+- **Two dead members left alone** — the mobile source was being edited by another agent during this pass: `MAX_UPLOAD_BYTES` is exported from `services/image.ts` but never checked against the compressed output, and `CropDetailTab` is declared independently in `navigation/types.ts` and `screens/farm/CropDetailTabs.tsx` (same four members today, two declarations that can drift).
+- **One doc/code drift left alone:** the header comment in `mobile/src/store/AuthContext.tsx` still describes `refreshSession()` as unable to tell a refusal from an unreachable server and calls closing that gap future work. `api/client.ts` closes it. `docs/mobile/authentication.md` follows the code and records the discrepancy rather than quietly agreeing with the comment.
+
+### Files
+
+Created: the whole of `mobile/` — `app.config.ts`, `eas.json`, `metro.config.js`, `babel.config.js`, `jest.config.js`, `jest.setup.js`, `index.ts`, `README.md`, `.gitignore`, `assets/`, and `src/` (`api/`, `components/`, `config/`, `hooks/`, `i18n/`, `navigation/`, `screens/`, `services/`, `store/`, `theme/`) — plus `shared/types/api.ts`, `shared/client/queryKeys.ts`, `shared/i18n/{en,hi}/mobile.json`, `backend/src/routes/users.js`, `backend/tests/api/users.test.js`, `scripts/scan-apk-strings.mjs`, `web/frontend/src/components/domain/{FertilizerGuidanceView,IrrigationVerdictCard}.test.tsx`, `web/frontend/src/pages/health/SymptomCheckPage.test.tsx`.
+
+Changed: `shared/client/{errors,format,units}.ts`, `backend/src/{app.js, config/constants.js, middleware/rateLimits.js, routes/ownership-table.js, services/cropHealthService.js, services/feedService.js}`, `backend/tests/api/dashboard.test.js`, `web/frontend/src/api/{types,errors,queryKeys}.ts`, `web/frontend/src/lib/{format,units}.ts`, `web/frontend/src/components/domain/{AnalysisResult,AnalysisResult.test,FertilizerGuidanceView,IrrigationVerdictCard}.tsx`, `web/frontend/src/pages/health/SymptomCheckPage.tsx`, `web/frontend/src/test/fixtures.ts`, `eslint.config.js`, the root `package.json`, `scripts/check-{i18n,ui-strings}.mjs`, `shared/i18n/{en,hi}/fertilizer.json`, `shared/i18n/hi/_verification.json`, and the docs: all twelve `docs/mobile/*.md`, `docs/api/users.md`, `docs/database/schema.md`, `docs/security/route-ownership.md`, `docs/testing/test-matrix.md`, `docs/development/MASTER-TODO.md`, and the root `README.md`.
+
+---
+
+## MOBILE — Expo SDK 57 → 54 migration — 2026-08-14
+
+**Dependency versions only. No file under `mobile/src/` changed, and no Phase 6 feature was dropped.** This entry supersedes the stack line in the Phase 6 entry above; everything else in that entry stands.
+
+### Why
+
+The demo handset has **Expo Go 54.0.8** installed and will not be upgraded. Expo Go loads only projects built against its own SDK, so the project's SDK is not a free choice — the client already on the device fixes it. Phase 6 shipped on SDK 57 / RN 0.86.2 / React 19.2.3, which that Expo Go refuses to open, which would have left the Expo Go LAN demo — the path `docs/mobile/deployment.md` names as primary and the advantage ADR-015 chose the framework for — with no device behind it. The EAS APK backup is not available either: it is still `⚠ BLOCKED` on the Render deploy and an Expo account. A framework picked for an instant on-device demo has to match the device that will do the demoing.
+
+### How the versions were chosen
+
+Out of **`expo@54.0.36`'s own `bundledNativeModules.json`**, package by package — not guessed, and not derived by decrementing a major. That matters more than it sounds, because the two SDKs version their modules differently: SDK 57 moves the `expo-*` packages in lockstep at `57.x`, while SDK 54 versions each independently. The correct SDK 54 numbers therefore bear no visible relation to the SDK or to each other, and anything inferred by pattern would have been wrong.
+
+| Package | was (SDK 57) | now (SDK 54) |
+|---|---|---|
+| `expo` | ~57.0.12 | ~54.0.36 |
+| `react-native` | 0.86.2 | 0.81.5 |
+| `react` | 19.2.3 | 19.1.0 |
+| `expo-camera` | ~57.0.3 | ~17.0.10 |
+| `expo-constants` | ~57.0.10 | ~18.0.13 |
+| `expo-image-manipulator` | ~57.0.9 | ~14.0.8 |
+| `expo-image-picker` | ~57.0.9 | ~17.0.11 |
+| `expo-linking` | ~57.0.5 | ~8.0.12 |
+| `expo-localization` | ~57.0.1 | ~17.0.9 |
+| `expo-location` | ~57.0.9 | ~19.0.8 |
+| `expo-secure-store` | ~57.0.1 | ~15.0.8 |
+| `expo-speech` | ~57.0.1 | ~14.0.8 |
+| `expo-status-bar` | ~57.0.1 | ~3.0.9 |
+| `react-native-gesture-handler` | ~2.32.0 | ~2.28.0 |
+| `react-native-safe-area-context` | ~5.7.0 | ~5.6.0 |
+| `react-native-screens` | ~4.26.0 | ~4.16.0 |
+| `react-native-svg` | 15.15.4 | 15.12.1 |
+| `@react-native-community/netinfo` | 12.0.1 | 11.4.1 |
+| `@react-native-async-storage/async-storage` | 2.2.0 | 2.2.0 — unchanged |
+| `jest-expo` | ^57.0.4 | ~54.0.17 |
+| `babel-preset-expo` | ~57.0.6 | ~54.0.12 |
+| `react-test-renderer` | ^19.2.3 | 19.1.0 |
+| `@types/react` | ~19.2.2 | ~19.1.17 |
+| `typescript` | ~6.0.3 | ~5.9.2 |
+| `i18next` / `react-i18next` | ^26 / ^17 | ^25.2.1 / ^15.5.2 |
+
+### Why no source changed
+
+The two APIs that could plausibly have broken across three SDK majors did not. `expo-image-manipulator`'s **context API** — `ImageManipulator.manipulate()` → `renderAsync()` → `saveAsync()`, which `services/image.ts` is written against — already exists in 14.0.8. The `expo-camera` surface the scan screens use matches 17.x as written. So the compression path, the camera permission branches, the offline persistence, TTS, the upload state machine and all 24 screens are byte-identical to what Phase 6 verified.
+
+### Verification performed (all executed, results real)
+
+| Check | Result |
+|---|---|
+| `npx expo install --check` | **Dependencies are up to date** |
+| `npx expo-doctor` | **18 / 18 checks passed** |
+| `npx tsc --noEmit` | **0 errors** |
+| `npx jest` | **11 suites / 90 tests pass** — identical to SDK 57 |
+| `npx eslint mobile/src` · `npm run format:check` | clean |
+| `npx expo start --lan` | manifest serves `"sdkVersion":"54.0.0"`, `"runtimeVersion":"exposdk:54.0.0"`, `extra.apiUrl` = the LAN URL |
+| Android bundle over LAN | **HTTP 200, 8.2 MB, 1321 modules** |
+| `npx expo export --platform android` | **3.55 MB Hermes bundle**, clean |
+| ST-60 `npm run scan:apk --bundle <hbc>` | **PASS**, and the scanner was proven able to read strings out of that bundle |
+
+The `ERR_INVALID_ARG_TYPE` noise the SDK 57 CLI printed on start no longer appears at all.
+
+That ST-60 run is the **first time the client-half scanner has been pointed at a real artefact**. It is a Hermes bundle from `expo export`, not an APK, so ST-60's APK half remains blocked — but the scanner is no longer merely written: it read strings out of a genuine compiled bundle and returned PASS, which is the part of it that had never been exercised.
+
+### Still true, unchanged by this migration
+
+**No APK has been built and no physical device has run this app** — not on SDK 57, not on SDK 54. `eas init` has not been run, `extra.eas.projectId` is null, and none of the 17 rows of the manual matrix in `docs/mobile/testing.md` has been executed. The pin is reasoned from the handset's stated Expo Go version, not from an observed successful launch; every device row stays ⏳ MANUAL DEVICE TEST PENDING. The Hindi verification state, the captive-portal limitation, the absent ICU polyfill and the untested `expo-image-manipulator` are all exactly as the Phase 6 entry left them.
+
+### The cost, recorded
+
+SDK 54 is behind current, and the project carries that gap for as long as the pin holds. The pin is to **a device, not a date**: if that handset's Expo Go changes — reinstall, replacement phone, store update — the SDK moves with it and the app has to be re-tested against whatever Expo Go the device then has. Dependency additions are no longer free-hand; anything new must resolve against SDK 54, checked with `expo install --check` and `expo-doctor`. Recorded as a decision in `docs/mobile/technology-decision.md`.
+
+### Files
+
+Changed: `mobile/package.json` (+ `package-lock.json`), `mobile/README.md`, `docs/mobile/technology-decision.md`, `docs/mobile/architecture.md`, `docs/development/MASTER-TODO.md`, this file, and the root `README.md`. Nothing under `mobile/src/`.

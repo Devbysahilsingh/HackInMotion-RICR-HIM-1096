@@ -144,3 +144,18 @@ export const healthAnalyzeBurstLimiter = rateLimit({
 
 /** docs/api/crop-health.md: "POST /crop-health/symptom-check | Auth · RL 30/day". */
 export const symptomCheckLimiter = perUserDaily(SYMPTOM_CHECK_DAILY_LIMIT);
+
+/**
+ * docs/api/users.md: "PATCH /users/me | Auth · RL 30/h".
+ *
+ * Hourly rather than daily, so it does not share `perUserDaily`. Settings are
+ * not a hot path — a farmer changes a language or a consent toggle a handful of
+ * times ever — and 30 an hour is far above any real use while still bounding
+ * what a stolen token can do to the audit trail by flipping consent in a loop.
+ */
+export const profileUpdateLimiter = rateLimit({
+  ...baseOptions,
+  windowMs: 60 * 60 * 1000,
+  limit: 30,
+  keyGenerator: (req) => req.auth?.userId ?? ipKeyGenerator(req.ip),
+});

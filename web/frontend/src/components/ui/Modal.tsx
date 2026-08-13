@@ -95,11 +95,7 @@ export function Modal({
         has ESC and the labelled close control, and announcing a full-screen
         "close" target would be noise.
       */}
-      <div
-        className="absolute inset-0 bg-ink-900/45"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+      <div className="absolute inset-0 bg-ink-900/45" onClick={onClose} aria-hidden="true" />
       <div
         ref={dialogRef}
         role="dialog"

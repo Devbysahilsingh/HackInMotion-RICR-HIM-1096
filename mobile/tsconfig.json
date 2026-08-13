@@ -1,0 +1,28 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "resolveJsonModule": true,
+    /**
+     * `jest` is listed globally rather than in a second tsconfig for the test
+     * files: `describe`/`it`/`expect` are ambient, and one project that knows
+     * about them is simpler than two projects that disagree about anything.
+     */
+    "types": ["jest"],
+    /**
+     * No `baseUrl`: TypeScript 6 deprecates it, and it is unnecessary here —
+     * without one, `paths` resolve relative to this file, which is exactly
+     * what these two entries already assume.
+     */
+    "paths": {
+      "@/*": ["./src/*"],
+      "@shared/*": ["../shared/*"]
+    }
+  },
+  "include": ["src", "index.ts", "app.config.ts", "jest.setup.js", "**/*.d.ts"],
+  "exclude": ["node_modules"]
+}

@@ -49,14 +49,7 @@ const AXES = {
     'RINGS',
   ],
   color: ['YELLOW', 'BROWN', 'BLACK', 'WHITE', 'GREY', 'RED', 'ORANGE', 'PURPLE', 'TAN'],
-  distribution: [
-    'LOWER_LEAVES',
-    'UPPER_LEAVES',
-    'ALL_LEAVES',
-    'SCATTERED',
-    'MARGINS',
-    'VEINS',
-  ],
+  distribution: ['LOWER_LEAVES', 'UPPER_LEAVES', 'ALL_LEAVES', 'SCATTERED', 'MARGINS', 'VEINS'],
 } as const;
 
 type Axis = keyof typeof AXES;
@@ -220,9 +213,7 @@ function SymptomResult({ result, cropId }: { result: SymptomCheckResponse; cropI
         <SourceLabel sourceLabelKey={result.guidance.sourceLabelKey} />
 
         {result.guidance.coverageNoticeKey && (
-          <Notice tone="info">
-            {translateMessageKey(t, result.guidance.coverageNoticeKey)}
-          </Notice>
+          <Notice tone="info">{translateMessageKey(t, result.guidance.coverageNoticeKey)}</Notice>
         )}
 
         {/*
@@ -261,11 +252,7 @@ function SymptomResult({ result, cropId }: { result: SymptomCheckResponse; cropI
   );
 }
 
-function CandidateCard({
-  candidate,
-}: {
-  candidate: SymptomCheckResponse['candidates'][number];
-}) {
+function CandidateCard({ candidate }: { candidate: SymptomCheckResponse['candidates'][number] }) {
   const { t } = useTranslation(['health', 'common']);
   const { language } = useLanguage();
 
@@ -284,7 +271,7 @@ function CandidateCard({
             {t(`health:band${candidate.band === 'LIKELY' ? 'Likely' : 'Possible'}`)}
           </Badge>
           <span className="text-sm tabular-nums text-ink-500">
-            {formatNumber(candidate.score * 100, language, { maximumFractionDigits: 0 })}%
+            {formatNumber(candidate.matchScore * 100, language, { maximumFractionDigits: 0 })}%
           </span>
         </div>
       </div>

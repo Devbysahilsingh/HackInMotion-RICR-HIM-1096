@@ -79,13 +79,18 @@ export default function FarmListPage() {
                       </p>
                       <div className="flex flex-wrap gap-2">
                         <Badge>
-                          {formatNumber(farm.sizeValue, language)} {t(`common:unit.${farm.sizeUnit}`)}
+                          {formatNumber(farm.sizeValue, language)}{' '}
+                          {t(`common:unit.${farm.sizeUnit}`)}
                         </Badge>
                         <Badge>{t(`agri:soil.${farm.soilType}`)}</Badge>
                         <Badge>{t(`agri:irrigationMethod.${farm.irrigationMethod}`)}</Badge>
                       </div>
                     </div>
-                    <IconChevronRight size={20} className="shrink-0 text-ink-500" aria-hidden="true" />
+                    <IconChevronRight
+                      size={20}
+                      className="shrink-0 text-ink-500"
+                      aria-hidden="true"
+                    />
                   </Link>
                 </Card>
               </li>

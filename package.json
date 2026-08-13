@@ -13,10 +13,14 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "scan:secrets": "node scripts/scan-staged-secrets.mjs",
+    "scan:apk": "node scripts/scan-apk-strings.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
-    "verify": "npm run lint && npm run format:check && npm run check:i18n && npm test && npm run test:web",
+    "check:ui-strings": "node scripts/check-ui-strings.mjs",
+    "verify": "npm run lint && npm run format:check && npm run check:i18n && npm run check:ui-strings && npm test && npm run test:web && npm run test:mobile",
     "test": "npm --prefix backend test",
     "test:web": "npm --prefix web/frontend test",
+    "test:mobile": "npm --prefix mobile test",
+    "typecheck:mobile": "npm --prefix mobile run typecheck",
     "build:web": "npm --prefix web/frontend run build"
   },
   "devDependencies": {

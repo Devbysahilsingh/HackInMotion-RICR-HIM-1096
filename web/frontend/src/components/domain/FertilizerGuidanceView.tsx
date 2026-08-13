@@ -24,9 +24,7 @@ export function FertilizerGuidanceView({ guidance }: { guidance: FertilizerGuida
   if (!guidance.covered) {
     return (
       <div className="space-y-4">
-        <EmptyState
-          title={translateMessageKey(t, guidance.reasonKey ?? 'fertilizer.notCovered')}
-        />
+        <EmptyState title={translateMessageKey(t, guidance.reasonKey ?? 'fertilizer.notCovered')} />
         <Notice tone="info" data-testid="fertilizer-disclaimer">
           {translateMessageKey(t, guidance.disclaimerKey)}
         </Notice>
@@ -114,13 +112,47 @@ function RecommendationCard({ recommendation }: { recommendation: FertilizerReco
             <ul className="space-y-2">
               {recommendation.schedule.map((step, index) => (
                 <li
-                  key={index}
-                  className="flex flex-wrap items-center gap-2 rounded-lg bg-canvas px-3 py-2 text-sm"
+                  key={`${step.stage}-${index}`}
+                  className="space-y-1 rounded-lg bg-canvas px-3 py-2 text-sm"
+                  data-testid="fertilizer-schedule-step"
                 >
-                  <span className="min-w-0 flex-1">
-                    {step.labelKey ? translateMessageKey(t, step.labelKey) : String(step.stage ?? '')}
-                  </span>
-                  {step.due && <Badge tone="warning">{t('fertilizer:dueNow')}</Badge>}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* `fractionKey` is the only i18n key on a schedule step. */}
+                    <span className="min-w-0 flex-1">
+                      {translateMessageKey(t, step.fractionKey)}
+                    </span>
+                    {step.isCurrent && <Badge tone="warning">{t('fertilizer:dueNow')}</Badge>}
+                  </div>
+
+                  {/*
+                    `timing` and `note` are the source's own words, carried
+                    through untranslated the way every other published figure on
+                    this screen is. They are tagged `lang="en"` so a Hindi
+                    screen reader does not attempt them in Hindi — the same
+                    treatment the AI observations get.
+                  */}
+                  {step.timing && (
+                    <p className="text-xs text-ink-500" lang="en" data-testid="fertilizer-timing">
+                      {step.timing}
+                    </p>
+                  )}
+
+                  {/*
+                    An entry whose published timing could not be resolved to a
+                    day window is never highlighted as due. Saying so is the
+                    difference between "not now" and "we cannot tell when".
+                  */}
+                  {step.timingUnknown && (
+                    <p className="text-xs text-ink-500" data-testid="fertilizer-timing-unknown">
+                      {t('fertilizer:timingNotPublished')}
+                    </p>
+                  )}
+
+                  {step.note && (
+                    <p className="text-xs text-ink-500" lang="en" data-testid="fertilizer-note">
+                      {step.note}
+                    </p>
+                  )}
                 </li>
               ))}
             </ul>

@@ -21,7 +21,8 @@ import { WhyTrace } from './WhyTrace';
  *
  * The three honesty labels are all mandatory rather than decorative:
  * `mode: 'simplified'` means the forecast had no evapotranspiration and the
- * estimate is rough; an `unknown` soil type widens the error bar; and the
+ * estimate is rough; `soilUncertaintyWide` means the soil's available-water
+ * figure is the unspecified-soil placeholder and the error bar is wider; and the
  * freshness dot says how old the weather behind the whole calculation is. Any
  * of them missing would present a guess as a measurement.
  */
@@ -114,8 +115,17 @@ export function IrrigationVerdictCard({
             {t('irrigation:modeSimplified')}
           </Notice>
         )}
-        {advice.soil?.soilType === 'unknown' && (
-          <Notice tone="info">{t('irrigation:soilUnknown')}</Notice>
+        {/*
+          The engine returns no soil object at the top level — the soil inputs
+          are only in the `SOIL` trace step below. `soilUncertaintyWide` is the
+          flag it does return, and it is set by exactly one AWC entry: the
+          `unknown` placeholder (shared/constants/agronomy.js). So this reads
+          the flag rather than a soil figure the response does not carry.
+        */}
+        {advice.soilUncertaintyWide && (
+          <Notice tone="info" data-testid="irrigation-soil-uncertain">
+            {t('irrigation:soilUnknown')}
+          </Notice>
         )}
 
         <div className="flex flex-wrap items-center justify-between gap-2">

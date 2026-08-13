@@ -1,39 +1,9 @@
 /**
- * Land-unit arithmetic, mirroring `backend/src/utils/locationKey.js` exactly.
+ * Land-unit arithmetic — re-exported from `shared/client/units.ts`.
  *
- * The land ledger — total crop area may not exceed the farm — is enforced by
- * the server; these helpers exist so the form can refuse the same planting
- * *before* the round trip and say how much ground is actually left. The two
- * sides must agree on the conversion table or the form would promise an area
- * the server then rejects.
+ * Moved out of this app when the mobile client landed. The conversion table
+ * has to agree with `backend/src/utils/locationKey.js` or a form promises an
+ * area the server rejects; keeping one client copy means there is one place
+ * for that agreement to hold rather than two.
  */
-import type { CropWithStage, Farm, LandUnit } from '@/api/types';
-
-export const ACRES_PER_UNIT: Record<LandUnit, number> = {
-  acre: 1,
-  hectare: 2.47105,
-  bigha: 0.625,
-};
-
-export function toAcres(value: number, unit: LandUnit): number {
-  return value * ACRES_PER_UNIT[unit];
-}
-
-/**
- * Acres already committed to crops that occupy ground (`planned` + `active`;
- * a harvested crop frees its area). A crop that recorded a value without a
- * unit is read as acres — the same identity fallback the server applies.
- */
-export function allocatedCropAcres(crops: readonly CropWithStage[], excludeCropId?: string): number {
-  return crops
-    .filter((crop) => crop.status !== 'harvested' && crop.id !== excludeCropId)
-    .reduce(
-      (sum, crop) => sum + (crop.areaValue ? toAcres(crop.areaValue, crop.areaUnit ?? 'acre') : 0),
-      0,
-    );
-}
-
-/** Ground still open for crops, floored at zero for display. */
-export function availableFarmAcres(farm: Farm, crops: readonly CropWithStage[]): number {
-  return Math.max(0, toAcres(farm.sizeValue, farm.sizeUnit) - allocatedCropAcres(crops));
-}
+export * from '@shared/client/units';

@@ -23,7 +23,9 @@ describe('DashboardPage', () => {
 
     expect(screen.getByText(/Apply about 25 mm/)).toBeInTheDocument();
     // `weather.bodyHEAVY_RAIN` with the numbers the engine compared.
-    expect(screen.getByText(/About 82 mm of rain is expected, with a 90% chance/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/About 82 mm of rain is expected, with a 90% chance/),
+    ).toBeInTheDocument();
   });
 
   it('pins the urgent item and chips every item with its priority', async () => {

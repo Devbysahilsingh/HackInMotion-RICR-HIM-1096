@@ -24,6 +24,13 @@ export const ROUTE_OWNERSHIP = [
   { method: 'POST', path: '/api/v1/auth/logout', auth: 'required', ownership: 'none' },
   { method: 'GET', path: '/api/v1/auth/me', auth: 'required', ownership: 'none' },
 
+  // ── Users ──────────────────────────────────────────────────────────────────
+  // `me` is a literal, not an id: the document written is the one the access
+  // token resolved to, so there is nothing to own *through* — the row is
+  // 'none' for the same reason `GET /auth/me` is, not because a check was
+  // skipped. No request shape addresses another account (no `:id` exists).
+  { method: 'PATCH', path: '/api/v1/users/me', auth: 'required', ownership: 'none' },
+
   // ── Farms ──────────────────────────────────────────────────────────────────
   { method: 'GET', path: '/api/v1/farms', auth: 'required', ownership: 'scoped' },
   { method: 'POST', path: '/api/v1/farms', auth: 'required', ownership: 'none' },

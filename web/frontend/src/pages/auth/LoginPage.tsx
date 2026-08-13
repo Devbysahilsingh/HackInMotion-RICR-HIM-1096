@@ -100,7 +100,13 @@ export default function LoginPage() {
           {...register('password')}
         />
 
-        <Button type="submit" fullWidth size="lg" isLoading={isSubmitting} data-testid="login-submit">
+        <Button
+          type="submit"
+          fullWidth
+          size="lg"
+          isLoading={isSubmitting}
+          data-testid="login-submit"
+        >
           {isSubmitting ? t('auth:loggingIn') : t('auth:loginCta')}
         </Button>
       </form>
