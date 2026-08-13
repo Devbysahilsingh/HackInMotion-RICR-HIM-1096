@@ -175,10 +175,19 @@ def test_response_matches_the_documented_shape(client, auth_headers, jpeg_bytes)
     assert body["latencyMs"] >= 0
 
 
-def test_model_version_marks_the_answer_as_a_stub(client, auth_headers, jpeg_bytes) -> None:
-    """Until a real model ships, every response says so in its version string."""
+def test_model_version_identifies_the_serving_backend(client, auth_headers, jpeg_bytes) -> None:
+    """A stub answer must never carry a trained model's version string.
+
+    The default test configuration sets no MODEL_PATH, so the stub is serving
+    and the version must say so — regardless of what the committed manifest
+    names. That distinction became real when model-v1.0 shipped: before it, the
+    manifest itself said "stub-", so this property held by accident.
+    """
     body = post(client, jpeg_bytes, "TOMATO", auth_headers).json()
-    assert body["modelVersion"].startswith("stub-")
+    predictor = client.app.state.predictor
+
+    assert body["modelVersion"] == predictor.model_version
+    assert body["modelVersion"].startswith("stub-") is bool(getattr(predictor, "is_stub", False))
 
 
 def test_identical_input_yields_an_identical_response(client, auth_headers) -> None:

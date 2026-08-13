@@ -63,12 +63,26 @@ def test_uncovered_crop_yields_no_indices(manifest) -> None:
     assert manifest.indices_for_crop("NOT_A_CROP") == ()
 
 
-def test_manifest_declares_itself_untrained_and_uncalibrated(manifest) -> None:
-    """The honesty markers are load-bearing, not decoration."""
-    assert manifest.trained is False
-    assert manifest.provisional is True
-    assert manifest.thresholds.calibrated is False
-    assert manifest.model_version.startswith("stub-")
+def test_manifest_honesty_markers_are_mutually_consistent(manifest) -> None:
+    """The honesty markers are load-bearing, not decoration.
+
+    Asserted as an invariant rather than a snapshot: this held trivially while
+    the only model was the stub, and the moment a trained one shipped a
+    snapshot test would simply have been updated to match whatever the file
+    said. What must never happen is the markers DISAGREEING with each other —
+    a manifest claiming a trained model under a `stub-` version, or claiming
+    calibration while still flagged provisional.
+    """
+    is_stub = manifest.model_version.startswith("stub-")
+    assert manifest.trained is not is_stub, "trained must agree with the version string"
+
+    if manifest.trained:
+        assert manifest.provisional is False
+        assert manifest.thresholds.calibrated is True
+        assert manifest.model_version.startswith("model-v")
+    else:
+        assert manifest.provisional is True
+        assert manifest.thresholds.calibrated is False
 
 
 def test_margin_guard_matches_the_specified_value(manifest) -> None:

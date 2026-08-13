@@ -1,0 +1,40 @@
+# Training dependencies — development only, NEVER shipped.
+#
+# Deliberately separate from ml-service/requirements.txt. The service image
+# carries onnxruntime and Pillow and nothing else heavy; torch is ~2.5GB and has
+# no place in a container whose only job is to run a 20MB ONNX graph
+# (docs/security/dependency-security.md keeps the "ml" and "training" lists
+# apart for exactly this reason).
+#
+# Install (Python 3.12, per docs/ml/training-plan.md):
+#   conda create -p ml-service/training/.venv python=3.12 -y
+#   ml-service/training/.venv/python.exe -m pip install \
+#       torch torchvision --index-url https://download.pytorch.org/whl/cu126
+#   ml-service/training/.venv/python.exe -m pip install -r requirements-train.txt
+#
+# torch and torchvision are listed but commented, because the CUDA build cannot
+# be resolved from PyPI — it needs the cu126 index above. Pinning them here
+# without that index would silently install the CPU wheel and the RTX 2050 would
+# sit idle through an overnight run.
+#
+# torch==2.13.0+cu126
+# torchvision==0.28.0+cu126
+
+# Everything on this list is on the approved "training" set in
+# docs/security/dependency-security.md, except pyyaml — added because
+# training-plan.md mandates a single YAML config as the unit of run
+# reproducibility, and pyyaml is the stdlib-adjacent reader for it.
+scikit-learn==1.9.0
+matplotlib==3.11.1
+PyYAML==6.0.3
+
+# Export and parity (P4-6). onnxruntime is needed HERE as well as in the
+# service, because the golden-image parity gate compares PyTorch against the
+# same runtime the service will use.
+onnx==1.22.0
+onnxruntime==1.28.0
+
+# albumentations is on the approved list but is NOT installed: the plan allows
+# "torchvision v2 / albumentations" and torchvision.transforms.v2 covers every
+# augmentation dataset-preparation.md specifies, so the opencv dependency chain
+# behind albumentations buys nothing here.

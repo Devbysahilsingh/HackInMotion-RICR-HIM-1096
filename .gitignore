@@ -31,6 +31,12 @@ datasets/*
 # datasets/audit/ (contact sheets + hash cache) stays ignored: derived image
 # data, regenerable from the raw sets by scripts/ml/audit-datasets.py.
 *.onnx
+# The shipped inference artefact IS committed: docs/ml/model-versioning.md —
+# "artifacts in ml-service repo dir via Git LFS if >100MB (ours ~20MB — plain
+# git fine); every deployed version tagged model-vX.Y". It is baked into the
+# service image, so it has to travel with the repo. Training checkpoints (*.pt)
+# stay ignored — they are 26MB each, per-epoch, and regenerable.
+!ml-service/model/*.onnx
 *.pt
 *.pth
 *.ckpt

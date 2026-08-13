@@ -25,15 +25,21 @@ COPY app ./app
 COPY model ./model
 
 # The model artefact and its manifest are baked into the image
-# (docs/ml/inference-architecture.md). Today `model/` holds the manifest only —
-# NO TRAINED MODEL EXISTS. With MODEL_PATH unset the service starts on the
-# deterministic StubPredictor, whose model version is literally
-# "stub-0.0.0-untrained" so a stub answer cannot be mistaken for a real one.
+# (docs/ml/inference-architecture.md). `COPY model ./model` above brings both.
 #
-# When training ships, that becomes:
-#   COPY model/model-vX.Y.onnx ./model/
-#   ENV MODEL_PATH=/app/model/model-vX.Y.onnx
-# and nothing else in this file, or in the API contract, changes.
+# P4-6/P4-7: model-v1.0.onnx is the trained EfficientNet-B0 candidate, exported
+# at opset 17 and parity-gated against onnxruntime (max |dprob| 1.55e-05 over
+# 100 golden images, tolerance 1e-3 — docs/ml/evaluation-results/onnx-parity.json).
+#
+# Setting MODEL_PATH is what selects the real model over the deterministic stub.
+# `build_predictor` never falls back: if this path is set and the artefact fails
+# to load, the service reports degraded health and answers 503 rather than
+# quietly serving hash noise as if it were a prediction.
+#
+# torch is deliberately absent from this image. Training lives in
+# ml-service/training/ with its own dependency set, and only the ~15MB ONNX
+# graph crosses the boundary (docs/security/dependency-security.md).
+ENV MODEL_PATH=/app/model/model-v1.0.onnx
 
 USER mlservice
 

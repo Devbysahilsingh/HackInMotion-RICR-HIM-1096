@@ -188,12 +188,36 @@ def main() -> int:
             print(f"error: {OUTPUT} is missing — run this script without --check", file=sys.stderr)
             return 1
         current = json.loads(OUTPUT.read_text(encoding="utf-8"))
-        # generatedAt always differs; the contract is everything else.
-        volatile = ("generatedAt",)
-        stripped_current = {k: v for k, v in current.items() if k not in volatile}
-        stripped_fresh = {k: v for k, v in fresh.items() if k not in volatile}
-        if stripped_current != stripped_fresh:
-            print("error: model-manifest.json is stale relative to datasets/manifest.json", file=sys.stderr)
+
+        # Only the CLASS CONTRACT is compared, because that is the only thing
+        # this generator owns and the only drift it exists to catch.
+        #
+        # Once a model is trained, `export_onnx.py` legitimately rewrites the
+        # model-describing half of the same file — modelVersion, trained,
+        # calibrated, the measured temperature and thresholds, the metrics
+        # block. Comparing the whole document would then report "stale" forever
+        # and the guard would be trained out of the build rather than fixed,
+        # taking the real contract check with it.
+        contract_keys = (
+            "schemaVersion",
+            "classes",
+            "healthyClasses",
+            "crops",
+            "datasetManifest",
+            "preprocessing",
+            "supportTiers",
+            "knownLimitations",
+            "confoundEvaluationGates",
+        )
+        drifted = [
+            key for key in contract_keys if current.get(key) != fresh.get(key)
+        ]
+        if drifted:
+            print(
+                "error: model-manifest.json class contract is stale relative to "
+                f"datasets/manifest.json (fields: {', '.join(drifted)})",
+                file=sys.stderr,
+            )
             return 1
         print("model-manifest.json is up to date")
         return 0

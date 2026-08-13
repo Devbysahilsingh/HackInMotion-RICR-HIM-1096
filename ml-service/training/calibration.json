@@ -1,0 +1,1393 @@
+{
+  "todo": "P4-4",
+  "generatedAt": "2026-08-13T06:07:29+00:00",
+  "method": "docs/ml/confidence-strategy.md",
+  "checkpoint": "ml-service/training/checkpoints/run2/best.pt",
+  "checkpointSha256_16": "e2d677040df1ab50",
+  "calibrationSplit": "val",
+  "samples": 5811,
+  "classes": [
+    "CHILLI_ANTHRACNOSE",
+    "CHILLI_BACTERIAL_SPOT",
+    "CHILLI_CERCOSPORA_LEAF_SPOT",
+    "CHILLI_HEALTHY",
+    "CHILLI_LEAF_CURL_VIRUS",
+    "CHILLI_NUTRIENT_DEFICIENCY",
+    "CHILLI_POWDERY_MILDEW",
+    "COTTON_BACTERIAL_BLIGHT",
+    "COTTON_CURL_VIRUS",
+    "COTTON_HEALTHY",
+    "COTTON_HERBICIDE_DAMAGE",
+    "COTTON_LEAF_HOPPER_JASSIDS",
+    "COTTON_LEAF_REDDENING",
+    "MAIZE_COMMON_RUST",
+    "MAIZE_GRAY_LEAF_SPOT",
+    "MAIZE_HEALTHY",
+    "MAIZE_NORTHERN_LEAF_BLIGHT",
+    "POTATO_EARLY_BLIGHT",
+    "POTATO_HEALTHY",
+    "POTATO_LATE_BLIGHT",
+    "RICE_BACTERIAL_LEAF_BLIGHT",
+    "RICE_BLAST",
+    "RICE_BROWN_SPOT",
+    "RICE_NORMAL",
+    "RICE_TUNGRO",
+    "TOMATO_BACTERIAL_SPOT",
+    "TOMATO_EARLY_BLIGHT",
+    "TOMATO_HEALTHY",
+    "TOMATO_LATE_BLIGHT",
+    "TOMATO_LEAF_MOLD",
+    "TOMATO_MOSAIC_VIRUS",
+    "TOMATO_SEPTORIA_LEAF_SPOT",
+    "TOMATO_SPIDER_MITES",
+    "TOMATO_TARGET_SPOT",
+    "TOMATO_YELLOW_LEAF_CURL_VIRUS"
+  ],
+  "healthyClasses": [
+    "CHILLI_HEALTHY",
+    "COTTON_HEALTHY",
+    "MAIZE_HEALTHY",
+    "POTATO_HEALTHY",
+    "RICE_NORMAL",
+    "TOMATO_HEALTHY"
+  ],
+  "temperature": 0.586277,
+  "nll": {
+    "before": 0.183297,
+    "after": 0.108118
+  },
+  "ece": {
+    "bins": 15,
+    "before": 0.083707,
+    "after": 0.004213
+  },
+  "thresholds": {
+    "tau": 0.7,
+    "tauHealthy": 0.8,
+    "marginGuard": 0.15
+  },
+  "derivedThresholds": {
+    "tau": 0.0,
+    "tauHealthy": 0.0
+  },
+  "policyOverride": {
+    "applied": true,
+    "approved": "2026-08-13",
+    "reason": "Smallest threshold satisfying every documented requirement simultaneously: precision-of-accepted 0.9851 (floor 0.90); inside confidence-strategy.md's stated expected neighbourhood 0.70-0.80; tau_healthy strictly greater than tau; healthy false-negative rate 0.0037 (ceiling 0.05); healthy-class recall 0.9518 (ship gate 0.90); and both the confidence and healthy abstention branches genuinely reachable. tau_healthy 0.80 is preferred over 0.85 because it gives identical false-negative protection (0.0037 vs 0.0038) with materially better healthy recall (0.9518 vs 0.9157). tau 0.90 is excluded by measurement: it would require tau_healthy > 0.90, and every such value fails the healthy-recall ship gate on validation (0.8434 at 0.90). Cost: coverage 0.9835 -> 0.9573, i.e. ~2.6 points more escalation to the Gemini tier, which is negligible against a 10/day/user cap and a 1500/day free tier.",
+    "derived": {
+      "tau": 0.0,
+      "tauHealthy": 0.0
+    },
+    "effective": {
+      "tau": 0.7,
+      "tauHealthy": 0.8
+    },
+    "validation": [
+      {
+        "criterion": "precision-of-accepted >= 0.9",
+        "measured": 0.9851,
+        "passed": true
+      },
+      {
+        "criterion": "healthy false-negative rate <= 0.05",
+        "measured": 0.0037,
+        "passed": true
+      },
+      {
+        "criterion": "tau_healthy > tau (confidence-strategy.md: 'stricter')",
+        "measured": "0.8 > 0.7",
+        "passed": true
+      },
+      {
+        "criterion": "healthy-class recall >= 0.90 @tau_healthy (ship gate)",
+        "measured": 0.9518072289156626,
+        "passed": true
+      },
+      {
+        "criterion": "confidence abstention branch reachable (tau > 0)",
+        "measured": 0.7,
+        "passed": true
+      },
+      {
+        "criterion": "healthy abstention branch reachable (tau_healthy > 0)",
+        "measured": 0.8,
+        "passed": true
+      },
+      {
+        "criterion": "coverage at tau",
+        "measured": 0.9582,
+        "passed": true
+      }
+    ]
+  },
+  "criteriaBinding": {
+    "tau": true,
+    "tauHealthy": true,
+    "note": "A threshold of 0.00 means the documented criterion is satisfied without excluding anything, so confidence-based abstention is inactive and the margin guard is the only mechanism producing an uncertain result. This is a product decision, not a measurement \u2014 see the reference points below."
+  },
+  "referencePoints": [
+    {
+      "threshold": 0.7,
+      "coverage": 0.9582,
+      "precision": 0.9851,
+      "accepted": 5568
+    },
+    {
+      "threshold": 0.75,
+      "coverage": 0.9516,
+      "precision": 0.9864,
+      "accepted": 5530
+    },
+    {
+      "threshold": 0.8,
+      "coverage": 0.9432,
+      "precision": 0.9881,
+      "accepted": 5481
+    },
+    {
+      "threshold": 0.9,
+      "coverage": 0.9152,
+      "precision": 0.9919,
+      "accepted": 5318
+    }
+  ],
+  "derivation": {
+    "tauCriterion": "lowest threshold with precision-of-accepted >= 0.9",
+    "tauPoint": {
+      "threshold": 0.0,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    "tauHealthyCriterion": "lowest threshold with false-negative-disease rate among accepted-healthy <= 0.05",
+    "tauHealthyPoint": {
+      "threshold": 0.0,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    "marginGuardSource": "published in docs/ml/confidence-strategy.md, not derived"
+  },
+  "productionPolicy": {
+    "coverage": 0.9573,
+    "precision_of_accepted": 0.9851,
+    "abstained": 248,
+    "abstain_rate": 0.0427,
+    "accepted_healthy": 801,
+    "false_negative_disease_rate_among_accepted_healthy": 0.0037
+  },
+  "calibrated": true,
+  "precisionCoverageCurve": [
+    {
+      "threshold": 0.0,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.01,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.02,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.03,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.04,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.05,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.06,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.07,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.08,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.09,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.1,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.11,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.12,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.13,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.14,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.15,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.16,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.17,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.18,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.19,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.2,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.21,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.22,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.23,
+      "coverage": 1.0,
+      "precision": 0.9654,
+      "accepted": 5811
+    },
+    {
+      "threshold": 0.24,
+      "coverage": 0.9998,
+      "precision": 0.9656,
+      "accepted": 5810
+    },
+    {
+      "threshold": 0.25,
+      "coverage": 0.9997,
+      "precision": 0.9657,
+      "accepted": 5809
+    },
+    {
+      "threshold": 0.26,
+      "coverage": 0.9997,
+      "precision": 0.9657,
+      "accepted": 5809
+    },
+    {
+      "threshold": 0.27,
+      "coverage": 0.9997,
+      "precision": 0.9657,
+      "accepted": 5809
+    },
+    {
+      "threshold": 0.28,
+      "coverage": 0.9997,
+      "precision": 0.9657,
+      "accepted": 5809
+    },
+    {
+      "threshold": 0.29,
+      "coverage": 0.9995,
+      "precision": 0.9659,
+      "accepted": 5808
+    },
+    {
+      "threshold": 0.3,
+      "coverage": 0.9995,
+      "precision": 0.9659,
+      "accepted": 5808
+    },
+    {
+      "threshold": 0.31,
+      "coverage": 0.9995,
+      "precision": 0.9659,
+      "accepted": 5808
+    },
+    {
+      "threshold": 0.32,
+      "coverage": 0.9995,
+      "precision": 0.9659,
+      "accepted": 5808
+    },
+    {
+      "threshold": 0.33,
+      "coverage": 0.9993,
+      "precision": 0.9661,
+      "accepted": 5807
+    },
+    {
+      "threshold": 0.34,
+      "coverage": 0.9993,
+      "precision": 0.9661,
+      "accepted": 5807
+    },
+    {
+      "threshold": 0.35,
+      "coverage": 0.999,
+      "precision": 0.9662,
+      "accepted": 5805
+    },
+    {
+      "threshold": 0.36,
+      "coverage": 0.9988,
+      "precision": 0.9662,
+      "accepted": 5804
+    },
+    {
+      "threshold": 0.37,
+      "coverage": 0.9988,
+      "precision": 0.9662,
+      "accepted": 5804
+    },
+    {
+      "threshold": 0.38,
+      "coverage": 0.9983,
+      "precision": 0.9664,
+      "accepted": 5801
+    },
+    {
+      "threshold": 0.39,
+      "coverage": 0.9979,
+      "precision": 0.9665,
+      "accepted": 5799
+    },
+    {
+      "threshold": 0.4,
+      "coverage": 0.9974,
+      "precision": 0.9669,
+      "accepted": 5796
+    },
+    {
+      "threshold": 0.41,
+      "coverage": 0.9967,
+      "precision": 0.9672,
+      "accepted": 5792
+    },
+    {
+      "threshold": 0.42,
+      "coverage": 0.9962,
+      "precision": 0.9675,
+      "accepted": 5789
+    },
+    {
+      "threshold": 0.43,
+      "coverage": 0.9954,
+      "precision": 0.9678,
+      "accepted": 5784
+    },
+    {
+      "threshold": 0.44,
+      "coverage": 0.9947,
+      "precision": 0.9682,
+      "accepted": 5780
+    },
+    {
+      "threshold": 0.45,
+      "coverage": 0.9935,
+      "precision": 0.969,
+      "accepted": 5773
+    },
+    {
+      "threshold": 0.46,
+      "coverage": 0.9919,
+      "precision": 0.9698,
+      "accepted": 5764
+    },
+    {
+      "threshold": 0.47,
+      "coverage": 0.9916,
+      "precision": 0.9698,
+      "accepted": 5762
+    },
+    {
+      "threshold": 0.48,
+      "coverage": 0.9907,
+      "precision": 0.9703,
+      "accepted": 5757
+    },
+    {
+      "threshold": 0.49,
+      "coverage": 0.99,
+      "precision": 0.9705,
+      "accepted": 5753
+    },
+    {
+      "threshold": 0.5,
+      "coverage": 0.9874,
+      "precision": 0.9718,
+      "accepted": 5738
+    },
+    {
+      "threshold": 0.51,
+      "coverage": 0.9852,
+      "precision": 0.9731,
+      "accepted": 5725
+    },
+    {
+      "threshold": 0.52,
+      "coverage": 0.9837,
+      "precision": 0.9739,
+      "accepted": 5716
+    },
+    {
+      "threshold": 0.53,
+      "coverage": 0.9816,
+      "precision": 0.9742,
+      "accepted": 5704
+    },
+    {
+      "threshold": 0.54,
+      "coverage": 0.9802,
+      "precision": 0.9751,
+      "accepted": 5696
+    },
+    {
+      "threshold": 0.55,
+      "coverage": 0.9795,
+      "precision": 0.9754,
+      "accepted": 5692
+    },
+    {
+      "threshold": 0.56,
+      "coverage": 0.9785,
+      "precision": 0.9759,
+      "accepted": 5686
+    },
+    {
+      "threshold": 0.57,
+      "coverage": 0.9775,
+      "precision": 0.9764,
+      "accepted": 5680
+    },
+    {
+      "threshold": 0.58,
+      "coverage": 0.9761,
+      "precision": 0.9771,
+      "accepted": 5672
+    },
+    {
+      "threshold": 0.59,
+      "coverage": 0.975,
+      "precision": 0.9779,
+      "accepted": 5666
+    },
+    {
+      "threshold": 0.6,
+      "coverage": 0.9738,
+      "precision": 0.9781,
+      "accepted": 5659
+    },
+    {
+      "threshold": 0.61,
+      "coverage": 0.9726,
+      "precision": 0.9789,
+      "accepted": 5652
+    },
+    {
+      "threshold": 0.62,
+      "coverage": 0.9716,
+      "precision": 0.9795,
+      "accepted": 5646
+    },
+    {
+      "threshold": 0.63,
+      "coverage": 0.9695,
+      "precision": 0.9807,
+      "accepted": 5634
+    },
+    {
+      "threshold": 0.64,
+      "coverage": 0.9673,
+      "precision": 0.9817,
+      "accepted": 5621
+    },
+    {
+      "threshold": 0.65,
+      "coverage": 0.9659,
+      "precision": 0.9822,
+      "accepted": 5613
+    },
+    {
+      "threshold": 0.66,
+      "coverage": 0.9644,
+      "precision": 0.9825,
+      "accepted": 5604
+    },
+    {
+      "threshold": 0.67,
+      "coverage": 0.9628,
+      "precision": 0.9832,
+      "accepted": 5595
+    },
+    {
+      "threshold": 0.68,
+      "coverage": 0.9611,
+      "precision": 0.9844,
+      "accepted": 5585
+    },
+    {
+      "threshold": 0.69,
+      "coverage": 0.9596,
+      "precision": 0.9848,
+      "accepted": 5576
+    },
+    {
+      "threshold": 0.7,
+      "coverage": 0.9582,
+      "precision": 0.9851,
+      "accepted": 5568
+    },
+    {
+      "threshold": 0.71,
+      "coverage": 0.9566,
+      "precision": 0.9851,
+      "accepted": 5559
+    },
+    {
+      "threshold": 0.72,
+      "coverage": 0.9556,
+      "precision": 0.9854,
+      "accepted": 5553
+    },
+    {
+      "threshold": 0.73,
+      "coverage": 0.9546,
+      "precision": 0.9856,
+      "accepted": 5547
+    },
+    {
+      "threshold": 0.74,
+      "coverage": 0.9527,
+      "precision": 0.9859,
+      "accepted": 5536
+    },
+    {
+      "threshold": 0.75,
+      "coverage": 0.9516,
+      "precision": 0.9864,
+      "accepted": 5530
+    },
+    {
+      "threshold": 0.76,
+      "coverage": 0.9499,
+      "precision": 0.9868,
+      "accepted": 5520
+    },
+    {
+      "threshold": 0.77,
+      "coverage": 0.9485,
+      "precision": 0.9869,
+      "accepted": 5512
+    },
+    {
+      "threshold": 0.78,
+      "coverage": 0.9473,
+      "precision": 0.9873,
+      "accepted": 5505
+    },
+    {
+      "threshold": 0.79,
+      "coverage": 0.9448,
+      "precision": 0.9878,
+      "accepted": 5490
+    },
+    {
+      "threshold": 0.8,
+      "coverage": 0.9432,
+      "precision": 0.9881,
+      "accepted": 5481
+    },
+    {
+      "threshold": 0.81,
+      "coverage": 0.9417,
+      "precision": 0.9889,
+      "accepted": 5472
+    },
+    {
+      "threshold": 0.82,
+      "coverage": 0.9394,
+      "precision": 0.9894,
+      "accepted": 5459
+    },
+    {
+      "threshold": 0.83,
+      "coverage": 0.938,
+      "precision": 0.9894,
+      "accepted": 5451
+    },
+    {
+      "threshold": 0.84,
+      "coverage": 0.9358,
+      "precision": 0.9899,
+      "accepted": 5438
+    },
+    {
+      "threshold": 0.85,
+      "coverage": 0.9336,
+      "precision": 0.9899,
+      "accepted": 5425
+    },
+    {
+      "threshold": 0.86,
+      "coverage": 0.9305,
+      "precision": 0.9902,
+      "accepted": 5407
+    },
+    {
+      "threshold": 0.87,
+      "coverage": 0.9276,
+      "precision": 0.9907,
+      "accepted": 5390
+    },
+    {
+      "threshold": 0.88,
+      "coverage": 0.9239,
+      "precision": 0.9911,
+      "accepted": 5369
+    },
+    {
+      "threshold": 0.89,
+      "coverage": 0.9203,
+      "precision": 0.9916,
+      "accepted": 5348
+    },
+    {
+      "threshold": 0.9,
+      "coverage": 0.9152,
+      "precision": 0.9919,
+      "accepted": 5318
+    },
+    {
+      "threshold": 0.91,
+      "coverage": 0.91,
+      "precision": 0.993,
+      "accepted": 5288
+    },
+    {
+      "threshold": 0.92,
+      "coverage": 0.9052,
+      "precision": 0.9932,
+      "accepted": 5260
+    },
+    {
+      "threshold": 0.93,
+      "coverage": 0.8985,
+      "precision": 0.9943,
+      "accepted": 5221
+    },
+    {
+      "threshold": 0.94,
+      "coverage": 0.8902,
+      "precision": 0.9948,
+      "accepted": 5173
+    },
+    {
+      "threshold": 0.95,
+      "coverage": 0.8807,
+      "precision": 0.9955,
+      "accepted": 5118
+    },
+    {
+      "threshold": 0.96,
+      "coverage": 0.8677,
+      "precision": 0.9964,
+      "accepted": 5042
+    },
+    {
+      "threshold": 0.97,
+      "coverage": 0.8505,
+      "precision": 0.9976,
+      "accepted": 4942
+    },
+    {
+      "threshold": 0.98,
+      "coverage": 0.8236,
+      "precision": 0.9981,
+      "accepted": 4786
+    },
+    {
+      "threshold": 0.99,
+      "coverage": 0.7536,
+      "precision": 0.9991,
+      "accepted": 4379
+    }
+  ],
+  "healthyThresholdCurve": [
+    {
+      "threshold": 0.0,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.01,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.02,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.03,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.04,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.05,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.06,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.07,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.08,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.09,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.1,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.11,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.12,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.13,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.14,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.15,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.16,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.17,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.18,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.19,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.2,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.21,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.22,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.23,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.24,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.25,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.26,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.27,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.28,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.29,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.3,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.31,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.32,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.33,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.34,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.35,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.36,
+      "accepted_healthy": 816,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.37,
+      "accepted_healthy": 815,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.38,
+      "accepted_healthy": 815,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.39,
+      "accepted_healthy": 815,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.4,
+      "accepted_healthy": 815,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.41,
+      "accepted_healthy": 815,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.42,
+      "accepted_healthy": 815,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.43,
+      "accepted_healthy": 815,
+      "false_negative_disease_rate": 0.0098
+    },
+    {
+      "threshold": 0.44,
+      "accepted_healthy": 814,
+      "false_negative_disease_rate": 0.0086
+    },
+    {
+      "threshold": 0.45,
+      "accepted_healthy": 814,
+      "false_negative_disease_rate": 0.0086
+    },
+    {
+      "threshold": 0.46,
+      "accepted_healthy": 813,
+      "false_negative_disease_rate": 0.0086
+    },
+    {
+      "threshold": 0.47,
+      "accepted_healthy": 812,
+      "false_negative_disease_rate": 0.0074
+    },
+    {
+      "threshold": 0.48,
+      "accepted_healthy": 812,
+      "false_negative_disease_rate": 0.0074
+    },
+    {
+      "threshold": 0.49,
+      "accepted_healthy": 812,
+      "false_negative_disease_rate": 0.0074
+    },
+    {
+      "threshold": 0.5,
+      "accepted_healthy": 812,
+      "false_negative_disease_rate": 0.0074
+    },
+    {
+      "threshold": 0.51,
+      "accepted_healthy": 812,
+      "false_negative_disease_rate": 0.0074
+    },
+    {
+      "threshold": 0.52,
+      "accepted_healthy": 812,
+      "false_negative_disease_rate": 0.0074
+    },
+    {
+      "threshold": 0.53,
+      "accepted_healthy": 811,
+      "false_negative_disease_rate": 0.0074
+    },
+    {
+      "threshold": 0.54,
+      "accepted_healthy": 811,
+      "false_negative_disease_rate": 0.0074
+    },
+    {
+      "threshold": 0.55,
+      "accepted_healthy": 811,
+      "false_negative_disease_rate": 0.0074
+    },
+    {
+      "threshold": 0.56,
+      "accepted_healthy": 811,
+      "false_negative_disease_rate": 0.0074
+    },
+    {
+      "threshold": 0.57,
+      "accepted_healthy": 811,
+      "false_negative_disease_rate": 0.0074
+    },
+    {
+      "threshold": 0.58,
+      "accepted_healthy": 811,
+      "false_negative_disease_rate": 0.0074
+    },
+    {
+      "threshold": 0.59,
+      "accepted_healthy": 810,
+      "false_negative_disease_rate": 0.0062
+    },
+    {
+      "threshold": 0.6,
+      "accepted_healthy": 810,
+      "false_negative_disease_rate": 0.0062
+    },
+    {
+      "threshold": 0.61,
+      "accepted_healthy": 809,
+      "false_negative_disease_rate": 0.0062
+    },
+    {
+      "threshold": 0.62,
+      "accepted_healthy": 808,
+      "false_negative_disease_rate": 0.005
+    },
+    {
+      "threshold": 0.63,
+      "accepted_healthy": 808,
+      "false_negative_disease_rate": 0.005
+    },
+    {
+      "threshold": 0.64,
+      "accepted_healthy": 808,
+      "false_negative_disease_rate": 0.005
+    },
+    {
+      "threshold": 0.65,
+      "accepted_healthy": 807,
+      "false_negative_disease_rate": 0.0037
+    },
+    {
+      "threshold": 0.66,
+      "accepted_healthy": 807,
+      "false_negative_disease_rate": 0.0037
+    },
+    {
+      "threshold": 0.67,
+      "accepted_healthy": 806,
+      "false_negative_disease_rate": 0.0037
+    },
+    {
+      "threshold": 0.68,
+      "accepted_healthy": 806,
+      "false_negative_disease_rate": 0.0037
+    },
+    {
+      "threshold": 0.69,
+      "accepted_healthy": 806,
+      "false_negative_disease_rate": 0.0037
+    },
+    {
+      "threshold": 0.7,
+      "accepted_healthy": 806,
+      "false_negative_disease_rate": 0.0037
+    },
+    {
+      "threshold": 0.71,
+      "accepted_healthy": 806,
+      "false_negative_disease_rate": 0.0037
+    },
+    {
+      "threshold": 0.72,
+      "accepted_healthy": 805,
+      "false_negative_disease_rate": 0.0037
+    },
+    {
+      "threshold": 0.73,
+      "accepted_healthy": 805,
+      "false_negative_disease_rate": 0.0037
+    },
+    {
+      "threshold": 0.74,
+      "accepted_healthy": 802,
+      "false_negative_disease_rate": 0.0037
+    },
+    {
+      "threshold": 0.75,
+      "accepted_healthy": 802,
+      "false_negative_disease_rate": 0.0037
+    },
+    {
+      "threshold": 0.76,
+      "accepted_healthy": 801,
+      "false_negative_disease_rate": 0.0037
+    },
+    {
+      "threshold": 0.77,
+      "accepted_healthy": 801,
+      "false_negative_disease_rate": 0.0037
+    },
+    {
+      "threshold": 0.78,
+      "accepted_healthy": 801,
+      "false_negative_disease_rate": 0.0037
+    },
+    {
+      "threshold": 0.79,
+      "accepted_healthy": 801,
+      "false_negative_disease_rate": 0.0037
+    },
+    {
+      "threshold": 0.8,
+      "accepted_healthy": 801,
+      "false_negative_disease_rate": 0.0037
+    },
+    {
+      "threshold": 0.81,
+      "accepted_healthy": 800,
+      "false_negative_disease_rate": 0.0037
+    },
+    {
+      "threshold": 0.82,
+      "accepted_healthy": 800,
+      "false_negative_disease_rate": 0.0037
+    },
+    {
+      "threshold": 0.83,
+      "accepted_healthy": 798,
+      "false_negative_disease_rate": 0.0038
+    },
+    {
+      "threshold": 0.84,
+      "accepted_healthy": 797,
+      "false_negative_disease_rate": 0.0038
+    },
+    {
+      "threshold": 0.85,
+      "accepted_healthy": 796,
+      "false_negative_disease_rate": 0.0038
+    },
+    {
+      "threshold": 0.86,
+      "accepted_healthy": 793,
+      "false_negative_disease_rate": 0.0038
+    },
+    {
+      "threshold": 0.87,
+      "accepted_healthy": 791,
+      "false_negative_disease_rate": 0.0038
+    },
+    {
+      "threshold": 0.88,
+      "accepted_healthy": 789,
+      "false_negative_disease_rate": 0.0038
+    },
+    {
+      "threshold": 0.89,
+      "accepted_healthy": 786,
+      "false_negative_disease_rate": 0.0038
+    },
+    {
+      "threshold": 0.9,
+      "accepted_healthy": 783,
+      "false_negative_disease_rate": 0.0038
+    },
+    {
+      "threshold": 0.91,
+      "accepted_healthy": 778,
+      "false_negative_disease_rate": 0.0026
+    },
+    {
+      "threshold": 0.92,
+      "accepted_healthy": 775,
+      "false_negative_disease_rate": 0.0026
+    },
+    {
+      "threshold": 0.93,
+      "accepted_healthy": 770,
+      "false_negative_disease_rate": 0.0026
+    },
+    {
+      "threshold": 0.94,
+      "accepted_healthy": 768,
+      "false_negative_disease_rate": 0.0026
+    },
+    {
+      "threshold": 0.95,
+      "accepted_healthy": 766,
+      "false_negative_disease_rate": 0.0026
+    },
+    {
+      "threshold": 0.96,
+      "accepted_healthy": 750,
+      "false_negative_disease_rate": 0.0027
+    },
+    {
+      "threshold": 0.97,
+      "accepted_healthy": 738,
+      "false_negative_disease_rate": 0.0014
+    },
+    {
+      "threshold": 0.98,
+      "accepted_healthy": 726,
+      "false_negative_disease_rate": 0.0014
+    },
+    {
+      "threshold": 0.99,
+      "accepted_healthy": 678,
+      "false_negative_disease_rate": 0.0
+    }
+  ],
+  "reliabilityBins": [
+    {
+      "bin": [
+        0.2,
+        0.267
+      ],
+      "count": 2,
+      "accuracy": 0.0,
+      "confidence": 0.2432
+    },
+    {
+      "bin": [
+        0.267,
+        0.333
+      ],
+      "count": 2,
+      "accuracy": 0.0,
+      "confidence": 0.3096
+    },
+    {
+      "bin": [
+        0.333,
+        0.4
+      ],
+      "count": 11,
+      "accuracy": 0.5455,
+      "confidence": 0.3755
+    },
+    {
+      "bin": [
+        0.4,
+        0.467
+      ],
+      "count": 33,
+      "accuracy": 0.4545,
+      "confidence": 0.4367
+    },
+    {
+      "bin": [
+        0.467,
+        0.533
+      ],
+      "count": 60,
+      "accuracy": 0.55,
+      "confidence": 0.5042
+    },
+    {
+      "bin": [
+        0.533,
+        0.6
+      ],
+      "count": 44,
+      "accuracy": 0.4773,
+      "confidence": 0.5664
+    },
+    {
+      "bin": [
+        0.6,
+        0.667
+      ],
+      "count": 64,
+      "accuracy": 0.5312,
+      "confidence": 0.6358
+    },
+    {
+      "bin": [
+        0.667,
+        0.733
+      ],
+      "count": 50,
+      "accuracy": 0.72,
+      "confidence": 0.6991
+    },
+    {
+      "bin": [
+        0.733,
+        0.8
+      ],
+      "count": 64,
+      "accuracy": 0.7656,
+      "confidence": 0.768
+    },
+    {
+      "bin": [
+        0.8,
+        0.867
+      ],
+      "count": 84,
+      "accuracy": 0.8452,
+      "confidence": 0.8372
+    },
+    {
+      "bin": [
+        0.867,
+        0.933
+      ],
+      "count": 192,
+      "accuracy": 0.8802,
+      "confidence": 0.9044
+    },
+    {
+      "bin": [
+        0.933,
+        1.0
+      ],
+      "count": 5205,
+      "accuracy": 0.9944,
+      "confidence": 0.9942
+    }
+  ]
+}

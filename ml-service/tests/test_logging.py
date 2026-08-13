@@ -90,12 +90,20 @@ def test_json_formatter_emits_parseable_lines() -> None:
     assert line["cropCode"] == "TOMATO"
 
 
-def test_startup_announces_that_the_model_is_provisional(make_app, caplog) -> None:
-    """An operator must never have to guess whether answers are real."""
+def test_startup_announces_provisional_configuration_iff_it_is_provisional(
+    make_app, caplog, manifest
+) -> None:
+    """An operator must never have to guess whether answers are real.
+
+    Tied to the manifest rather than asserted unconditionally: warning about a
+    provisional model that is no longer provisional is its own kind of dishonest,
+    and would train operators to ignore the line.
+    """
     from fastapi.testclient import TestClient
 
     with caplog.at_level(logging.WARNING):
         with TestClient(make_app()):
             pass
     warnings = [r for r in _captured(caplog) if r.getMessage() == "provisional_model_configuration"]
-    assert warnings
+
+    assert bool(warnings) is bool(manifest.provisional)

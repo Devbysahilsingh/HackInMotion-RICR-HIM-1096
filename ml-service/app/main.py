@@ -182,6 +182,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return _error(500, "INTERNAL_ERROR", "internal error")
 
     # ── Routes ──────────────────────────────────────────────────────────
+
+    def _serving_model_version() -> str:
+        """The version of the backend actually serving, not of the document.
+
+        A degraded service has no predictor, so it falls back to the manifest —
+        which is the right answer there: nothing is serving, and the manifest
+        names what *should* be. When a predictor exists it is authoritative,
+        which is what keeps a stub from reporting a trained model's version.
+        """
+        predictor = getattr(application.state, "predictor", None)
+        return predictor.model_version if predictor else manifest.model_version
+
     @application.get("/healthz", response_model=HealthResponse)
     async def healthz(request: Request) -> HealthResponse:
         """Public liveness. Exposes no internals: no class list, no thresholds,
@@ -190,7 +202,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         started_at = getattr(request.app.state, "started_at", time.monotonic())
         return HealthResponse(
             status="ok" if ready else "degraded",
-            modelVersion=manifest.model_version,
+            modelVersion=_serving_model_version(),
             uptime=round(time.monotonic() - started_at, 3),
         )
 
@@ -287,7 +299,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             confidence=round(outcome.confidence, 6),
             top3=[ScoredClassOut(code=item.code, prob=round(item.prob, 6)) for item in outcome.top3],
             cropMismatch=True if outcome.crop_mismatch else None,
-            modelVersion=manifest.model_version,
+            modelVersion=_serving_model_version(),
             latencyMs=latency_ms,
         )
 
@@ -300,7 +312,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "uncertain": outcome.uncertain,
                 "cropMismatch": outcome.crop_mismatch,
                 "reasons": list(outcome.reasons),
-                "modelVersion": manifest.model_version,
+                "modelVersion": _serving_model_version(),
                 "latencyMs": latency_ms,
             },
         )

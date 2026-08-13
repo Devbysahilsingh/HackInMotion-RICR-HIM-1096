@@ -1,0 +1,15 @@
+{
+  "todo": "P4-6",
+  "generatedAt": "2026-08-13T06:17:24+00:00",
+  "modelVersion": "model-v1.0",
+  "artifact": "ml-service/model/model-v1.0.onnx",
+  "opset": 17,
+  "goldenImages": 100,
+  "classesSpanned": 35,
+  "maxAbsProbDelta": 1.551210880279541e-05,
+  "meanAbsProbDelta": 1.5349774912465365e-06,
+  "argmaxMismatches": 0,
+  "tolerance": 0.001,
+  "passed": true,
+  "runtime": "onnxruntime 1.28.0 CPUExecutionProvider"
+}

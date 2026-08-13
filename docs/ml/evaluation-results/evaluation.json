@@ -1,0 +1,1825 @@
+{
+  "todo": "P4-5",
+  "generatedAt": "2026-08-13T06:17:37+00:00",
+  "checkpoint": "ml-service/training/checkpoints/run2/best.pt",
+  "checkpointSha256_16": "e2d677040df1ab50",
+  "datasetManifestClasses": 35,
+  "calibration": {
+    "temperature": 0.586277,
+    "tau": 0.7,
+    "tauHealthy": 0.8,
+    "marginGuard": 0.15,
+    "ece": {
+      "bins": 15,
+      "before": 0.083707,
+      "after": 0.004213
+    },
+    "criteriaBinding": {
+      "tau": true,
+      "tauHealthy": true,
+      "note": "A threshold of 0.00 means the documented criterion is satisfied without excluding anything, so confidence-based abstention is inactive and the margin guard is the only mechanism producing an uncertain result. This is a product decision, not a measurement \u2014 see the reference points below."
+    }
+  },
+  "splits": {
+    "val": {
+      "split": "val",
+      "samples": 5811,
+      "classes_present": 35,
+      "classes_total": 35,
+      "unmasked": {
+        "accuracy": 0.9654,
+        "macro_f1": 0.9556,
+        "macro_f1_present_classes": 0.9556,
+        "top3_accuracy": 0.9962
+      },
+      "crop_masked": {
+        "accuracy": 0.9659,
+        "macro_f1": 0.9563,
+        "macro_f1_present_classes": 0.9563
+      },
+      "per_class": [
+        {
+          "class": "CHILLI_ANTHRACNOSE",
+          "precision": 0.9231,
+          "recall": 1.0,
+          "f1": 0.96,
+          "support": 48
+        },
+        {
+          "class": "CHILLI_BACTERIAL_SPOT",
+          "precision": 0.9537,
+          "recall": 0.9196,
+          "f1": 0.9364,
+          "support": 112
+        },
+        {
+          "class": "CHILLI_CERCOSPORA_LEAF_SPOT",
+          "precision": 0.976,
+          "recall": 0.95,
+          "f1": 0.9628,
+          "support": 300
+        },
+        {
+          "class": "CHILLI_HEALTHY",
+          "precision": 0.9885,
+          "recall": 0.9772,
+          "f1": 0.9828,
+          "support": 263
+        },
+        {
+          "class": "CHILLI_LEAF_CURL_VIRUS",
+          "precision": 0.9404,
+          "recall": 0.9537,
+          "f1": 0.947,
+          "support": 281
+        },
+        {
+          "class": "CHILLI_NUTRIENT_DEFICIENCY",
+          "precision": 0.9423,
+          "recall": 0.9735,
+          "f1": 0.9577,
+          "support": 151
+        },
+        {
+          "class": "CHILLI_POWDERY_MILDEW",
+          "precision": 0.9919,
+          "recall": 1.0,
+          "f1": 0.996,
+          "support": 123
+        },
+        {
+          "class": "COTTON_BACTERIAL_BLIGHT",
+          "precision": 0.7955,
+          "recall": 0.9459,
+          "f1": 0.8642,
+          "support": 37
+        },
+        {
+          "class": "COTTON_CURL_VIRUS",
+          "precision": 1.0,
+          "recall": 0.9844,
+          "f1": 0.9921,
+          "support": 64
+        },
+        {
+          "class": "COTTON_HEALTHY",
+          "precision": 0.9744,
+          "recall": 1.0,
+          "f1": 0.987,
+          "support": 38
+        },
+        {
+          "class": "COTTON_HERBICIDE_DAMAGE",
+          "precision": 0.9767,
+          "recall": 1.0,
+          "f1": 0.9882,
+          "support": 42
+        },
+        {
+          "class": "COTTON_LEAF_HOPPER_JASSIDS",
+          "precision": 0.9677,
+          "recall": 0.8824,
+          "f1": 0.9231,
+          "support": 34
+        },
+        {
+          "class": "COTTON_LEAF_REDDENING",
+          "precision": 0.988,
+          "recall": 0.9425,
+          "f1": 0.9647,
+          "support": 87
+        },
+        {
+          "class": "MAIZE_COMMON_RUST",
+          "precision": 1.0,
+          "recall": 0.9888,
+          "f1": 0.9944,
+          "support": 179
+        },
+        {
+          "class": "MAIZE_GRAY_LEAF_SPOT",
+          "precision": 0.8608,
+          "recall": 0.8831,
+          "f1": 0.8718,
+          "support": 77
+        },
+        {
+          "class": "MAIZE_HEALTHY",
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 174
+        },
+        {
+          "class": "MAIZE_NORTHERN_LEAF_BLIGHT",
+          "precision": 0.9392,
+          "recall": 0.9392,
+          "f1": 0.9392,
+          "support": 148
+        },
+        {
+          "class": "POTATO_EARLY_BLIGHT",
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 150
+        },
+        {
+          "class": "POTATO_HEALTHY",
+          "precision": 1.0,
+          "recall": 0.9565,
+          "f1": 0.9778,
+          "support": 23
+        },
+        {
+          "class": "POTATO_LATE_BLIGHT",
+          "precision": 0.9868,
+          "recall": 1.0,
+          "f1": 0.9934,
+          "support": 150
+        },
+        {
+          "class": "RICE_BACTERIAL_LEAF_BLIGHT",
+          "precision": 0.8091,
+          "recall": 0.8165,
+          "f1": 0.8128,
+          "support": 109
+        },
+        {
+          "class": "RICE_BLAST",
+          "precision": 0.9292,
+          "recall": 0.6562,
+          "f1": 0.7692,
+          "support": 160
+        },
+        {
+          "class": "RICE_BROWN_SPOT",
+          "precision": 0.9891,
+          "recall": 1.0,
+          "f1": 0.9945,
+          "support": 91
+        },
+        {
+          "class": "RICE_NORMAL",
+          "precision": 0.9647,
+          "recall": 0.988,
+          "f1": 0.9762,
+          "support": 83
+        },
+        {
+          "class": "RICE_TUNGRO",
+          "precision": 0.7718,
+          "recall": 0.9755,
+          "f1": 0.8618,
+          "support": 163
+        },
+        {
+          "class": "TOMATO_BACTERIAL_SPOT",
+          "precision": 0.9874,
+          "recall": 0.9843,
+          "f1": 0.9859,
+          "support": 319
+        },
+        {
+          "class": "TOMATO_EARLY_BLIGHT",
+          "precision": 0.958,
+          "recall": 0.9133,
+          "f1": 0.9352,
+          "support": 150
+        },
+        {
+          "class": "TOMATO_HEALTHY",
+          "precision": 0.9958,
+          "recall": 0.9874,
+          "f1": 0.9916,
+          "support": 238
+        },
+        {
+          "class": "TOMATO_LATE_BLIGHT",
+          "precision": 0.9792,
+          "recall": 0.9895,
+          "f1": 0.9843,
+          "support": 285
+        },
+        {
+          "class": "TOMATO_LEAF_MOLD",
+          "precision": 0.9861,
+          "recall": 0.993,
+          "f1": 0.9895,
+          "support": 143
+        },
+        {
+          "class": "TOMATO_MOSAIC_VIRUS",
+          "precision": 0.9492,
+          "recall": 1.0,
+          "f1": 0.9739,
+          "support": 56
+        },
+        {
+          "class": "TOMATO_SEPTORIA_LEAF_SPOT",
+          "precision": 0.9779,
+          "recall": 0.9962,
+          "f1": 0.987,
+          "support": 266
+        },
+        {
+          "class": "TOMATO_SPIDER_MITES",
+          "precision": 0.9804,
+          "recall": 0.9921,
+          "f1": 0.9862,
+          "support": 252
+        },
+        {
+          "class": "TOMATO_TARGET_SPOT",
+          "precision": 0.9712,
+          "recall": 0.9573,
+          "f1": 0.9642,
+          "support": 211
+        },
+        {
+          "class": "TOMATO_YELLOW_LEAF_CURL_VIRUS",
+          "precision": 0.9988,
+          "recall": 0.995,
+          "f1": 0.9969,
+          "support": 804
+        }
+      ],
+      "per_class_masked": [
+        {
+          "class": "CHILLI_ANTHRACNOSE",
+          "precision": 0.9231,
+          "recall": 1.0,
+          "f1": 0.96,
+          "support": 48
+        },
+        {
+          "class": "CHILLI_BACTERIAL_SPOT",
+          "precision": 0.9537,
+          "recall": 0.9196,
+          "f1": 0.9364,
+          "support": 112
+        },
+        {
+          "class": "CHILLI_CERCOSPORA_LEAF_SPOT",
+          "precision": 0.9728,
+          "recall": 0.9533,
+          "f1": 0.963,
+          "support": 300
+        },
+        {
+          "class": "CHILLI_HEALTHY",
+          "precision": 0.9885,
+          "recall": 0.9772,
+          "f1": 0.9828,
+          "support": 263
+        },
+        {
+          "class": "CHILLI_LEAF_CURL_VIRUS",
+          "precision": 0.9437,
+          "recall": 0.9537,
+          "f1": 0.9487,
+          "support": 281
+        },
+        {
+          "class": "CHILLI_NUTRIENT_DEFICIENCY",
+          "precision": 0.9423,
+          "recall": 0.9735,
+          "f1": 0.9577,
+          "support": 151
+        },
+        {
+          "class": "CHILLI_POWDERY_MILDEW",
+          "precision": 0.9919,
+          "recall": 1.0,
+          "f1": 0.996,
+          "support": 123
+        },
+        {
+          "class": "COTTON_BACTERIAL_BLIGHT",
+          "precision": 0.814,
+          "recall": 0.9459,
+          "f1": 0.875,
+          "support": 37
+        },
+        {
+          "class": "COTTON_CURL_VIRUS",
+          "precision": 1.0,
+          "recall": 0.9844,
+          "f1": 0.9921,
+          "support": 64
+        },
+        {
+          "class": "COTTON_HEALTHY",
+          "precision": 0.9744,
+          "recall": 1.0,
+          "f1": 0.987,
+          "support": 38
+        },
+        {
+          "class": "COTTON_HERBICIDE_DAMAGE",
+          "precision": 0.9767,
+          "recall": 1.0,
+          "f1": 0.9882,
+          "support": 42
+        },
+        {
+          "class": "COTTON_LEAF_HOPPER_JASSIDS",
+          "precision": 0.9677,
+          "recall": 0.8824,
+          "f1": 0.9231,
+          "support": 34
+        },
+        {
+          "class": "COTTON_LEAF_REDDENING",
+          "precision": 0.988,
+          "recall": 0.9425,
+          "f1": 0.9647,
+          "support": 87
+        },
+        {
+          "class": "MAIZE_COMMON_RUST",
+          "precision": 1.0,
+          "recall": 0.9888,
+          "f1": 0.9944,
+          "support": 179
+        },
+        {
+          "class": "MAIZE_GRAY_LEAF_SPOT",
+          "precision": 0.8608,
+          "recall": 0.8831,
+          "f1": 0.8718,
+          "support": 77
+        },
+        {
+          "class": "MAIZE_HEALTHY",
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 174
+        },
+        {
+          "class": "MAIZE_NORTHERN_LEAF_BLIGHT",
+          "precision": 0.9392,
+          "recall": 0.9392,
+          "f1": 0.9392,
+          "support": 148
+        },
+        {
+          "class": "POTATO_EARLY_BLIGHT",
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 150
+        },
+        {
+          "class": "POTATO_HEALTHY",
+          "precision": 1.0,
+          "recall": 0.9565,
+          "f1": 0.9778,
+          "support": 23
+        },
+        {
+          "class": "POTATO_LATE_BLIGHT",
+          "precision": 0.9934,
+          "recall": 1.0,
+          "f1": 0.9967,
+          "support": 150
+        },
+        {
+          "class": "RICE_BACTERIAL_LEAF_BLIGHT",
+          "precision": 0.8091,
+          "recall": 0.8165,
+          "f1": 0.8128,
+          "support": 109
+        },
+        {
+          "class": "RICE_BLAST",
+          "precision": 0.9292,
+          "recall": 0.6562,
+          "f1": 0.7692,
+          "support": 160
+        },
+        {
+          "class": "RICE_BROWN_SPOT",
+          "precision": 0.9891,
+          "recall": 1.0,
+          "f1": 0.9945,
+          "support": 91
+        },
+        {
+          "class": "RICE_NORMAL",
+          "precision": 0.9647,
+          "recall": 0.988,
+          "f1": 0.9762,
+          "support": 83
+        },
+        {
+          "class": "RICE_TUNGRO",
+          "precision": 0.7718,
+          "recall": 0.9755,
+          "f1": 0.8618,
+          "support": 163
+        },
+        {
+          "class": "TOMATO_BACTERIAL_SPOT",
+          "precision": 0.9874,
+          "recall": 0.9843,
+          "f1": 0.9859,
+          "support": 319
+        },
+        {
+          "class": "TOMATO_EARLY_BLIGHT",
+          "precision": 0.9583,
+          "recall": 0.92,
+          "f1": 0.9388,
+          "support": 150
+        },
+        {
+          "class": "TOMATO_HEALTHY",
+          "precision": 0.9958,
+          "recall": 0.9874,
+          "f1": 0.9916,
+          "support": 238
+        },
+        {
+          "class": "TOMATO_LATE_BLIGHT",
+          "precision": 0.9792,
+          "recall": 0.993,
+          "f1": 0.9861,
+          "support": 285
+        },
+        {
+          "class": "TOMATO_LEAF_MOLD",
+          "precision": 0.9861,
+          "recall": 0.993,
+          "f1": 0.9895,
+          "support": 143
+        },
+        {
+          "class": "TOMATO_MOSAIC_VIRUS",
+          "precision": 0.9492,
+          "recall": 1.0,
+          "f1": 0.9739,
+          "support": 56
+        },
+        {
+          "class": "TOMATO_SEPTORIA_LEAF_SPOT",
+          "precision": 0.9815,
+          "recall": 0.9962,
+          "f1": 0.9888,
+          "support": 266
+        },
+        {
+          "class": "TOMATO_SPIDER_MITES",
+          "precision": 0.9804,
+          "recall": 0.9921,
+          "f1": 0.9862,
+          "support": 252
+        },
+        {
+          "class": "TOMATO_TARGET_SPOT",
+          "precision": 0.9712,
+          "recall": 0.9573,
+          "f1": 0.9642,
+          "support": 211
+        },
+        {
+          "class": "TOMATO_YELLOW_LEAF_CURL_VIRUS",
+          "precision": 0.9988,
+          "recall": 0.995,
+          "f1": 0.9969,
+          "support": 804
+        }
+      ]
+    },
+    "test": {
+      "split": "test",
+      "samples": 5876,
+      "classes_present": 35,
+      "classes_total": 35,
+      "unmasked": {
+        "accuracy": 0.9632,
+        "macro_f1": 0.9544,
+        "macro_f1_present_classes": 0.9544,
+        "top3_accuracy": 0.998
+      },
+      "crop_masked": {
+        "accuracy": 0.9639,
+        "macro_f1": 0.9553,
+        "macro_f1_present_classes": 0.9553
+      },
+      "per_class": [
+        {
+          "class": "CHILLI_ANTHRACNOSE",
+          "precision": 0.9423,
+          "recall": 0.98,
+          "f1": 0.9608,
+          "support": 50
+        },
+        {
+          "class": "CHILLI_BACTERIAL_SPOT",
+          "precision": 0.9455,
+          "recall": 0.9369,
+          "f1": 0.9412,
+          "support": 111
+        },
+        {
+          "class": "CHILLI_CERCOSPORA_LEAF_SPOT",
+          "precision": 0.9797,
+          "recall": 0.9666,
+          "f1": 0.9731,
+          "support": 299
+        },
+        {
+          "class": "CHILLI_HEALTHY",
+          "precision": 0.9737,
+          "recall": 0.9848,
+          "f1": 0.9792,
+          "support": 263
+        },
+        {
+          "class": "CHILLI_LEAF_CURL_VIRUS",
+          "precision": 0.9639,
+          "recall": 0.9502,
+          "f1": 0.957,
+          "support": 281
+        },
+        {
+          "class": "CHILLI_NUTRIENT_DEFICIENCY",
+          "precision": 0.9542,
+          "recall": 0.9669,
+          "f1": 0.9605,
+          "support": 151
+        },
+        {
+          "class": "CHILLI_POWDERY_MILDEW",
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 123
+        },
+        {
+          "class": "COTTON_BACTERIAL_BLIGHT",
+          "precision": 0.8333,
+          "recall": 1.0,
+          "f1": 0.9091,
+          "support": 50
+        },
+        {
+          "class": "COTTON_CURL_VIRUS",
+          "precision": 0.9846,
+          "recall": 1.0,
+          "f1": 0.9922,
+          "support": 64
+        },
+        {
+          "class": "COTTON_HEALTHY",
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 50
+        },
+        {
+          "class": "COTTON_HERBICIDE_DAMAGE",
+          "precision": 0.9615,
+          "recall": 1.0,
+          "f1": 0.9804,
+          "support": 50
+        },
+        {
+          "class": "COTTON_LEAF_HOPPER_JASSIDS",
+          "precision": 0.9545,
+          "recall": 0.84,
+          "f1": 0.8936,
+          "support": 50
+        },
+        {
+          "class": "COTTON_LEAF_REDDENING",
+          "precision": 0.9259,
+          "recall": 0.8721,
+          "f1": 0.8982,
+          "support": 86
+        },
+        {
+          "class": "MAIZE_COMMON_RUST",
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 179
+        },
+        {
+          "class": "MAIZE_GRAY_LEAF_SPOT",
+          "precision": 0.875,
+          "recall": 0.9091,
+          "f1": 0.8917,
+          "support": 77
+        },
+        {
+          "class": "MAIZE_HEALTHY",
+          "precision": 1.0,
+          "recall": 0.9943,
+          "f1": 0.9971,
+          "support": 174
+        },
+        {
+          "class": "MAIZE_NORTHERN_LEAF_BLIGHT",
+          "precision": 0.9517,
+          "recall": 0.9388,
+          "f1": 0.9452,
+          "support": 147
+        },
+        {
+          "class": "POTATO_EARLY_BLIGHT",
+          "precision": 0.9934,
+          "recall": 1.0,
+          "f1": 0.9967,
+          "support": 150
+        },
+        {
+          "class": "POTATO_HEALTHY",
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 50
+        },
+        {
+          "class": "POTATO_LATE_BLIGHT",
+          "precision": 1.0,
+          "recall": 0.9933,
+          "f1": 0.9967,
+          "support": 150
+        },
+        {
+          "class": "RICE_BACTERIAL_LEAF_BLIGHT",
+          "precision": 0.8073,
+          "recall": 0.8148,
+          "f1": 0.8111,
+          "support": 108
+        },
+        {
+          "class": "RICE_BLAST",
+          "precision": 0.8727,
+          "recall": 0.6038,
+          "f1": 0.7138,
+          "support": 159
+        },
+        {
+          "class": "RICE_BROWN_SPOT",
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 91
+        },
+        {
+          "class": "RICE_NORMAL",
+          "precision": 0.9535,
+          "recall": 1.0,
+          "f1": 0.9762,
+          "support": 82
+        },
+        {
+          "class": "RICE_TUNGRO",
+          "precision": 0.7524,
+          "recall": 0.9568,
+          "f1": 0.8424,
+          "support": 162
+        },
+        {
+          "class": "TOMATO_BACTERIAL_SPOT",
+          "precision": 0.9755,
+          "recall": 0.9969,
+          "f1": 0.986,
+          "support": 319
+        },
+        {
+          "class": "TOMATO_EARLY_BLIGHT",
+          "precision": 1.0,
+          "recall": 0.9333,
+          "f1": 0.9655,
+          "support": 150
+        },
+        {
+          "class": "TOMATO_HEALTHY",
+          "precision": 0.9957,
+          "recall": 0.9873,
+          "f1": 0.9915,
+          "support": 237
+        },
+        {
+          "class": "TOMATO_LATE_BLIGHT",
+          "precision": 0.9759,
+          "recall": 0.9965,
+          "f1": 0.9861,
+          "support": 285
+        },
+        {
+          "class": "TOMATO_LEAF_MOLD",
+          "precision": 0.9792,
+          "recall": 0.986,
+          "f1": 0.9826,
+          "support": 143
+        },
+        {
+          "class": "TOMATO_MOSAIC_VIRUS",
+          "precision": 0.9655,
+          "recall": 1.0,
+          "f1": 0.9825,
+          "support": 56
+        },
+        {
+          "class": "TOMATO_SEPTORIA_LEAF_SPOT",
+          "precision": 0.9848,
+          "recall": 0.9774,
+          "f1": 0.9811,
+          "support": 265
+        },
+        {
+          "class": "TOMATO_SPIDER_MITES",
+          "precision": 0.9722,
+          "recall": 0.9761,
+          "f1": 0.9742,
+          "support": 251
+        },
+        {
+          "class": "TOMATO_TARGET_SPOT",
+          "precision": 0.9306,
+          "recall": 0.9571,
+          "f1": 0.9437,
+          "support": 210
+        },
+        {
+          "class": "TOMATO_YELLOW_LEAF_CURL_VIRUS",
+          "precision": 0.9987,
+          "recall": 0.9875,
+          "f1": 0.9931,
+          "support": 803
+        }
+      ],
+      "per_class_masked": [
+        {
+          "class": "CHILLI_ANTHRACNOSE",
+          "precision": 0.9423,
+          "recall": 0.98,
+          "f1": 0.9608,
+          "support": 50
+        },
+        {
+          "class": "CHILLI_BACTERIAL_SPOT",
+          "precision": 0.9455,
+          "recall": 0.9369,
+          "f1": 0.9412,
+          "support": 111
+        },
+        {
+          "class": "CHILLI_CERCOSPORA_LEAF_SPOT",
+          "precision": 0.9797,
+          "recall": 0.9699,
+          "f1": 0.9748,
+          "support": 299
+        },
+        {
+          "class": "CHILLI_HEALTHY",
+          "precision": 0.9737,
+          "recall": 0.9848,
+          "f1": 0.9792,
+          "support": 263
+        },
+        {
+          "class": "CHILLI_LEAF_CURL_VIRUS",
+          "precision": 0.964,
+          "recall": 0.9537,
+          "f1": 0.9589,
+          "support": 281
+        },
+        {
+          "class": "CHILLI_NUTRIENT_DEFICIENCY",
+          "precision": 0.9542,
+          "recall": 0.9669,
+          "f1": 0.9605,
+          "support": 151
+        },
+        {
+          "class": "CHILLI_POWDERY_MILDEW",
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 123
+        },
+        {
+          "class": "COTTON_BACTERIAL_BLIGHT",
+          "precision": 0.8333,
+          "recall": 1.0,
+          "f1": 0.9091,
+          "support": 50
+        },
+        {
+          "class": "COTTON_CURL_VIRUS",
+          "precision": 0.9846,
+          "recall": 1.0,
+          "f1": 0.9922,
+          "support": 64
+        },
+        {
+          "class": "COTTON_HEALTHY",
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 50
+        },
+        {
+          "class": "COTTON_HERBICIDE_DAMAGE",
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 50
+        },
+        {
+          "class": "COTTON_LEAF_HOPPER_JASSIDS",
+          "precision": 0.9545,
+          "recall": 0.84,
+          "f1": 0.8936,
+          "support": 50
+        },
+        {
+          "class": "COTTON_LEAF_REDDENING",
+          "precision": 0.9259,
+          "recall": 0.8721,
+          "f1": 0.8982,
+          "support": 86
+        },
+        {
+          "class": "MAIZE_COMMON_RUST",
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 179
+        },
+        {
+          "class": "MAIZE_GRAY_LEAF_SPOT",
+          "precision": 0.875,
+          "recall": 0.9091,
+          "f1": 0.8917,
+          "support": 77
+        },
+        {
+          "class": "MAIZE_HEALTHY",
+          "precision": 1.0,
+          "recall": 0.9943,
+          "f1": 0.9971,
+          "support": 174
+        },
+        {
+          "class": "MAIZE_NORTHERN_LEAF_BLIGHT",
+          "precision": 0.9517,
+          "recall": 0.9388,
+          "f1": 0.9452,
+          "support": 147
+        },
+        {
+          "class": "POTATO_EARLY_BLIGHT",
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 150
+        },
+        {
+          "class": "POTATO_HEALTHY",
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 50
+        },
+        {
+          "class": "POTATO_LATE_BLIGHT",
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 150
+        },
+        {
+          "class": "RICE_BACTERIAL_LEAF_BLIGHT",
+          "precision": 0.8073,
+          "recall": 0.8148,
+          "f1": 0.8111,
+          "support": 108
+        },
+        {
+          "class": "RICE_BLAST",
+          "precision": 0.8727,
+          "recall": 0.6038,
+          "f1": 0.7138,
+          "support": 159
+        },
+        {
+          "class": "RICE_BROWN_SPOT",
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 91
+        },
+        {
+          "class": "RICE_NORMAL",
+          "precision": 0.9535,
+          "recall": 1.0,
+          "f1": 0.9762,
+          "support": 82
+        },
+        {
+          "class": "RICE_TUNGRO",
+          "precision": 0.7524,
+          "recall": 0.9568,
+          "f1": 0.8424,
+          "support": 162
+        },
+        {
+          "class": "TOMATO_BACTERIAL_SPOT",
+          "precision": 0.9755,
+          "recall": 0.9969,
+          "f1": 0.986,
+          "support": 319
+        },
+        {
+          "class": "TOMATO_EARLY_BLIGHT",
+          "precision": 1.0,
+          "recall": 0.9333,
+          "f1": 0.9655,
+          "support": 150
+        },
+        {
+          "class": "TOMATO_HEALTHY",
+          "precision": 0.9957,
+          "recall": 0.9873,
+          "f1": 0.9915,
+          "support": 237
+        },
+        {
+          "class": "TOMATO_LATE_BLIGHT",
+          "precision": 0.9793,
+          "recall": 0.9965,
+          "f1": 0.9878,
+          "support": 285
+        },
+        {
+          "class": "TOMATO_LEAF_MOLD",
+          "precision": 0.9792,
+          "recall": 0.986,
+          "f1": 0.9826,
+          "support": 143
+        },
+        {
+          "class": "TOMATO_MOSAIC_VIRUS",
+          "precision": 0.9655,
+          "recall": 1.0,
+          "f1": 0.9825,
+          "support": 56
+        },
+        {
+          "class": "TOMATO_SEPTORIA_LEAF_SPOT",
+          "precision": 0.9848,
+          "recall": 0.9811,
+          "f1": 0.983,
+          "support": 265
+        },
+        {
+          "class": "TOMATO_SPIDER_MITES",
+          "precision": 0.9722,
+          "recall": 0.9761,
+          "f1": 0.9742,
+          "support": 251
+        },
+        {
+          "class": "TOMATO_TARGET_SPOT",
+          "precision": 0.9306,
+          "recall": 0.9571,
+          "f1": 0.9437,
+          "support": 210
+        },
+        {
+          "class": "TOMATO_YELLOW_LEAF_CURL_VIRUS",
+          "precision": 0.9987,
+          "recall": 0.9875,
+          "f1": 0.9931,
+          "support": 803
+        }
+      ]
+    },
+    "fieldtest": {
+      "split": "fieldtest",
+      "samples": 1233,
+      "classes_present": 13,
+      "classes_total": 35,
+      "unmasked": {
+        "accuracy": 0.1257,
+        "macro_f1": 0.0564,
+        "macro_f1_present_classes": 0.1517,
+        "top3_accuracy": 0.3066
+      },
+      "crop_masked": {
+        "accuracy": 0.3333,
+        "macro_f1": 0.119,
+        "macro_f1_present_classes": 0.3203
+      },
+      "per_class": [
+        {
+          "class": "CHILLI_ANTHRACNOSE",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "CHILLI_BACTERIAL_SPOT",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "CHILLI_CERCOSPORA_LEAF_SPOT",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "CHILLI_HEALTHY",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "CHILLI_LEAF_CURL_VIRUS",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "CHILLI_NUTRIENT_DEFICIENCY",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "CHILLI_POWDERY_MILDEW",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "COTTON_BACTERIAL_BLIGHT",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "COTTON_CURL_VIRUS",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "COTTON_HEALTHY",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "COTTON_HERBICIDE_DAMAGE",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "COTTON_LEAF_HOPPER_JASSIDS",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "COTTON_LEAF_REDDENING",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "MAIZE_COMMON_RUST",
+          "precision": 0.5625,
+          "recall": 0.0789,
+          "f1": 0.1385,
+          "support": 114
+        },
+        {
+          "class": "MAIZE_GRAY_LEAF_SPOT",
+          "precision": 0.2614,
+          "recall": 0.371,
+          "f1": 0.3067,
+          "support": 62
+        },
+        {
+          "class": "MAIZE_HEALTHY",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "MAIZE_NORTHERN_LEAF_BLIGHT",
+          "precision": 0.4507,
+          "recall": 0.1788,
+          "f1": 0.256,
+          "support": 179
+        },
+        {
+          "class": "POTATO_EARLY_BLIGHT",
+          "precision": 0.2963,
+          "recall": 0.0755,
+          "f1": 0.1203,
+          "support": 106
+        },
+        {
+          "class": "POTATO_HEALTHY",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "POTATO_LATE_BLIGHT",
+          "precision": 0.4706,
+          "recall": 0.1667,
+          "f1": 0.2462,
+          "support": 96
+        },
+        {
+          "class": "RICE_BACTERIAL_LEAF_BLIGHT",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "RICE_BLAST",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "RICE_BROWN_SPOT",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "RICE_NORMAL",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "RICE_TUNGRO",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "TOMATO_BACTERIAL_SPOT",
+          "precision": 0.5,
+          "recall": 0.0096,
+          "f1": 0.0189,
+          "support": 104
+        },
+        {
+          "class": "TOMATO_EARLY_BLIGHT",
+          "precision": 0.25,
+          "recall": 0.2125,
+          "f1": 0.2297,
+          "support": 80
+        },
+        {
+          "class": "TOMATO_HEALTHY",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 44
+        },
+        {
+          "class": "TOMATO_LATE_BLIGHT",
+          "precision": 0.403,
+          "recall": 0.27,
+          "f1": 0.3234,
+          "support": 100
+        },
+        {
+          "class": "TOMATO_LEAF_MOLD",
+          "precision": 0.25,
+          "recall": 0.0341,
+          "f1": 0.06,
+          "support": 88
+        },
+        {
+          "class": "TOMATO_MOSAIC_VIRUS",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 49
+        },
+        {
+          "class": "TOMATO_SEPTORIA_LEAF_SPOT",
+          "precision": 0.5926,
+          "recall": 0.1159,
+          "f1": 0.1939,
+          "support": 138
+        },
+        {
+          "class": "TOMATO_SPIDER_MITES",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "TOMATO_TARGET_SPOT",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "TOMATO_YELLOW_LEAF_CURL_VIRUS",
+          "precision": 1.0,
+          "recall": 0.0411,
+          "f1": 0.0789,
+          "support": 73
+        }
+      ],
+      "per_class_masked": [
+        {
+          "class": "CHILLI_ANTHRACNOSE",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "CHILLI_BACTERIAL_SPOT",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "CHILLI_CERCOSPORA_LEAF_SPOT",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "CHILLI_HEALTHY",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "CHILLI_LEAF_CURL_VIRUS",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "CHILLI_NUTRIENT_DEFICIENCY",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "CHILLI_POWDERY_MILDEW",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "COTTON_BACTERIAL_BLIGHT",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "COTTON_CURL_VIRUS",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "COTTON_HEALTHY",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "COTTON_HERBICIDE_DAMAGE",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "COTTON_LEAF_HOPPER_JASSIDS",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "COTTON_LEAF_REDDENING",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "MAIZE_COMMON_RUST",
+          "precision": 0.5333,
+          "recall": 0.1404,
+          "f1": 0.2222,
+          "support": 114
+        },
+        {
+          "class": "MAIZE_GRAY_LEAF_SPOT",
+          "precision": 0.26,
+          "recall": 0.629,
+          "f1": 0.3679,
+          "support": 62
+        },
+        {
+          "class": "MAIZE_HEALTHY",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "MAIZE_NORTHERN_LEAF_BLIGHT",
+          "precision": 0.609,
+          "recall": 0.4525,
+          "f1": 0.5192,
+          "support": 179
+        },
+        {
+          "class": "POTATO_EARLY_BLIGHT",
+          "precision": 0.7368,
+          "recall": 0.2642,
+          "f1": 0.3889,
+          "support": 106
+        },
+        {
+          "class": "POTATO_HEALTHY",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "POTATO_LATE_BLIGHT",
+          "precision": 0.5851,
+          "recall": 0.5729,
+          "f1": 0.5789,
+          "support": 96
+        },
+        {
+          "class": "RICE_BACTERIAL_LEAF_BLIGHT",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "RICE_BLAST",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "RICE_BROWN_SPOT",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "RICE_NORMAL",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "RICE_TUNGRO",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "TOMATO_BACTERIAL_SPOT",
+          "precision": 0.1852,
+          "recall": 0.0481,
+          "f1": 0.0763,
+          "support": 104
+        },
+        {
+          "class": "TOMATO_EARLY_BLIGHT",
+          "precision": 0.2581,
+          "recall": 0.5,
+          "f1": 0.3404,
+          "support": 80
+        },
+        {
+          "class": "TOMATO_HEALTHY",
+          "precision": 0.2083,
+          "recall": 0.1136,
+          "f1": 0.1471,
+          "support": 44
+        },
+        {
+          "class": "TOMATO_LATE_BLIGHT",
+          "precision": 0.4333,
+          "recall": 0.65,
+          "f1": 0.52,
+          "support": 100
+        },
+        {
+          "class": "TOMATO_LEAF_MOLD",
+          "precision": 0.3171,
+          "recall": 0.1477,
+          "f1": 0.2016,
+          "support": 88
+        },
+        {
+          "class": "TOMATO_MOSAIC_VIRUS",
+          "precision": 0.1042,
+          "recall": 0.102,
+          "f1": 0.1031,
+          "support": 49
+        },
+        {
+          "class": "TOMATO_SEPTORIA_LEAF_SPOT",
+          "precision": 0.4505,
+          "recall": 0.2971,
+          "f1": 0.3581,
+          "support": 138
+        },
+        {
+          "class": "TOMATO_SPIDER_MITES",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "TOMATO_TARGET_SPOT",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        {
+          "class": "TOMATO_YELLOW_LEAF_CURL_VIRUS",
+          "precision": 0.5455,
+          "recall": 0.2466,
+          "f1": 0.3396,
+          "support": 73
+        }
+      ]
+    }
+  },
+  "perCrop": {
+    "test": [
+      {
+        "crop": "CHILLI",
+        "samples": 1278,
+        "macro_f1": 0.9674,
+        "accuracy": 0.9679
+      },
+      {
+        "crop": "COTTON",
+        "samples": 350,
+        "macro_f1": 0.9489,
+        "accuracy": 0.9457
+      },
+      {
+        "crop": "MAIZE",
+        "samples": 577,
+        "macro_f1": 0.9585,
+        "accuracy": 0.9705
+      },
+      {
+        "crop": "POTATO",
+        "samples": 350,
+        "macro_f1": 0.9989,
+        "accuracy": 0.9971
+      },
+      {
+        "crop": "RICE",
+        "samples": 602,
+        "macro_f1": 0.8687,
+        "accuracy": 0.8505
+      },
+      {
+        "crop": "TOMATO",
+        "samples": 2719,
+        "macro_f1": 0.9788,
+        "accuracy": 0.9823
+      }
+    ],
+    "fieldtest": [
+      {
+        "crop": "CHILLI",
+        "samples": 0,
+        "macro_f1": null,
+        "accuracy": null
+      },
+      {
+        "crop": "COTTON",
+        "samples": 0,
+        "macro_f1": null,
+        "accuracy": null
+      },
+      {
+        "crop": "MAIZE",
+        "samples": 355,
+        "macro_f1": 0.1779,
+        "accuracy": 0.1803
+      },
+      {
+        "crop": "POTATO",
+        "samples": 202,
+        "macro_f1": 0.1313,
+        "accuracy": 0.1188
+      },
+      {
+        "crop": "RICE",
+        "samples": 0,
+        "macro_f1": null,
+        "accuracy": null
+      },
+      {
+        "crop": "TOMATO",
+        "samples": 676,
+        "macro_f1": 0.099,
+        "accuracy": 0.0991
+      }
+    ]
+  },
+  "healthyRecall": {
+    "val": {
+      "tau_healthy": 0.8,
+      "per_class": [
+        {
+          "class": "CHILLI_HEALTHY",
+          "support": 263,
+          "recall_at_tau_healthy": 0.9658
+        },
+        {
+          "class": "COTTON_HEALTHY",
+          "support": 38,
+          "recall_at_tau_healthy": 1.0
+        },
+        {
+          "class": "MAIZE_HEALTHY",
+          "support": 174,
+          "recall_at_tau_healthy": 1.0
+        },
+        {
+          "class": "POTATO_HEALTHY",
+          "support": 23,
+          "recall_at_tau_healthy": 0.9565
+        },
+        {
+          "class": "RICE_NORMAL",
+          "support": 83,
+          "recall_at_tau_healthy": 0.9518
+        },
+        {
+          "class": "TOMATO_HEALTHY",
+          "support": 238,
+          "recall_at_tau_healthy": 0.9706
+        }
+      ],
+      "macro_recall": 0.9741,
+      "min_recall": 0.9518
+    },
+    "test": {
+      "tau_healthy": 0.8,
+      "per_class": [
+        {
+          "class": "CHILLI_HEALTHY",
+          "support": 263,
+          "recall_at_tau_healthy": 0.9582
+        },
+        {
+          "class": "COTTON_HEALTHY",
+          "support": 50,
+          "recall_at_tau_healthy": 0.98
+        },
+        {
+          "class": "MAIZE_HEALTHY",
+          "support": 174,
+          "recall_at_tau_healthy": 0.9828
+        },
+        {
+          "class": "POTATO_HEALTHY",
+          "support": 50,
+          "recall_at_tau_healthy": 0.98
+        },
+        {
+          "class": "RICE_NORMAL",
+          "support": 82,
+          "recall_at_tau_healthy": 0.9512
+        },
+        {
+          "class": "TOMATO_HEALTHY",
+          "support": 237,
+          "recall_at_tau_healthy": 0.9662
+        }
+      ],
+      "macro_recall": 0.9697,
+      "min_recall": 0.9512
+    }
+  },
+  "shipGates": [
+    {
+      "gate": "val macro-F1 >= 0.85 (in-domain)",
+      "measured": 0.9556,
+      "threshold": 0.85,
+      "passed": true
+    },
+    {
+      "gate": "healthy-class recall >= 0.90 @tau_healthy (val)",
+      "measured": 0.9518,
+      "threshold": 0.9,
+      "passed": true,
+      "note": "min across healthy classes - the weakest class is the gate, not the average"
+    },
+    {
+      "gate": "calibration ECE <= 0.05 post-scaling (val)",
+      "measured": 0.004213,
+      "threshold": 0.05,
+      "passed": true
+    },
+    {
+      "gate": "per-crop macro-F1 >= 0.75 (test), else demote that crop to GENERAL",
+      "measured": 0.8687,
+      "threshold": 0.75,
+      "passed": true,
+      "note": "crops below the gate: none"
+    },
+    {
+      "gate": "field-test macro-F1 reported (honesty gate - no numeric threshold)",
+      "measured": 0.0564,
+      "threshold": null,
+      "passed": true,
+      "measuredPresentClasses": 0.1517,
+      "measuredAccuracy": 0.1257,
+      "measuredCropMaskedAccuracy": 0.3333,
+      "note": "the number must appear in the README; it is not gated on a value. Reported over all 35 classes AND over the 13 with field-test support, because only 13 are represented in PlantDoc."
+    }
+  ],
+  "mandatoryDisclosures": {
+    "riceNormalVsBrownSpot": {
+      "requirement": "The RICE_NORMAL <-> RICE_BROWN_SPOT confusion cell MUST be reported explicitly in the evaluation battery, not folded into macro-F1 alone. RICE_NORMAL recall MUST NOT be quoted as field performance. If RICE_NORMAL recall exceeds RICE_BROWN_SPOT recall by a wide margin, treat it as evidence of the shortcut, not of skill.",
+      "test": {
+        "pair": [
+          "RICE_NORMAL",
+          "RICE_BROWN_SPOT"
+        ],
+        "RICE_NORMAL_support": 82,
+        "RICE_BROWN_SPOT_support": 91,
+        "RICE_NORMAL_predicted_as_RICE_BROWN_SPOT": 0,
+        "RICE_BROWN_SPOT_predicted_as_RICE_NORMAL": 0,
+        "RICE_NORMAL_recall": 1.0,
+        "RICE_BROWN_SPOT_recall": 1.0
+      },
+      "val": {
+        "pair": [
+          "RICE_NORMAL",
+          "RICE_BROWN_SPOT"
+        ],
+        "RICE_NORMAL_support": 83,
+        "RICE_BROWN_SPOT_support": 91,
+        "RICE_NORMAL_predicted_as_RICE_BROWN_SPOT": 0,
+        "RICE_BROWN_SPOT_predicted_as_RICE_NORMAL": 0,
+        "RICE_NORMAL_recall": 0.988,
+        "RICE_BROWN_SPOT_recall": 1.0
+      }
+    },
+    "chilliSourceConfound": {
+      "requirement": "Metrics for CHILLI_ANTHRACNOSE, CHILLI_BACTERIAL_SPOT, CHILLI_NUTRIENT_DEFICIENCY and CHILLI_POWDERY_MILDEW MUST be reported with this confound stated, and MUST NOT be presented as evidence of disease-discrimination ability. The Grad-CAM background-reliance probe in docs/ml/error-analysis.md is REQUIRED for chilli before any chilli accuracy figure is published.",
+      "affectedClasses": [
+        "CHILLI_ANTHRACNOSE",
+        "CHILLI_BACTERIAL_SPOT",
+        "CHILLI_NUTRIENT_DEFICIENCY",
+        "CHILLI_POWDERY_MILDEW"
+      ],
+      "testMetrics": [
+        {
+          "class": "CHILLI_ANTHRACNOSE",
+          "precision": 0.9423,
+          "recall": 0.98,
+          "f1": 0.9608,
+          "support": 50
+        },
+        {
+          "class": "CHILLI_BACTERIAL_SPOT",
+          "precision": 0.9455,
+          "recall": 0.9369,
+          "f1": 0.9412,
+          "support": 111
+        },
+        {
+          "class": "CHILLI_NUTRIENT_DEFICIENCY",
+          "precision": 0.9542,
+          "recall": 0.9669,
+          "f1": 0.9605,
+          "support": 151
+        },
+        {
+          "class": "CHILLI_POWDERY_MILDEW",
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 123
+        }
+      ],
+      "statement": "CHILLI_ANTHRACNOSE exists only in chilli_secondary; CHILLI_BACTERIAL_SPOT, CHILLI_NUTRIENT_DEFICIENCY and CHILLI_POWDERY_MILDEW only in chilli_primary, and the two sources are separable at 0.91 from a single background statistic. These four numbers are therefore NOT evidence of disease-discrimination ability. The Grad-CAM probe (P4-8) is required before any chilli accuracy figure is published."
+    }
+  },
+  "knownLimitations": [
+    "RICE_NORMAL is 100% studio imagery; healthy-rice field performance is UNVALIDATED and must not be claimed (ADR-021 decision 2, option c).",
+    "Both chilli sources are studio imagery separable by capture style; the merged chilli label space is not trusted until the source-separability probe runs (ADR-021 decision 4).",
+    "Stock-image quarantine is filename-evidence only. Pixel-burned watermarks with neutral filenames are NOT caught and need the human review queue.",
+    "Rotated/mirrored publisher augmentations are undetectable by the duplicate method; augmented groups are excluded by construction, not by detection."
+  ]
+}

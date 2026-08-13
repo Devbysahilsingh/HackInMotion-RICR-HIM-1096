@@ -1,0 +1,622 @@
+{
+  "todo": "P4-8 + error analysis (docs/ml/error-analysis.md)",
+  "generatedAt": "2026-08-13T05:44:37+00:00",
+  "checkpoint": "ml-service/training/checkpoints/run2/best.pt",
+  "confusionClusters": [
+    {
+      "true": "RICE_BLAST",
+      "predicted": "RICE_TUNGRO",
+      "count": 42,
+      "rate_of_true_class": 0.2642,
+      "same_crop": true
+    },
+    {
+      "true": "RICE_BLAST",
+      "predicted": "RICE_BACTERIAL_LEAF_BLIGHT",
+      "count": 19,
+      "rate_of_true_class": 0.1195,
+      "same_crop": true
+    },
+    {
+      "true": "MAIZE_NORTHERN_LEAF_BLIGHT",
+      "predicted": "MAIZE_GRAY_LEAF_SPOT",
+      "count": 9,
+      "rate_of_true_class": 0.0612,
+      "same_crop": true
+    },
+    {
+      "true": "RICE_BACTERIAL_LEAF_BLIGHT",
+      "predicted": "RICE_TUNGRO",
+      "count": 9,
+      "rate_of_true_class": 0.0833,
+      "same_crop": true
+    },
+    {
+      "true": "RICE_BACTERIAL_LEAF_BLIGHT",
+      "predicted": "RICE_BLAST",
+      "count": 9,
+      "rate_of_true_class": 0.0833,
+      "same_crop": true
+    },
+    {
+      "true": "COTTON_LEAF_REDDENING",
+      "predicted": "COTTON_BACTERIAL_BLIGHT",
+      "count": 8,
+      "rate_of_true_class": 0.093,
+      "same_crop": true
+    },
+    {
+      "true": "MAIZE_GRAY_LEAF_SPOT",
+      "predicted": "MAIZE_NORTHERN_LEAF_BLIGHT",
+      "count": 7,
+      "rate_of_true_class": 0.0909,
+      "same_crop": true
+    },
+    {
+      "true": "COTTON_LEAF_HOPPER_JASSIDS",
+      "predicted": "COTTON_LEAF_REDDENING",
+      "count": 6,
+      "rate_of_true_class": 0.12,
+      "same_crop": true
+    },
+    {
+      "true": "TOMATO_EARLY_BLIGHT",
+      "predicted": "TOMATO_LATE_BLIGHT",
+      "count": 6,
+      "rate_of_true_class": 0.04,
+      "same_crop": true
+    },
+    {
+      "true": "TOMATO_SPIDER_MITES",
+      "predicted": "TOMATO_TARGET_SPOT",
+      "count": 6,
+      "rate_of_true_class": 0.0239,
+      "same_crop": true
+    }
+  ],
+  "perClassTrainVolume": {
+    "CHILLI_ANTHRACNOSE": 225,
+    "CHILLI_BACTERIAL_SPOT": 520,
+    "CHILLI_CERCOSPORA_LEAF_SPOT": 1398,
+    "CHILLI_HEALTHY": 1227,
+    "CHILLI_LEAF_CURL_VIRUS": 1311,
+    "CHILLI_NUTRIENT_DEFICIENCY": 704,
+    "CHILLI_POWDERY_MILDEW": 575,
+    "COTTON_BACTERIAL_BLIGHT": 163,
+    "COTTON_CURL_VIRUS": 298,
+    "COTTON_HEALTHY": 164,
+    "COTTON_HERBICIDE_DAMAGE": 188,
+    "COTTON_LEAF_HOPPER_JASSIDS": 141,
+    "COTTON_LEAF_REDDENING": 403,
+    "MAIZE_COMMON_RUST": 834,
+    "MAIZE_GRAY_LEAF_SPOT": 359,
+    "MAIZE_HEALTHY": 812,
+    "MAIZE_NORTHERN_LEAF_BLIGHT": 689,
+    "POTATO_EARLY_BLIGHT": 700,
+    "POTATO_HEALTHY": 79,
+    "POTATO_LATE_BLIGHT": 700,
+    "RICE_BACTERIAL_LEAF_BLIGHT": 506,
+    "RICE_BLAST": 745,
+    "RICE_BROWN_SPOT": 424,
+    "RICE_NORMAL": 384,
+    "RICE_TUNGRO": 758,
+    "TOMATO_BACTERIAL_SPOT": 1489,
+    "TOMATO_EARLY_BLIGHT": 700,
+    "TOMATO_HEALTHY": 1109,
+    "TOMATO_LATE_BLIGHT": 1331,
+    "TOMATO_LEAF_MOLD": 666,
+    "TOMATO_MOSAIC_VIRUS": 261,
+    "TOMATO_SEPTORIA_LEAF_SPOT": 1240,
+    "TOMATO_SPIDER_MITES": 1173,
+    "TOMATO_TARGET_SPOT": 983,
+    "TOMATO_YELLOW_LEAF_CURL_VIRUS": 3750
+  },
+  "backgroundReliance": {
+    "method": "Grad-CAM over the final conv stage; border-mass proxy",
+    "samplesPerCrop": 20,
+    "borderFraction": 0.25,
+    "uniformBaseline": 0.75,
+    "caveat": "No leaf segmentation masks exist in this corpus, so this is a PROXY for background reliance, not a measurement of it. Values near the uniform baseline mean diffuse attention, not necessarily background reliance.",
+    "findings": [
+      {
+        "split": "fieldtest",
+        "crop": "MAIZE",
+        "samples": 20,
+        "mean_border_mass_fraction": 0.6822,
+        "uniform_baseline": 0.75,
+        "ratio_to_uniform": 0.91,
+        "interpretation": "attention concentrated on the centred subject"
+      },
+      {
+        "split": "fieldtest",
+        "crop": "POTATO",
+        "samples": 20,
+        "mean_border_mass_fraction": 0.6871,
+        "uniform_baseline": 0.75,
+        "ratio_to_uniform": 0.916,
+        "interpretation": "attention concentrated on the centred subject"
+      },
+      {
+        "split": "fieldtest",
+        "crop": "TOMATO",
+        "samples": 20,
+        "mean_border_mass_fraction": 0.7096,
+        "uniform_baseline": 0.75,
+        "ratio_to_uniform": 0.946,
+        "interpretation": "attention concentrated on the centred subject"
+      },
+      {
+        "split": "test",
+        "crop": "CHILLI",
+        "samples": 20,
+        "mean_border_mass_fraction": 0.6625,
+        "uniform_baseline": 0.75,
+        "ratio_to_uniform": 0.883,
+        "interpretation": "attention concentrated on the centred subject"
+      },
+      {
+        "split": "test",
+        "crop": "COTTON",
+        "samples": 20,
+        "mean_border_mass_fraction": 0.6827,
+        "uniform_baseline": 0.75,
+        "ratio_to_uniform": 0.91,
+        "interpretation": "attention concentrated on the centred subject"
+      },
+      {
+        "split": "test",
+        "crop": "MAIZE",
+        "samples": 20,
+        "mean_border_mass_fraction": 0.7305,
+        "uniform_baseline": 0.75,
+        "ratio_to_uniform": 0.974,
+        "interpretation": "attention concentrated on the centred subject"
+      },
+      {
+        "split": "test",
+        "crop": "POTATO",
+        "samples": 20,
+        "mean_border_mass_fraction": 0.7311,
+        "uniform_baseline": 0.75,
+        "ratio_to_uniform": 0.975,
+        "interpretation": "attention concentrated on the centred subject"
+      },
+      {
+        "split": "test",
+        "crop": "RICE",
+        "samples": 20,
+        "mean_border_mass_fraction": 0.6551,
+        "uniform_baseline": 0.75,
+        "ratio_to_uniform": 0.873,
+        "interpretation": "attention concentrated on the centred subject"
+      },
+      {
+        "split": "test",
+        "crop": "TOMATO",
+        "samples": 20,
+        "mean_border_mass_fraction": 0.8668,
+        "uniform_baseline": 0.75,
+        "ratio_to_uniform": 1.156,
+        "interpretation": "attention concentrated OFF the centred leaf"
+      }
+    ]
+  },
+  "overfitting": {
+    "final_train_acc": 0.9684,
+    "final_val_acc": 0.9654,
+    "train_minus_val_acc": 0.003,
+    "val_acc": 0.9654,
+    "test_acc": 0.9632,
+    "note": "A small train-val gap with a large in-domain-to-field gap is not overfitting to the training SET; it is fitting the training DOMAIN.",
+    "val_minus_test_acc": 0.0022
+  },
+  "confidenceAutopsy": {
+    "threshold": 0.9,
+    "count": 37,
+    "rate_of_all_test": 0.0063,
+    "rate_of_all_errors": 0.1713,
+    "samples": [
+      {
+        "path": "datasets/raw/chilli_primary/Chilli Leaf Disease Image Dataset for Classificati/Bacterial_Spot/Bacterial_Spot/Bacterial_Spot_684.jpg",
+        "true": "CHILLI_BACTERIAL_SPOT",
+        "predicted": "CHILLI_LEAF_CURL_VIRUS",
+        "confidence": 0.9975
+      },
+      {
+        "path": "datasets/raw/chilli_primary/Chilli Leaf Disease Image Dataset for Classificati/Cercospora_Leaf_Spot/Cercospora_Leaf_Spot/Cercospora Leaf Spot_1846.jpg",
+        "true": "CHILLI_CERCOSPORA_LEAF_SPOT",
+        "predicted": "CHILLI_HEALTHY",
+        "confidence": 0.9832
+      },
+      {
+        "path": "datasets/raw/chilli_primary/Chilli Leaf Disease Image Dataset for Classificati/Curl_Virus/Curl_Virus/Curl Virus_412.jpg",
+        "true": "CHILLI_LEAF_CURL_VIRUS",
+        "predicted": "CHILLI_CERCOSPORA_LEAF_SPOT",
+        "confidence": 0.9165
+      },
+      {
+        "path": "datasets/raw/chilli_primary/Chilli Leaf Disease Image Dataset for Classificati/Curl_Virus/Curl_Virus/Curl Virus_438.jpg",
+        "true": "CHILLI_LEAF_CURL_VIRUS",
+        "predicted": "CHILLI_NUTRIENT_DEFICIENCY",
+        "confidence": 0.9513
+      },
+      {
+        "path": "datasets/raw/chilli_primary/Chilli Leaf Disease Image Dataset for Classificati/Curl_Virus/Curl_Virus/Curl Virus_440.jpg",
+        "true": "CHILLI_LEAF_CURL_VIRUS",
+        "predicted": "CHILLI_BACTERIAL_SPOT",
+        "confidence": 0.9064
+      },
+      {
+        "path": "datasets/raw/chilli_primary/Chilli Leaf Disease Image Dataset for Classificati/Nutrition_Deficiency/Nutrition Deficiency_547.jpg",
+        "true": "CHILLI_NUTRIENT_DEFICIENCY",
+        "predicted": "CHILLI_HEALTHY",
+        "confidence": 0.9955
+      },
+      {
+        "path": "datasets/raw/cotton_sarcld2024/SAR-CLD-2024 A Comprehensive Dataset for Cotton Leaf Disease Detection/Original Dataset/Original Dataset/Leaf Hopper Jassids/LHJ00137.jpg",
+        "true": "COTTON_LEAF_HOPPER_JASSIDS",
+        "predicted": "COTTON_LEAF_REDDENING",
+        "confidence": 0.9957
+      },
+      {
+        "path": "datasets/raw/cotton_sarcld2024/SAR-CLD-2024 A Comprehensive Dataset for Cotton Leaf Disease Detection/Original Dataset/Original Dataset/Leaf Hopper Jassids/LHJ00206.jpg",
+        "true": "COTTON_LEAF_HOPPER_JASSIDS",
+        "predicted": "COTTON_BACTERIAL_BLIGHT",
+        "confidence": 0.9288
+      },
+      {
+        "path": "datasets/raw/cotton_sarcld2024/SAR-CLD-2024 A Comprehensive Dataset for Cotton Leaf Disease Detection/Original Dataset/Original Dataset/Leaf Hopper Jassids/LHJ00212.jpg",
+        "true": "COTTON_LEAF_HOPPER_JASSIDS",
+        "predicted": "COTTON_BACTERIAL_BLIGHT",
+        "confidence": 0.9639
+      },
+      {
+        "path": "datasets/raw/cotton_sarcld2024/SAR-CLD-2024 A Comprehensive Dataset for Cotton Leaf Disease Detection/Original Dataset/Original Dataset/Leaf Redding/LR00473.jpg",
+        "true": "COTTON_LEAF_REDDENING",
+        "predicted": "COTTON_BACTERIAL_BLIGHT",
+        "confidence": 0.989
+      },
+      {
+        "path": "datasets/raw/cotton_sarcld2024/SAR-CLD-2024 A Comprehensive Dataset for Cotton Leaf Disease Detection/Original Dataset/Original Dataset/Leaf Redding/LR00561.jpg",
+        "true": "COTTON_LEAF_REDDENING",
+        "predicted": "COTTON_BACTERIAL_BLIGHT",
+        "confidence": 0.9051
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Corn___Cercospora_leaf_spot Gray_leaf_spot/image (411).JPG",
+        "true": "MAIZE_GRAY_LEAF_SPOT",
+        "predicted": "MAIZE_NORTHERN_LEAF_BLIGHT",
+        "confidence": 0.9189
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Corn___Cercospora_leaf_spot Gray_leaf_spot/image (447).jpg",
+        "true": "MAIZE_GRAY_LEAF_SPOT",
+        "predicted": "MAIZE_NORTHERN_LEAF_BLIGHT",
+        "confidence": 0.9274
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Corn___Cercospora_leaf_spot Gray_leaf_spot/image (458).JPG",
+        "true": "MAIZE_GRAY_LEAF_SPOT",
+        "predicted": "MAIZE_NORTHERN_LEAF_BLIGHT",
+        "confidence": 0.903
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Corn___Northern_Leaf_Blight/image (895).JPG",
+        "true": "MAIZE_NORTHERN_LEAF_BLIGHT",
+        "predicted": "MAIZE_GRAY_LEAF_SPOT",
+        "confidence": 0.9795
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Corn___Northern_Leaf_Blight/image (902).JPG",
+        "true": "MAIZE_NORTHERN_LEAF_BLIGHT",
+        "predicted": "MAIZE_GRAY_LEAF_SPOT",
+        "confidence": 0.9212
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Corn___Northern_Leaf_Blight/image (93).JPG",
+        "true": "MAIZE_NORTHERN_LEAF_BLIGHT",
+        "predicted": "MAIZE_GRAY_LEAF_SPOT",
+        "confidence": 0.9977
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Potato___Late_blight/image (777).JPG",
+        "true": "POTATO_LATE_BLIGHT",
+        "predicted": "TOMATO_LATE_BLIGHT",
+        "confidence": 0.9835
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Tomato___Early_blight/image (696).JPG",
+        "true": "TOMATO_EARLY_BLIGHT",
+        "predicted": "TOMATO_LATE_BLIGHT",
+        "confidence": 0.9845
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Tomato___Early_blight/image (82).JPG",
+        "true": "TOMATO_EARLY_BLIGHT",
+        "predicted": "TOMATO_SEPTORIA_LEAF_SPOT",
+        "confidence": 0.994
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Tomato___Early_blight/image (941).JPG",
+        "true": "TOMATO_EARLY_BLIGHT",
+        "predicted": "TOMATO_LATE_BLIGHT",
+        "confidence": 0.9511
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Tomato___Target_Spot/image (589).JPG",
+        "true": "TOMATO_TARGET_SPOT",
+        "predicted": "TOMATO_SEPTORIA_LEAF_SPOT",
+        "confidence": 0.9874
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Tomato___Target_Spot/image (926).JPG",
+        "true": "TOMATO_TARGET_SPOT",
+        "predicted": "TOMATO_SPIDER_MITES",
+        "confidence": 0.9261
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Tomato___Tomato_Yellow_Leaf_Curl_Virus/image (4338).JPG",
+        "true": "TOMATO_YELLOW_LEAF_CURL_VIRUS",
+        "predicted": "TOMATO_SPIDER_MITES",
+        "confidence": 0.9815
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Tomato___Tomato_Yellow_Leaf_Curl_Virus/image (4516).JPG",
+        "true": "TOMATO_YELLOW_LEAF_CURL_VIRUS",
+        "predicted": "TOMATO_SPIDER_MITES",
+        "confidence": 0.9451
+      }
+    ]
+  },
+  "fieldDegradation": [
+    {
+      "class": "TOMATO_MOSAIC_VIRUS",
+      "test_recall": 1.0,
+      "field_recall": 0.0,
+      "delta": -1.0
+    },
+    {
+      "class": "TOMATO_HEALTHY",
+      "test_recall": 0.9873,
+      "field_recall": 0.0,
+      "delta": -0.9873
+    },
+    {
+      "class": "TOMATO_BACTERIAL_SPOT",
+      "test_recall": 0.9969,
+      "field_recall": 0.0096,
+      "delta": -0.9872
+    },
+    {
+      "class": "TOMATO_LEAF_MOLD",
+      "test_recall": 0.986,
+      "field_recall": 0.0341,
+      "delta": -0.9519
+    },
+    {
+      "class": "TOMATO_YELLOW_LEAF_CURL_VIRUS",
+      "test_recall": 0.9875,
+      "field_recall": 0.0411,
+      "delta": -0.9465
+    },
+    {
+      "class": "POTATO_EARLY_BLIGHT",
+      "test_recall": 1.0,
+      "field_recall": 0.0755,
+      "delta": -0.9245
+    },
+    {
+      "class": "MAIZE_COMMON_RUST",
+      "test_recall": 1.0,
+      "field_recall": 0.0789,
+      "delta": -0.9211
+    },
+    {
+      "class": "TOMATO_SEPTORIA_LEAF_SPOT",
+      "test_recall": 0.9774,
+      "field_recall": 0.1159,
+      "delta": -0.8614
+    },
+    {
+      "class": "POTATO_LATE_BLIGHT",
+      "test_recall": 0.9933,
+      "field_recall": 0.1667,
+      "delta": -0.8267
+    },
+    {
+      "class": "MAIZE_NORTHERN_LEAF_BLIGHT",
+      "test_recall": 0.9388,
+      "field_recall": 0.1788,
+      "delta": -0.76
+    },
+    {
+      "class": "TOMATO_LATE_BLIGHT",
+      "test_recall": 0.9965,
+      "field_recall": 0.27,
+      "delta": -0.7265
+    },
+    {
+      "class": "TOMATO_EARLY_BLIGHT",
+      "test_recall": 0.9333,
+      "field_recall": 0.2125,
+      "delta": -0.7208
+    },
+    {
+      "class": "MAIZE_GRAY_LEAF_SPOT",
+      "test_recall": 0.9091,
+      "field_recall": 0.371,
+      "delta": -0.5381
+    }
+  ],
+  "labelNoiseSweep": {
+    "skipped": false,
+    "inspected": 200,
+    "threshold_note": "error-analysis.md: retrain decision if a class contributes >2% of its own training images to this list",
+    "top_loss_by_class": {
+      "RICE_BLAST": 36,
+      "CHILLI_CERCOSPORA_LEAF_SPOT": 27,
+      "TOMATO_YELLOW_LEAF_CURL_VIRUS": 24,
+      "CHILLI_LEAF_CURL_VIRUS": 19,
+      "RICE_TUNGRO": 14,
+      "CHILLI_HEALTHY": 13,
+      "TOMATO_EARLY_BLIGHT": 11,
+      "MAIZE_NORTHERN_LEAF_BLIGHT": 9,
+      "TOMATO_LATE_BLIGHT": 6,
+      "TOMATO_SPIDER_MITES": 6,
+      "TOMATO_TARGET_SPOT": 5,
+      "TOMATO_HEALTHY": 5
+    },
+    "samples": [
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Tomato___Late_blight/image (1510).JPG",
+        "labelled": "TOMATO_LATE_BLIGHT",
+        "predicted": "TOMATO_HEALTHY",
+        "loss": 8.965
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Corn___Northern_Leaf_Blight/image (736).jpg",
+        "labelled": "MAIZE_NORTHERN_LEAF_BLIGHT",
+        "predicted": "MAIZE_HEALTHY",
+        "loss": 7.125
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Corn___Northern_Leaf_Blight/image (160).JPG",
+        "labelled": "MAIZE_NORTHERN_LEAF_BLIGHT",
+        "predicted": "MAIZE_GRAY_LEAF_SPOT",
+        "loss": 7.004
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Tomato___Late_blight/image (1605).JPG",
+        "labelled": "TOMATO_LATE_BLIGHT",
+        "predicted": "TOMATO_HEALTHY",
+        "loss": 6.877
+      },
+      {
+        "path": "datasets/raw/rice_healthy_diu/Tungro/orginal/20241114_152029.jpg",
+        "labelled": "RICE_TUNGRO",
+        "predicted": "RICE_NORMAL",
+        "loss": 6.803
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Tomato___Tomato_Yellow_Leaf_Curl_Virus/image (2701).JPG",
+        "labelled": "TOMATO_YELLOW_LEAF_CURL_VIRUS",
+        "predicted": "TOMATO_LATE_BLIGHT",
+        "loss": 6.001
+      },
+      {
+        "path": "datasets/raw/chilli_primary/Chilli Leaf Disease Image Dataset for Classificati/Curl_Virus/Curl_Virus/Curl Virus_303.jpg",
+        "labelled": "CHILLI_LEAF_CURL_VIRUS",
+        "predicted": "CHILLI_NUTRIENT_DEFICIENCY",
+        "loss": 5.904
+      },
+      {
+        "path": "datasets/raw/chilli_primary/Chilli Leaf Disease Image Dataset for Classificati/Healthy_Leaf/Healthy_Leaf/Healthy_Leaf_1628.jpg",
+        "labelled": "CHILLI_HEALTHY",
+        "predicted": "CHILLI_BACTERIAL_SPOT",
+        "loss": 5.491
+      },
+      {
+        "path": "datasets/raw/rice_healthy_diu/Tungro/orginal/20241114_152052.jpg",
+        "labelled": "RICE_TUNGRO",
+        "predicted": "RICE_NORMAL",
+        "loss": 5.485
+      },
+      {
+        "path": "datasets/raw/chilli_primary/Chilli Leaf Disease Image Dataset for Classificati/Healthy_Leaf/Healthy_Leaf/Healthy_Leaf_1617.jpg",
+        "labelled": "CHILLI_HEALTHY",
+        "predicted": "CHILLI_POWDERY_MILDEW",
+        "loss": 5.101
+      },
+      {
+        "path": "datasets/raw/rice_healthy_diu/Tungro/orginal/20241114_154231.jpg",
+        "labelled": "RICE_TUNGRO",
+        "predicted": "RICE_NORMAL",
+        "loss": 5.022
+      },
+      {
+        "path": "datasets/raw/rice_healthy_diu/Healthy _leaf/orginal/leaf/20241114_150440.jpg",
+        "labelled": "RICE_NORMAL",
+        "predicted": "RICE_TUNGRO",
+        "loss": 4.956
+      },
+      {
+        "path": "datasets/raw/chilli_primary/Chilli Leaf Disease Image Dataset for Classificati/Cercospora_Leaf_Spot/Cercospora_Leaf_Spot/Cercospora Leaf Spot_1747.jpg",
+        "labelled": "CHILLI_CERCOSPORA_LEAF_SPOT",
+        "predicted": "CHILLI_HEALTHY",
+        "loss": 4.945
+      },
+      {
+        "path": "datasets/raw/chilli_primary/Chilli Leaf Disease Image Dataset for Classificati/Healthy_Leaf/Healthy_Leaf/Healthy_Leaf_1629.jpg",
+        "labelled": "CHILLI_HEALTHY",
+        "predicted": "CHILLI_BACTERIAL_SPOT",
+        "loss": 4.884
+      },
+      {
+        "path": "datasets/raw/chilli_primary/Chilli Leaf Disease Image Dataset for Classificati/Curl_Virus/Curl_Virus/Curl Virus_355.jpg",
+        "labelled": "CHILLI_LEAF_CURL_VIRUS",
+        "predicted": "CHILLI_NUTRIENT_DEFICIENCY",
+        "loss": 4.821
+      },
+      {
+        "path": "datasets/raw/chilli_primary/Chilli Leaf Disease Image Dataset for Classificati/Healthy_Leaf/Healthy_Leaf/Healthy_Leaf_1436.jpg",
+        "labelled": "CHILLI_HEALTHY",
+        "predicted": "CHILLI_BACTERIAL_SPOT",
+        "loss": 4.727
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Tomato___Early_blight/image (683).JPG",
+        "labelled": "TOMATO_EARLY_BLIGHT",
+        "predicted": "TOMATO_SEPTORIA_LEAF_SPOT",
+        "loss": 4.678
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Tomato___Target_Spot/image (1092).JPG",
+        "labelled": "TOMATO_TARGET_SPOT",
+        "predicted": "TOMATO_SEPTORIA_LEAF_SPOT",
+        "loss": 4.67
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Tomato___Early_blight/image (240).JPG",
+        "labelled": "TOMATO_EARLY_BLIGHT",
+        "predicted": "TOMATO_TARGET_SPOT",
+        "loss": 4.642
+      },
+      {
+        "path": "datasets/raw/rice_healthy_diu/Rice Blast/orginal/Rice Blast/IMG_20241031_125043.jpg",
+        "labelled": "RICE_BLAST",
+        "predicted": "RICE_BACTERIAL_LEAF_BLIGHT",
+        "loss": 4.504
+      },
+      {
+        "path": "datasets/raw/rice_healthy_diu/Rice Blast/orginal/Rice Blast/IMG_20241114_154847.jpg",
+        "labelled": "RICE_BLAST",
+        "predicted": "RICE_TUNGRO",
+        "loss": 4.469
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Tomato___Tomato_Yellow_Leaf_Curl_Virus/image (2145).JPG",
+        "labelled": "TOMATO_YELLOW_LEAF_CURL_VIRUS",
+        "predicted": "TOMATO_LATE_BLIGHT",
+        "loss": 4.399
+      },
+      {
+        "path": "datasets/raw/chilli_primary/Chilli Leaf Disease Image Dataset for Classificati/Cercospora_Leaf_Spot/Cercospora_Leaf_Spot/Cercospora Leaf Spot_1885.jpg",
+        "labelled": "CHILLI_CERCOSPORA_LEAF_SPOT",
+        "predicted": "CHILLI_HEALTHY",
+        "loss": 4.391
+      },
+      {
+        "path": "datasets/raw/plantvillage/Plant_leave_diseases_dataset_without_augmentation/Tomato___Tomato_Yellow_Leaf_Curl_Virus/image (1254).JPG",
+        "labelled": "TOMATO_YELLOW_LEAF_CURL_VIRUS",
+        "predicted": "TOMATO_BACTERIAL_SPOT",
+        "loss": 4.324
+      },
+      {
+        "path": "datasets/raw/chilli_primary/Chilli Leaf Disease Image Dataset for Classificati/Cercospora_Leaf_Spot/Cercospora_Leaf_Spot/Cercospora Leaf Spot_1890.jpg",
+        "labelled": "CHILLI_CERCOSPORA_LEAF_SPOT",
+        "predicted": "CHILLI_LEAF_CURL_VIRUS",
+        "loss": 4.315
+      }
+    ]
+  }
+}

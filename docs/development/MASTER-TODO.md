@@ -71,15 +71,21 @@ _All items P2-1..P2-9 implemented and tested. **930 backend tests passing** (was
 7. **`MAIZE_GRAY_LEAF_SPOT` has no Indian primary source** — `iimr.icar.gov.in` did not resolve in DNS. Worth a retry.
 
 ## PHASE 4 — ML training (parallel track from Phase 0 completion; RTX 2050)
-- [ ] [P0](C) Training env: venv py3.12, torch cu12x, verify CUDA visible ✔ torch.cuda.is_available() true
-- [ ] [P0](C) Training pipeline code (config-driven, AMP, sampler, checkpoints, early stop, experiments log) ✔ Run 0 ResNet18 sanity gates
-- [ ] [P0](C) «audit approval» EffNet-B0 Run 1+2 (overnight) ✔ curves logged; no-leakage smell check
-- [ ] [P0](C) Temperature calibration + τ/τ_healthy derivation ✔ curves committed
-- [ ] [P0](C) Evaluation battery + field-test gap + error analysis ✔ ship gates table; report to team
-- [ ] [P0](C) ONNX export + golden parity + manifest ✔ parity <1e-3
-- [ ] [P0](C) Artifact into ml-service + real-model integration test ✔ E2E analyze with real leaf images (sample set)
-- [ ] [P1](C) Grad-CAM background-reliance probe ✔ findings in error-analysis
-- [ ] [P2](C) Optional Run 3 / augmentation experiment if gates need it
+- [x] **P4-1** [P0](C) Training env: venv py3.12, torch cu12x, verify CUDA visible ✔ `torch.cuda.is_available()` true — Python 3.12.13, torch 2.13.0+cu126, RTX 2050 4GB. 41/41 `preflight.py` checks pass.
+- [x] **P4-2** [P0](C) Training pipeline code (config-driven, AMP, sampler, checkpoints, early stop, experiments log) ✔ Run 0 ResNet18 sanity gates PASS (val acc 0.8283, macro-F1 0.7876; leakage smell test clear)
+- [x] **P4-3** [P0](C) «audit approval» EffNet-B0 Run 1+2 ✔ Run 1 3/3 epochs; Run 2 15/15 epochs, best val macro-F1 **0.9556** (epoch 12), initialised from run1/best.pt. Curves in `ml-service/training/experiments.md`.
+- [x] **P4-4** [P0](C) Temperature calibration + τ/τ_healthy derivation ✔ **T = 0.5863**, ECE 0.0837 → **0.0042**. Curves in `ml-service/training/calibration.json`. Raw derivation gave **τ = τ_healthy = 0.00** (the documented criteria are non-binding for a model this accurate); **shipped τ = 0.70 / τ_healthy = 0.80** as a recorded, approved policy override that `calibrate.py` re-validates against every documented criterion (6/6 PASS) and would refuse on any failure. Both the derived and effective values are stored.
+- [x] **P4-5** [P0](C) Evaluation battery + field-test gap + error analysis ✔ **all 5 ship gates PASS**; results in `docs/ml/evaluation-results/`. Field-test number published: accuracy **0.1257** vs in-domain 0.9632.
+- [x] **P4-8** [P1](C) Grad-CAM background-reliance probe ✔ 20 samples/crop. Chilli centre-weighted (0.88 of uniform) — chilli figures may be published. **TOMATO above uniform (1.16)** — background reliance indicated.
+- [x] **P4-6** [P0](C) ONNX export + golden parity + manifest ✔ `model-v1.0.onnx`, opset 17, **max |Δprob| 1.55e-05** over 100 golden images spanning all 35 classes (tolerance 1e-3), 0 argmax mismatches. Real manifest written.
+- [x] **P4-7** [P0](C) Artifact into ml-service + real-model integration test ✔ `model-v1.0.onnx` baked in, `MODEL_PATH` set in the Dockerfile, real manifest, **ml-service 141/141 pass in both stub and real-model configurations**. Live E2E on real leaf images: `/healthz` reports `model-v1.0`, `/docs` 404, unauthenticated `/predict` 401, 6 crops classified correctly, a wrong-crop declaration returns `cropMismatch`, and a genuinely low-confidence sample (0.5928 < τ) **abstains** rather than being served — the confidence branch is live in production. No torch in the service image.
+- [ ] **P4-9** [P2](C) Optional Run 3 / augmentation experiment if gates need it — **not needed for the ship gates** (all 5 PASS, no crop demoted). Worth reconsidering only against the field-test gap, which Run 3 (a deeper fine-tune on the same lab-domain data) would not fix.
+
+**Phase 4 outstanding:**
+1. ~~Threshold decision~~ **RESOLVED 2026-08-13** — τ = 0.70 / τ_healthy = 0.80 approved and applied. Coverage 0.9573, precision 0.9851, abstain 4.27% (was 1.65%). All three previously-failing policy tests now pass **without any assertion being changed**: one was fixed by the threshold itself, and two had a separate fixture defect (they inverted probabilities with `log(p)` while the policy computes `softmax(logits / T)`, so an intended 0.750 realised as 0.9454 — corrected to `T * log(p)`, which the tests' own `confidence == approx(target)` assertion verifies).
+2. **No field-robustness claim is supportable.** Field accuracy 0.1257 unmasked / 0.3333 crop-masked, per-class recall 0.00–0.37. The Gemini tier is load-bearing for real-world photographs, not a fallback detail.
+3. **RICE_NORMAL ↔ RICE_BROWN_SPOT separated perfectly (1.0/1.0, zero confusion)** across a source-disjoint pair separable at 0.96 by background alone — the shortcut signature, not evidence of skill.
+4. **Cotton still cannot ship bilingually** — disease-KB Hindi remains 0/408 (ADR-021 §1).
 
 ## PHASE 5 — Web frontend
 - [ ] [P0](C→B pass) Vite scaffold + Tailwind + router + Query + axios interceptors + i18n init + QueryBoundary ✔ auth bootstrap flow works

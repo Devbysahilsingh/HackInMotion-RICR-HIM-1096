@@ -65,12 +65,30 @@ def test_masked_probabilities_renormalise_to_one(manifest) -> None:
 
 
 def test_only_declared_crop_classes_can_be_returned(manifest) -> None:
-    # A mild rice lean that still leaves the maize classes above the mask floor:
-    # the mask must restrict the answer set, not trip the mismatch branch.
+    """The mask must restrict the answer set, not trip the mismatch branch.
+
+    The lean is derived from the manifest's temperature rather than hardcoded.
+    A fixed peak of 3.0 was a mild lean at T=1 (the untrained stub) and became a
+    strong one at the calibrated T=0.586, which sharpened every distribution and
+    pushed the non-declared crop's classes under the mask floor — so the fixture
+    started exercising the mismatch branch instead of the masking branch. The
+    service was right; the fixture had a temperature baked into it.
+    """
+    temperature = manifest.thresholds.temperature
+    floor = manifest.thresholds.crop_mask_floor
+    others = manifest.num_classes - 1
+
+    # Largest peak that still leaves every other class above the floor:
+    #   p_other = 1 / (exp(peak / T) + others) > floor
+    max_peak = temperature * math.log(1.0 / floor - others)
+    peak = max_peak / 2  # comfortably inside, so the test is not knife-edge
+
     outcome = apply_policy(
-        logits_favouring(manifest, "RICE_BLAST", peak=3.0), "MAIZE", manifest
+        logits_favouring(manifest, "RICE_BLAST", peak=peak), "MAIZE", manifest
     )
-    assert outcome.crop_mismatch is False
+    assert outcome.crop_mismatch is False, (
+        f"peak={peak:.3f} at T={temperature} should leave MAIZE above the {floor} floor"
+    )
     for item in outcome.top3:
         assert item.code.startswith("MAIZE_")
 
@@ -114,11 +132,21 @@ def test_healthy_guard_rejects_a_healthy_top1_below_tau_healthy(manifest, monkey
     others = [i for i in tomato_indices if i != healthy_index]
 
     # Craft probabilities directly, then invert through log to get logits.
+    #
+    # The inversion must account for temperature: the policy computes
+    # softmax(logits / T), so a logit of log(p) realises p only when T == 1.
+    # That held while the model was the untrained stub and stopped holding the
+    # moment calibration shipped T=0.5863 — log(0.75) then realised 0.9454,
+    # above tau_healthy, so the guard correctly did not fire and this fixture
+    # was silently testing a different scenario than it documents. Multiplying
+    # by T makes the constructed probability the one the test names; the
+    # `confidence == approx(target)` assertion below is what proves it.
     remaining = (1.0 - target) / len(others)
+    temperature = thresholds.temperature
     logits = [-40.0] * manifest.num_classes
-    logits[healthy_index] = math.log(target)
+    logits[healthy_index] = temperature * math.log(target)
     for index in others:
-        logits[index] = math.log(remaining)
+        logits[index] = temperature * math.log(remaining)
 
     outcome = apply_policy(logits, "TOMATO", manifest)
     assert outcome.top3[0].code == "TOMATO_HEALTHY"
@@ -145,10 +173,13 @@ def test_rice_normal_is_treated_as_healthy(manifest) -> None:
     others = [i for i in rice_indices if i != normal_index]
     remaining = (1.0 - target) / len(others)
 
+    # Temperature-scaled inversion, for the same reason as the healthy-guard
+    # test above: softmax(logits / T) realises log(p) as p only when T == 1.
+    temperature = thresholds.temperature
     logits = [-40.0] * manifest.num_classes
-    logits[normal_index] = math.log(target)
+    logits[normal_index] = temperature * math.log(target)
     for index in others:
-        logits[index] = math.log(remaining)
+        logits[index] = temperature * math.log(remaining)
 
     outcome = apply_policy(logits, "RICE", manifest)
     assert "healthy_guard" in outcome.reasons

@@ -9,3 +9,11 @@ docs/**/*.md
 # Design-tool exports kept as visual reference, not source we author.
 # Reformatting them would diverge from the tool output for no benefit.
 assets/
+
+# Machine-generated ML artefacts. Each is rewritten verbatim by the script that
+# produces it (calibrate.py, evaluate.py, error-analysis.py, export_onnx.py,
+# generate_model_manifest.py), so formatting them here would be undone on the
+# next run and leave the tree permanently dirty. Same reasoning as datasets/.
+ml-service/model/model-manifest.json
+ml-service/training/calibration.json
+docs/ml/evaluation-results/*.json

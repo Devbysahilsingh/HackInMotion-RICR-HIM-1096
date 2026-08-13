@@ -2,6 +2,10 @@
 # and dev tooling have no business in a production container.
 .venv/
 venv/
+# The training tree is ~2.5GB with its torch venv. The Dockerfile COPYs only
+# app/ and model/ so it could never land in the image anyway, but the whole
+# context is still shipped to the daemon on every build without this line.
+training/
 __pycache__/
 *.py[cod]
 .pytest_cache/

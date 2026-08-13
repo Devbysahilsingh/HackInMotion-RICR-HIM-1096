@@ -76,7 +76,15 @@ class StubPredictor(Predictor):
         if num_classes <= 0:
             raise ValueError("num_classes must be positive")
         self.num_classes = num_classes
-        self.model_version = model_version
+        # The `stub-` prefix is forced here rather than assumed from the
+        # manifest. It used to come for free because the manifest itself said
+        # "stub-0.0.0-untrained" — but once a trained model shipped, the
+        # manifest began saying "model-v1.0", and a stub handed that string
+        # would have reported a real model version while serving hash noise.
+        # The marker has to be a property of the backend, not of the document.
+        self.model_version = (
+            model_version if model_version.startswith("stub-") else f"stub-{model_version}"
+        )
         self.is_stub = True
         self._spread = spread
 
