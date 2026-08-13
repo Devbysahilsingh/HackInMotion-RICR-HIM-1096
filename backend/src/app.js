@@ -29,6 +29,8 @@ import { cropRecommendationRouter } from './routes/cropRecommendation.js';
 import { dashboardRouter, recommendationsRouter } from './routes/dashboard.js';
 import { marketRouter } from './routes/market.js';
 import { registryRouter } from './routes/registry.js';
+import { cropHealthRouter } from './routes/cropHealth.js';
+import { communityRouter } from './routes/community.js';
 
 export const API_PREFIX = '/api/v1';
 
@@ -93,6 +95,12 @@ export function createApp({ extraRouters = [] } = {}) {
   app.use(`${API_PREFIX}/crop-recommendation`, cropRecommendationRouter);
   app.use(`${API_PREFIX}/market`, marketRouter);
   app.use(`${API_PREFIX}/registry`, registryRouter);
+  // Multipart lives entirely inside this router (multer is mounted per-route),
+  // so no global body parser change is needed and no other route can be sent a
+  // multipart body — `express.json` above simply ignores it and validation
+  // rejects the empty result.
+  app.use(`${API_PREFIX}/crop-health`, cropHealthRouter);
+  app.use(`${API_PREFIX}/community`, communityRouter);
 
   for (const router of extraRouters) app.use(router);
 

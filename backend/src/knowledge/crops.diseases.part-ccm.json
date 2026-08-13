@@ -1,0 +1,1389 @@
+{
+  "status": "RESEARCH OUTPUT — PART 1 of 2 (CHILLI / COTTON / MAIZE). Not seeded. Requires human agronomist review before it reaches cropRegistry.diseases. COTTON additionally requires the ADR-021 decision-1 sign-off before any cotton class may ship.",
+  "purpose": "Sourced disease knowledge-base entries for the 17 CHILLI / COTTON / MAIZE ML class codes in datasets/manifest.json -> classes. Feeds the `diseaseSchema` in backend/src/models/CropRegistry.js (code, names, symptoms[], inspect[], nextSteps[], prevention[], symptomTags[], expertThreshold, sourceRefs[]). RICE / TOMATO / POTATO are authored separately in crops.diseases.part-rtp.json and merged by the integrator.",
+  "accessed": "2026-08-13",
+  "partOf": {
+    "thisPart": "crops.diseases.part-ccm.json",
+    "otherPart": "crops.diseases.part-rtp.json",
+    "coverage": ["CHILLI", "COTTON", "MAIZE"],
+    "classCodesCovered": 17
+  },
+  "rules": {
+    "noInventedAgronomy": "No symptom, colour, lesion size, temperature or threshold in this file was invented, estimated, averaged or remembered. Every agronomic statement was read from a page that was actually fetched during this pass, and the fetched text is reproduced in `publishedSymptoms` so the tag mapping is auditable without re-fetching. Where a fact could not be sourced the array is EMPTY and the failure is written into `gaps`.",
+    "verbatimCapture": "TNAU pages were fetched as raw HTML with curl and de-tagged locally, not read through a summarising model, because a summariser silently rewords symptom text — exactly the class of error that would put an unsourced phrase into the KB. The TNAU horticulture PDF was parsed with pypdf. Two pages (Crop Protection Network, UF/IFAS) were read through WebFetch and their `note` says so.",
+    "noProse": "This file stores i18n KEYS only. The English strings live in i18n.diseases.part-ccm.json. The API never returns display prose (CropRegistry.js: 'i18n key arrays — the API never returns display prose').",
+    "noDosage": "docs/ai/ai-safety.md rule 3: 'No dosage generation anywhere (pesticide or fertilizer).' No `nextSteps` key contains a dose, a concentration, a product name or a pesticide brand. Where a source recommends chemical control, the published recommendation is NOT reproduced; the farmer is routed to KVK / Kisan Call Centre 1800-180-1551. The fetched chemical recommendations were read and are deliberately discarded.",
+    "noUnitConversion": "Published measurements are recorded in the unit the source printed. TNAU prints northern-leaf-blight lesions as '1 to 6 inches' and Crop Protection Network prints grey-leaf-spot lesions as 'up to 2 inches'; both are kept in inches. Converting to centimetres would put a computed number into the file (backend/src/knowledge/README.md: nothing is 'estimated, averaged, converted, rounded or inferred').",
+    "closedTagVocabulary": "symptomTags come from the CLOSED list in the research brief, consumed by the rule-based symptom engine (docs/ai/fallback-strategy.md, weights: pattern 3, part 2, colour 2, distribution 1, weather 1). No tag was invented. Where a published concept has no tag, the concept is left untagged and the miss is recorded in `gaps` (G-TAG-1..G-TAG-4).",
+    "tagDerivation": "Every entry carries a `tagDerivation` line naming the phrase in `publishedSymptoms` that justifies each tag. A tag with no phrase behind it is a fabrication and none is present.",
+    "hindi": "Every `names.hi` is null and every entry is `hiVerified: false`. No Hindi-language official source was fetched in this pass, and CLAUDE.md rule 8 forbids unsourced agronomic translation. See gap G-HI-1.",
+    "confidenceCodes": "P = primary/official Indian government, ICAR or State Agricultural University source. S = everything else, including TNAU-authored courseware hosted off the .ac.in domain (eagri.org) and non-Indian extension bodies. Grading is deliberately conservative: an under-claimed P is harmless, an over-claimed one is not."
+  },
+  "sourceDocuments": {
+    "TNAU_CHILLI_DIEBACK": {
+      "org": "TNAU (Tamil Nadu Agricultural University)",
+      "title": "TNAU Agritech Portal :: Crop Protection :: Horticultural crops :: Vegetables :: Chilli — Fruit Rot and Die Back: Colletotrichum capsici",
+      "url": "https://agritech.tnau.ac.in/crop_protection/chilli_diseases_2.html",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "Page footer 'Updated on Jun, 2023'. Fetched as raw HTML."
+    },
+    "TNAU_CHILLI_PM": {
+      "org": "TNAU",
+      "title": "TNAU Agritech Portal :: Crop Protection :: Chilli — Powdery mildew: Leveillula taurica",
+      "url": "https://agritech.tnau.ac.in/crop_protection/chilli_diseases_3.html",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "Page footer 'Updated on Jun, 2023'. Fetched as raw HTML."
+    },
+    "TNAU_CHILLI_BLS": {
+      "org": "TNAU",
+      "title": "TNAU Agritech Portal :: Crop Protection :: Chilli — Bacterial leaf spot: Xanthomonas campestris pv. vesicatoria",
+      "url": "https://agritech.tnau.ac.in/crop_protection/chilli_diseases_4.html",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "Page footer 'Updated on Jun, 2023'. Fetched as raw HTML."
+    },
+    "TNAU_CHILLI_CLS": {
+      "org": "TNAU",
+      "title": "TNAU Agritech Portal :: Crop Protection :: Chilli — Cercospora leaf spot: Cercospora capsici",
+      "url": "https://agritech.tnau.ac.in/crop_protection/chilli_diseases_5.html",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "Page footer 'Updated on Jun, 2023'. Fetched as raw HTML."
+    },
+    "TNAU_CHILLI_VIRUS": {
+      "org": "TNAU",
+      "title": "TNAU Agritech Portal :: Crop Protection :: Chilli — Viral diseases (Leaf curl; Mosaic)",
+      "url": "https://agritech.tnau.ac.in/crop_protection/chilli_diseases_7.html",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "Page footer 'Updated on Jun, 2023'. The page names no causal virus for chilli leaf curl and states only 'The virus is generally transmitted by whitefly'."
+    },
+    "TNAU_HORT_PDF": {
+      "org": "TNAU — Department of Plant Pathology, Centre for Plant Protection Studies",
+      "title": "Major Diseases of Horticultural Crops and this [sic] Management — Dr. G. Thiribhuvanamala, Dr. S. Nakkeeran, Dr. K. Eraivan Arutkani Aiyanathan (61 pp.). 'DISEASES OF CHILLIES' section, printed pp. 317-318; vegetable leaf-spot and virus section, printed pp. 312-314",
+      "url": "https://agritech.tnau.ac.in/pdf/9.pdf",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "Downloaded and parsed with pypdf. Typographical errors ('spost', 'nad', 'shrivels nad dries') are the source's own; quotations preserve them."
+    },
+    "TNAU_NUTRIENT_DEFICIENCY": {
+      "org": "TNAU",
+      "title": "TNAU Agritech Portal :: Agriculture :: Mineral Nutrition — Nutrient Deficiency Symptoms of Plants ('Generalized Visual Leaf and Plant Nutrient Element Deficiency and Excess Symptoms' table)",
+      "url": "https://agritech.tnau.ac.in/agriculture/agri_min_nutri_def_symptoms.html",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "Page footer '© All Rights Reserved. TNAU-2016.' This is a GENERAL plant-nutrition page — it is not chilli-specific and does not name chilli anywhere. See gap G-CND-1."
+    },
+    "TNAU_COTTON_BACTERIAL_BLIGHT": {
+      "org": "TNAU",
+      "title": "TNAU Agritech Portal :: Crop Protection :: Agricultural crops :: Cash crops :: Cotton — Bacterial blight: Xanthomonas campestris p.v malvacearum",
+      "url": "https://agritech.tnau.ac.in/crop_protection/cotton_diseases/cotton_d9.html",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "Page footer 'Updated on Apr 2023'. Fetched as raw HTML."
+    },
+    "TNAU_COTTON_LEAFHOPPER": {
+      "org": "TNAU",
+      "title": "TNAU Agritech Portal :: Crop Protection :: Pest of Cotton — Leafhopper: Amrasca (Biguttula biguttula) devastans",
+      "url": "https://agritech.tnau.ac.in/crop_protection/cotton/crop_prot_crop_insectpest%20_cotton_10.html",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "Fetched as raw HTML. Publishes an ETL (economic threshold level) of '50 nymphs or adults / 50 leaves' — a scouting threshold, not a dose, and reproduced as such."
+    },
+    "TNAU_MAIZE_LEAF_BLIGHT": {
+      "org": "TNAU",
+      "title": "TNAU Agritech Portal :: Crop Protection :: Cereals :: Maize — Leaf Blight: Exserohilum turcicum & Helminthosporium maydis (listed on the maize disease index as 'Turcicum Leaf Blight (TLB)')",
+      "url": "https://agritech.tnau.ac.in/crop_protection/maize_disease_new/maize_2.html",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "Index page: https://agritech.tnau.ac.in/crop_protection/crop_prot_crop%20diseases_cereals_maize.html. The page heading names TWO pathogens on one page — see gap G-MNLB-1."
+    },
+    "TNAU_MAIZE_RUST": {
+      "org": "TNAU",
+      "title": "TNAU Agritech Portal :: Crop Protection :: Cereals :: Maize — Common Rust: Puccinia sorghi",
+      "url": "https://agritech.tnau.ac.in/crop_protection/maize_disease_new/maize_4.html",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "Fetched as raw HTML."
+    },
+    "EAGRI_COTTON_LEAF_CURL": {
+      "org": "TNAU / e-Krishi Shiksha courseware (eagri.org)",
+      "title": "PATH 272 Diseases of Field Crops and their Management — Lecture 13 Cotton :: MAJOR DISEASE :: LEAF CURL DISEASE",
+      "url": "http://www.eagri.org/eagri50/PATH272/lecture13/009.html",
+      "accessed": "2026-08-13",
+      "confidence": "S",
+      "note": "TNAU-authored teaching courseware, but published on a .org domain rather than a government or university domain, so it is graded SECONDARY deliberately. It is the only source fetched in this pass that describes cotton leaf curl symptoms; no ICAR-CICR page could be reached (gap G-CCV-1)."
+    },
+    "ICAR_COTTON_RED_LEAF": {
+      "org": "ICAR (Indian Council of Agricultural Research)",
+      "title": "Praharaj, C. S. & Sankaranarayanan, K. — 'Red leaf symptoms in cotton its causes and management options', Indian Farming Vol. 60 No. 9 (2010), ICAR e-publications",
+      "url": "https://epubs.icar.org.in/index.php/IndFarm/article/view/49106",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "ABSTRACT PAGE ONLY. The full-text PDF at .../article/download/49106/21048/119672 returned an HTTP 404 body when fetched with curl, so only the abstract text is quoted. The abstract states causes and biochemistry; it does not describe the visual progression of the symptom (gap G-CLR-1)."
+    },
+    "CPN_GRAY_LEAF_SPOT": {
+      "org": "Crop Protection Network (US land-grant university extension consortium)",
+      "title": "Gray Leaf Spot of Corn — encyclopedia entry (Cercospora zeae-maydis)",
+      "url": "https://cropprotectionnetwork.org/encyclopedia/gray-leaf-spot-of-corn",
+      "accessed": "2026-08-13",
+      "confidence": "S",
+      "note": "Read through WebFetch, not raw HTML. NON-INDIAN. Used only because no Indian primary source for grey leaf spot could be located in this pass (gap G-MGLS-1). Gallery image credits on the page: D. Mueller, K. Wise, G. Munkvold, A. Robertson, A. Sisson."
+    },
+    "UFIFAS_COTTON_HERBICIDE": {
+      "org": "University of Florida IFAS Extension",
+      "title": "Berger, S., Ferrell, J. & Devkota, P. — 'Diagnosing Herbicide Injury in Cotton', EDIS SS-AGR-358/AG367",
+      "url": "https://ask.ifas.ufl.edu/publication/AG367",
+      "accessed": "2026-08-13",
+      "confidence": "S",
+      "note": "Read through WebFetch, not raw HTML (edis.ifas.ufl.edu 301-redirects to ask.ifas.ufl.edu). NON-INDIAN. Used only because no ICAR/CICR/SAU document on herbicide injury in cotton could be located (gap G-CHD-1)."
+    },
+    "REPO_MANIFEST": {
+      "org": "Repo artifact",
+      "title": "datasets/manifest.json — classes, known_confounds, support_tiers, known_limitations",
+      "url": null,
+      "accessed": "2026-08-13",
+      "confidence": "S",
+      "note": "Authority for the 17 class codes covered here and for the dataset caveats restated in `datasetCaveats`."
+    },
+    "REPO_ADR021": {
+      "org": "Repo doc",
+      "title": "docs/decisions/ADR-021-dataset-curation-decisions.md — §1 Cotton OD-1",
+      "url": null,
+      "accessed": "2026-08-13",
+      "confidence": "S",
+      "note": "Source of the cotton shipping gate and of items (a)-(c) still awaiting agronomist sign-off."
+    }
+  },
+  "symptomTagVocabulary": {
+    "closed": true,
+    "part": [
+      "part:LEAF",
+      "part:STEM",
+      "part:FRUIT",
+      "part:FLOWER",
+      "part:ROOT",
+      "part:WHOLE_PLANT"
+    ],
+    "pattern": [
+      "pattern:SPOTS",
+      "pattern:BLOTCHES",
+      "pattern:POWDER",
+      "pattern:CURL",
+      "pattern:WILT",
+      "pattern:HOLES",
+      "pattern:YELLOWING",
+      "pattern:STREAKS",
+      "pattern:LESIONS",
+      "pattern:MOSAIC",
+      "pattern:ROT",
+      "pattern:STUNTING",
+      "pattern:WEBBING",
+      "pattern:RINGS"
+    ],
+    "color": [
+      "color:YELLOW",
+      "color:BROWN",
+      "color:BLACK",
+      "color:WHITE",
+      "color:GREY",
+      "color:RED",
+      "color:ORANGE",
+      "color:PURPLE",
+      "color:TAN"
+    ],
+    "distribution": [
+      "distribution:LOWER_LEAVES",
+      "distribution:UPPER_LEAVES",
+      "distribution:ALL_LEAVES",
+      "distribution:SCATTERED",
+      "distribution:MARGINS",
+      "distribution:VEINS"
+    ],
+    "weather": ["weather:HIGH_HUMIDITY", "weather:RAIN", "weather:HOT_DRY", "weather:COOL_MOIST"]
+  },
+  "datasetCaveats": [
+    {
+      "id": "DC-CHILLI-CONFOUND",
+      "crop": "CHILLI",
+      "restates": "datasets/manifest.json -> known_confounds[id=chilli_source_disjoint_classes]",
+      "statement": "The two chilli image sources are separable at 0.91 accuracy from a single background statistic alone. CHILLI_ANTHRACNOSE exists ONLY in chilli_secondary; CHILLI_BACTERIAL_SPOT, CHILLI_NUTRIENT_DEFICIENCY and CHILLI_POWDERY_MILDEW exist ONLY in chilli_primary. Those class pairs are decidable by capture style alone.",
+      "residualRisk": "Quoted verbatim from the manifest: 'Not removed, only contained. The only complete fix is chilli imagery of the same classes from a second capture style — no such data exists in the corpus.' The mitigations applied (source-stratified splits, per-class source composition recorded, chilli held at GENERAL tier) CONTAIN the confound; they do not solve it.",
+      "obligationOnThisKb": "A KB entry does not repair a data confound. Metrics for those four chilli classes must be reported with this confound stated and must not be presented as evidence of disease-discrimination ability; the Grad-CAM background-reliance probe (docs/ml/error-analysis.md) is REQUIRED before any chilli accuracy figure is published. CHILLI is GENERAL tier — no field-robustness claim."
+    },
+    {
+      "id": "DC-COTTON-GATE",
+      "crop": "COTTON",
+      "restates": "datasets/manifest.json -> support_tiers.COTTON and docs/decisions/ADR-021-dataset-curation-decisions.md §1",
+      "statement": "COTTON is SPECIALIZED tier with 6 classes and 'Ships only once each has a KB entry (en+hi) and the agronomist items (a)-(c) are signed off.' This file supplies the 6 English KB entries. It does NOT supply the Hindi half (every names.hi is null, see G-HI-1) and it does NOT constitute the agronomist sign-off.",
+      "outstandingSignOff": [
+        "(a) three classes never visually reviewed — COTTON_CURL_VIRUS, COTTON_HERBICIDE_DAMAGE, COTTON_LEAF_REDDENING",
+        "(b) 39 near-identical image pairs labelled COTTON_CURL_VIRUS in one and COTTON_HEALTHY in the other — early curl virus on a still-green leaf",
+        "(c) whether COTTON_LEAF_REDDENING (physiological/nutritional) and COTTON_HERBICIDE_DAMAGE should ship as diagnoses carrying treatment advice at all, versus being reported as observations"
+      ],
+      "obligationOnThisKb": "Because (c) is unresolved, COTTON_LEAF_REDDENING and COTTON_HERBICIDE_DAMAGE are written here as OBSERVATIONS: their nextSteps contain no treatment, only inspection and expert referral, and their expertThreshold is raised."
+    },
+    {
+      "id": "DC-ABIOTIC-LABELS",
+      "crop": "CHILLI, COTTON",
+      "restates": "This file's own reading of the class codes",
+      "statement": "CHILLI_NUTRIENT_DEFICIENCY and COTTON_HERBICIDE_DAMAGE are ABIOTIC DISORDERS, not diseases, and both dataset labels are broad. A photograph cannot identify WHICH nutrient is short — TNAU's own nutrition page states that 'Visual evaluation of nutrient stress should be used only as a supplement to other diagnostic techniques (i.e., soil and plant analysis)' and that 'It is often difficult to distinguish among the deficiency symptoms in the field, as disease or insect damage can resemble certain micronutrients deficiencies.' Neither entry names a specific nutrient or a specific herbicide, and neither may be rendered as one.",
+      "obligationOnThisKb": "COTTON_LEAF_REDDENING is likewise physiological and its published cause list is plural and non-exclusive."
+    }
+  ],
+  "diseases": [
+    {
+      "code": "CHILLI_ANTHRACNOSE",
+      "cropCode": "CHILLI",
+      "names": {
+        "en": "Fruit Rot and Die Back (chilli anthracnose)",
+        "hi": null,
+        "hiVerified": false
+      },
+      "publishedName": "TNAU publishes this as 'Fruit Rot and Die Back: Colletotrichum capsici'. The word 'anthracnose' does not appear on either TNAU page fetched; the dataset class code is CHILLI_ANTHRACNOSE and the two are treated as the same problem on the strength of the shared causal organism Colletotrichum capsici.",
+      "publishedSymptoms": "TNAU Agritech (chilli_diseases_2.html), verbatim: 'As the fungus causes necrosis of tender twigs from the tip backwards the disease is called die-back Infection usually begins when the crop is in flower. Flowers drop and dry up. There is profuse shedding of flowers. The flower stalk shrivel and dry up. This drying up spreads from the flower stalks to the stem and subsequently causes die-back of the branches and stem and the branches wither. Partia1lly affected plants bear fruits which are few and of low quality. On the surface of the soil the necrotic areas are found separated from the healthy area by a dark brown to black band.' — TNAU horticulture PDF p. 317, verbatim: 'Necrosis of tender twigs from the tip backwards, profuse shedding of flowers. Drying up spreads from the flower stalks to the stem and subsequently causes die-back of the branches and stem which later on wither. Partially affected plants bear few fruits of low quality. Fruits rot appears on ripe fruits where small circular spost initially appear and spreads as oblong black greenish colour or markedly delimited by a black or straw colored area. Badly diseased fruits turn straw coloured with less pungency. The diseased fruist later shrivels nad dries up.' Favourable conditions (same PDF): 'Seed borne and secondary spread by wind during [periods sof high humidity accompanied with rain. Disease appears after rains has stopped nad when there is prolonged deposition of dew on plant.'",
+      "symptomTags": [
+        "part:FRUIT",
+        "part:STEM",
+        "part:FLOWER",
+        "pattern:SPOTS",
+        "pattern:ROT",
+        "color:BLACK",
+        "color:TAN",
+        "weather:HIGH_HUMIDITY",
+        "weather:RAIN"
+      ],
+      "tagDerivation": "part:FRUIT ← 'Fruits rot appears on ripe fruits'; part:STEM ← 'die-back of the branches and stem'; part:FLOWER ← 'profuse shedding of flowers'; pattern:SPOTS ← 'small circular spost initially appear'; pattern:ROT ← 'Fruit Rot' / 'Fruits rot appears on ripe fruits'; color:BLACK ← 'oblong black greenish colour or markedly delimited by a black or straw colored area'; color:TAN ← 'straw coloured' (the closed vocabulary has no STRAW member; TAN is its nearest member and the mapping is asserted here, not by the source); weather:HIGH_HUMIDITY ← 'periods sof high humidity'; weather:RAIN ← 'accompanied with rain'. NO part:LEAF tag: neither TNAU page describes any leaf lesion for this disease (see G-CA-1).",
+      "symptoms": [
+        "disease.CHILLI_ANTHRACNOSE.symptom.1",
+        "disease.CHILLI_ANTHRACNOSE.symptom.2",
+        "disease.CHILLI_ANTHRACNOSE.symptom.3",
+        "disease.CHILLI_ANTHRACNOSE.symptom.4"
+      ],
+      "inspect": [
+        "disease.CHILLI_ANTHRACNOSE.inspect.1",
+        "disease.CHILLI_ANTHRACNOSE.inspect.2",
+        "disease.CHILLI_ANTHRACNOSE.inspect.3",
+        "disease.CHILLI_ANTHRACNOSE.inspect.4"
+      ],
+      "nextSteps": [
+        "disease.CHILLI_ANTHRACNOSE.nextStep.1",
+        "disease.CHILLI_ANTHRACNOSE.nextStep.2",
+        "disease.CHILLI_ANTHRACNOSE.nextStep.3"
+      ],
+      "prevention": [
+        "disease.CHILLI_ANTHRACNOSE.prevention.1",
+        "disease.CHILLI_ANTHRACNOSE.prevention.2"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU",
+          "title": "TNAU Agritech Portal :: Crop Protection :: Chilli — Fruit Rot and Die Back: Colletotrichum capsici",
+          "url": "https://agritech.tnau.ac.in/crop_protection/chilli_diseases_2.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of the die-back symptom text, the 'Infection usually begins when the crop is in flower' timing, and the disease-free-seed prevention line. Its chemical recommendations (Ziram, Captan, wettable sulphur, copper oxychloride, Zineb, with concentrations) were read and deliberately NOT reproduced."
+        },
+        {
+          "org": "TNAU — Centre for Plant Protection Studies",
+          "title": "Major Diseases of Horticultural Crops and this Management, 'DISEASES OF CHILLIES' §1 Fruit Rot and Die Back, printed p. 317",
+          "url": "https://agritech.tnau.ac.in/pdf/9.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of the FRUIT lesion description ('small circular spost', 'oblong black greenish colour', 'straw colored area') and of the favourable-conditions text (seed borne; high humidity with rain; symptoms appear after rains stop with prolonged dew)."
+        }
+      ]
+    },
+    {
+      "code": "CHILLI_BACTERIAL_SPOT",
+      "cropCode": "CHILLI",
+      "names": {
+        "en": "Bacterial leaf spot",
+        "hi": null,
+        "hiVerified": false
+      },
+      "publishedName": "TNAU: 'Bacterial leaf spot: Xanthomonas campestris pv. vesicatoria'.",
+      "publishedSymptoms": "TNAU Agritech (chilli_diseases_4.html), verbatim: 'The leaves exhibit small circular or irregular, dark brown or black greasy spots. As the spots enlarge in size, the centre becomes lighter Surrounded by a dark band of tissue. The spot coalesce to form irregular lesions. Severely affected leaves become chlorotic and fall off. Petioles and stems are also affected. Stem infection leads to formation of cankerous growth and wilting of branches. On the fruits round, raised water soaked spots with a pale yellow border and produced. The spots turn brown developing a depression in the centre wherein shining droplets of Bacterial cozen may be observed.' — TNAU horticulture PDF p. 318 corroborates and adds: 'On the fruits round, raised water soaked spots with a depression in the centre where in shining droplets of bacterial ooze is observed.'",
+      "symptomTags": [
+        "part:LEAF",
+        "part:STEM",
+        "part:FRUIT",
+        "pattern:SPOTS",
+        "pattern:LESIONS",
+        "pattern:YELLOWING",
+        "pattern:WILT",
+        "color:BROWN",
+        "color:BLACK",
+        "color:YELLOW"
+      ],
+      "tagDerivation": "part:LEAF ← 'The leaves exhibit small circular or irregular... spots'; part:STEM ← 'Petioles and stems are also affected'; part:FRUIT ← 'On the fruits round, raised water soaked spots'; pattern:SPOTS ← 'greasy spots'; pattern:LESIONS ← 'The spot coalesce to form irregular lesions'; pattern:YELLOWING ← 'Severely affected leaves become chlorotic'; pattern:WILT ← 'Stem infection leads to... wilting of branches'; color:BROWN ← 'dark brown'; color:BLACK ← 'or black greasy spots'; color:YELLOW ← 'a pale yellow border'. NO distribution or weather tag: TNAU publishes neither a canopy position nor favourable conditions for this disease (see G-CBS-1).",
+      "symptoms": [
+        "disease.CHILLI_BACTERIAL_SPOT.symptom.1",
+        "disease.CHILLI_BACTERIAL_SPOT.symptom.2",
+        "disease.CHILLI_BACTERIAL_SPOT.symptom.3",
+        "disease.CHILLI_BACTERIAL_SPOT.symptom.4",
+        "disease.CHILLI_BACTERIAL_SPOT.symptom.5"
+      ],
+      "inspect": [
+        "disease.CHILLI_BACTERIAL_SPOT.inspect.1",
+        "disease.CHILLI_BACTERIAL_SPOT.inspect.2",
+        "disease.CHILLI_BACTERIAL_SPOT.inspect.3"
+      ],
+      "nextSteps": [
+        "disease.CHILLI_BACTERIAL_SPOT.nextStep.1",
+        "disease.CHILLI_BACTERIAL_SPOT.nextStep.2",
+        "disease.CHILLI_BACTERIAL_SPOT.nextStep.3"
+      ],
+      "prevention": [
+        "disease.CHILLI_BACTERIAL_SPOT.prevention.1",
+        "disease.CHILLI_BACTERIAL_SPOT.prevention.2",
+        "disease.CHILLI_BACTERIAL_SPOT.prevention.3"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU",
+          "title": "TNAU Agritech Portal :: Crop Protection :: Chilli — Bacterial leaf spot: Xanthomonas campestris pv. vesicatoria",
+          "url": "https://agritech.tnau.ac.in/crop_protection/chilli_diseases_4.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of all symptom text and of the two cultural measures used ('Field sanitation is important. Also seeds must be obtained from disease free plants.'). Its chemical recommendations (mancozeb, copper oxychloride, mercuric chloride seed treatment, Bordeaux mixture, streptomycin timing) were read and deliberately NOT reproduced."
+        },
+        {
+          "org": "TNAU — Centre for Plant Protection Studies",
+          "title": "Major Diseases of Horticultural Crops and this Management, 'DISEASES OF CHILLIES' §3 Bacterial leaf spot, printed p. 318",
+          "url": "https://agritech.tnau.ac.in/pdf/9.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Corroborates the leaf and fruit symptoms and publishes the additional cultural measure 'Field sanitation and crop rotation'."
+        }
+      ]
+    },
+    {
+      "code": "CHILLI_CERCOSPORA_LEAF_SPOT",
+      "cropCode": "CHILLI",
+      "names": {
+        "en": "Cercospora leaf spot",
+        "hi": null,
+        "hiVerified": false
+      },
+      "publishedName": "TNAU: 'Cercospora leaf spot : Cercospora capsici'.",
+      "publishedSymptoms": "TNAU Agritech (chilli_diseases_5.html), verbatim: 'Leaf lesions typically are brown and circular with small to large light grey centres and dark brown margins. The lesions may enlarge to 1cm or more in diameter and some times coalesce. Stem, petiole and pod lesions also have light grey centres with dark borders, but they are typically elliptical. Severely infected leaves drop off prematurely resulting in reduced yield.' — TNAU horticulture PDF p. 313 (vegetable leaf-spot group, chilli listed as Cercospora capsisci [sic]) adds favourable conditions verbatim: 'High humidity , drizzling , wind favors disease development and spread. Survives in infected crop debris.'",
+      "symptomTags": [
+        "part:LEAF",
+        "part:STEM",
+        "part:FRUIT",
+        "pattern:SPOTS",
+        "pattern:LESIONS",
+        "color:BROWN",
+        "color:GREY",
+        "weather:HIGH_HUMIDITY"
+      ],
+      "tagDerivation": "part:LEAF ← 'Leaf lesions typically are brown and circular'; part:STEM ← 'Stem, petiole and pod lesions'; part:FRUIT ← 'pod lesions' (the chilli pod is the fruit); pattern:SPOTS ← 'brown and circular' spots up to '1cm or more in diameter'; pattern:LESIONS ← 'lesions... some times coalesce'; color:BROWN ← 'dark brown margins'; color:GREY ← 'light grey centres'; weather:HIGH_HUMIDITY ← 'High humidity , drizzling , wind favors disease development'. NO pattern:RINGS: the grey-centre/dark-margin structure is a target-like appearance, but neither source uses 'rings' or 'concentric' for chilli Cercospora — the PDF's 'concentric rings' phrase belongs to the combined multi-crop leaf-spot sentence and cannot be attributed to chilli.",
+      "symptoms": [
+        "disease.CHILLI_CERCOSPORA_LEAF_SPOT.symptom.1",
+        "disease.CHILLI_CERCOSPORA_LEAF_SPOT.symptom.2",
+        "disease.CHILLI_CERCOSPORA_LEAF_SPOT.symptom.3",
+        "disease.CHILLI_CERCOSPORA_LEAF_SPOT.symptom.4"
+      ],
+      "inspect": [
+        "disease.CHILLI_CERCOSPORA_LEAF_SPOT.inspect.1",
+        "disease.CHILLI_CERCOSPORA_LEAF_SPOT.inspect.2",
+        "disease.CHILLI_CERCOSPORA_LEAF_SPOT.inspect.3"
+      ],
+      "nextSteps": [
+        "disease.CHILLI_CERCOSPORA_LEAF_SPOT.nextStep.1",
+        "disease.CHILLI_CERCOSPORA_LEAF_SPOT.nextStep.2"
+      ],
+      "prevention": ["disease.CHILLI_CERCOSPORA_LEAF_SPOT.prevention.1"],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU",
+          "title": "TNAU Agritech Portal :: Crop Protection :: Chilli — Cercospora leaf spot: Cercospora capsici",
+          "url": "https://agritech.tnau.ac.in/crop_protection/chilli_diseases_5.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of all lesion text including the '1cm or more in diameter' size. Its chemical recommendation (Mancozeb 0.25% or Chlorothalonil 0.1%, twice at 10-15 day intervals) was read and deliberately NOT reproduced."
+        },
+        {
+          "org": "TNAU — Centre for Plant Protection Studies",
+          "title": "Major Diseases of Horticultural Crops and this Management, vegetable 'Leaf spots' section, printed p. 313",
+          "url": "https://agritech.tnau.ac.in/pdf/9.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Sole source of the favourable conditions and of 'Survives in infected crop debris', which justifies the debris-removal prevention key. NOTE the section covers chilli, tomato, bhendi, brinjal, onion and watermelon together; only the sentences that the section applies to all of them, plus the chilli-specific pathogen line, are used."
+        }
+      ]
+    },
+    {
+      "code": "CHILLI_HEALTHY",
+      "cropCode": "CHILLI",
+      "isHealthyClass": true,
+      "names": {
+        "en": "Healthy chilli — no disease signs found",
+        "hi": null,
+        "hiVerified": false
+      },
+      "publishedSymptoms": null,
+      "publishedSymptomsNote": "No symptom text exists for a healthy class and none is asserted. No source fetched in this pass publishes a POSITIVE description of what a healthy chilli leaf looks like (see G-HEALTHY-1), so the `inspect` keys are scouting actions derived from where the sourced diseases first appear, and each derivation is named in the sourceRef notes.",
+      "symptomTags": [],
+      "tagDerivation": "Intentionally empty. A healthy class has no symptom features; tagging it would let the rule engine score 'healthy' from a farmer's symptom report, which inverts the engine's purpose.",
+      "symptoms": [],
+      "inspect": [
+        "disease.CHILLI_HEALTHY.inspect.1",
+        "disease.CHILLI_HEALTHY.inspect.2",
+        "disease.CHILLI_HEALTHY.inspect.3"
+      ],
+      "nextSteps": [],
+      "prevention": [
+        "disease.CHILLI_HEALTHY.prevention.1",
+        "disease.CHILLI_HEALTHY.prevention.2",
+        "disease.CHILLI_HEALTHY.prevention.3",
+        "disease.CHILLI_HEALTHY.prevention.4",
+        "disease.CHILLI_HEALTHY.prevention.5",
+        "disease.CHILLI_HEALTHY.prevention.6"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU",
+          "title": "TNAU Agritech Portal :: Crop Protection :: Chilli — Powdery mildew: Leveillula taurica",
+          "url": "https://agritech.tnau.ac.in/crop_protection/chilli_diseases_3.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Justifies inspect.2 (check the leaf underside): 'white powdery growth on lower side of leaves'. Bacterial leaf spot's 'lower surface' wording corroborates."
+        },
+        {
+          "org": "TNAU",
+          "title": "TNAU Agritech Portal :: Crop Protection :: Chilli — Fruit Rot and Die Back",
+          "url": "https://agritech.tnau.ac.in/crop_protection/chilli_diseases_2.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Justifies inspect.3 (watch from flowering): 'Infection usually begins when the crop is in flower.' The dew/post-rain half of inspect.3 comes from the horticulture PDF's favourable conditions."
+        },
+        {
+          "org": "TNAU",
+          "title": "TNAU Agritech Portal :: Crop Protection :: Chilli — Bacterial leaf spot; and Viral diseases",
+          "url": "https://agritech.tnau.ac.in/crop_protection/chilli_diseases_4.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Justifies prevention.1 ('seeds must be obtained from disease free plants') and prevention.2 ('Field sanitation is important')."
+        },
+        {
+          "org": "TNAU — Centre for Plant Protection Studies",
+          "title": "Major Diseases of Horticultural Crops and this Management, 'Virus diseases: Mosaic and Leaf curl' management list, printed p. 314",
+          "url": "https://agritech.tnau.ac.in/pdf/9.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Justifies prevention.3 ('Protected nursery in net house or green house'), prevention.4 ('Placing yellow sticky traps @ 12/ha to monitor the vectors' — the count is omitted from the farmer text as a device count is not needed to act), prevention.5 ('Removal of weed host regularly') and prevention.6 ('Raise two rows of Maize or Sorgnum for every 5 rows of chilli')."
+        }
+      ]
+    },
+    {
+      "code": "CHILLI_LEAF_CURL_VIRUS",
+      "cropCode": "CHILLI",
+      "names": {
+        "en": "Leaf curl (virus)",
+        "hi": null,
+        "hiVerified": false
+      },
+      "publishedName": "TNAU publishes this under 'Viral diseases' as 'Leaf curl'. Neither TNAU source names a virus species for chilli leaf curl; both name only the vector. The dataset class code says LEAF_CURL_VIRUS and no species is asserted here.",
+      "publishedSymptoms": "TNAU Agritech (chilli_diseases_7.html), verbatim: 'Leaves curl towards midrib and become deformed. Stunted plant growth due to shortened internodes and leaves greatly reduced in size. Flower buds abcise before attaining full size and anthers do not contain pollen grains. The virus is generally transmitted by whitefly.' — TNAU horticulture PDF p. 314, verbatim: 'Leaf curl : Transmitted by white fly.Leaves are curled have margins that curl upward, giving them a cup-like appearance ,reduced in size ,yellowing between the veins ,shortened internodes giving the plant a stunted appearance . This disease is common in Tomato and Chillies'",
+      "symptomTags": [
+        "part:LEAF",
+        "part:FLOWER",
+        "part:WHOLE_PLANT",
+        "pattern:CURL",
+        "pattern:STUNTING",
+        "pattern:YELLOWING",
+        "color:YELLOW"
+      ],
+      "tagDerivation": "part:LEAF ← 'Leaves curl towards midrib and become deformed'; part:FLOWER ← 'Flower buds abcise before attaining full size'; part:WHOLE_PLANT ← 'Stunted plant growth due to shortened internodes'; pattern:CURL ← 'Leaves curl towards midrib' / 'margins that curl upward, giving them a cup-like appearance'; pattern:STUNTING ← 'giving the plant a stunted appearance'; pattern:YELLOWING and color:YELLOW ← 'yellowing between the veins'. NO distribution:VEINS: the published wording is yellowing BETWEEN the veins (interveinal), whereas distribution:VEINS reads as 'along the veins' and would tell the engine the opposite thing. See G-TAG-1.",
+      "symptoms": [
+        "disease.CHILLI_LEAF_CURL_VIRUS.symptom.1",
+        "disease.CHILLI_LEAF_CURL_VIRUS.symptom.2",
+        "disease.CHILLI_LEAF_CURL_VIRUS.symptom.3",
+        "disease.CHILLI_LEAF_CURL_VIRUS.symptom.4"
+      ],
+      "inspect": [
+        "disease.CHILLI_LEAF_CURL_VIRUS.inspect.1",
+        "disease.CHILLI_LEAF_CURL_VIRUS.inspect.2",
+        "disease.CHILLI_LEAF_CURL_VIRUS.inspect.3"
+      ],
+      "nextSteps": [
+        "disease.CHILLI_LEAF_CURL_VIRUS.nextStep.1",
+        "disease.CHILLI_LEAF_CURL_VIRUS.nextStep.2"
+      ],
+      "prevention": [
+        "disease.CHILLI_LEAF_CURL_VIRUS.prevention.1",
+        "disease.CHILLI_LEAF_CURL_VIRUS.prevention.2",
+        "disease.CHILLI_LEAF_CURL_VIRUS.prevention.3",
+        "disease.CHILLI_LEAF_CURL_VIRUS.prevention.4",
+        "disease.CHILLI_LEAF_CURL_VIRUS.prevention.5",
+        "disease.CHILLI_LEAF_CURL_VIRUS.prevention.6"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU",
+          "title": "TNAU Agritech Portal :: Crop Protection :: Chilli — Viral diseases (Leaf curl)",
+          "url": "https://agritech.tnau.ac.in/crop_protection/chilli_diseases_7.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of the symptom text, the whitefly vector, the honesty line used in nextStep.2 ('Control measures are not known for majority of viral diseases. Hence, mechanical, cultural methods are mostly recommended.'), and prevention items 1-6 excluding the sticky traps ('Selection of healthy and disease - free seed', 'Avoid monoculture of chilli crop', 'Nursery beds should be covered with nylon net or straw', 'Raise 2-3 rows of maize or sorghum as border crop'). Its insecticide recommendations (Carbofuran, Dimethoate, Acephate with rates) were read and deliberately NOT reproduced."
+        },
+        {
+          "org": "TNAU — Centre for Plant Protection Studies",
+          "title": "Major Diseases of Horticultural Crops and this Management, 'Virus diseases: Mosaic and Leaf curl', printed p. 314",
+          "url": "https://agritech.tnau.ac.in/pdf/9.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Sole source of the upward cupping, the reduced leaf size and the interveinal yellowing, and of the yellow-sticky-trap monitoring measure."
+        }
+      ]
+    },
+    {
+      "code": "CHILLI_NUTRIENT_DEFICIENCY",
+      "cropCode": "CHILLI",
+      "isAbioticDisorder": true,
+      "names": {
+        "en": "Possible nutrient deficiency (not a disease)",
+        "hi": null,
+        "hiVerified": false
+      },
+      "publishedName": "There is no published disease name here because this is not a disease. The dataset label is a broad abiotic class. The English name deliberately says 'possible' and 'not a disease'.",
+      "publishedSymptoms": "TNAU Agritech, 'Nutrient Deficiency Symptoms of Plants' — 'Generalized Visual Leaf and Plant Nutrient Element Deficiency and Excess Symptoms' table, verbatim: Nitrogen deficiency — 'Light green leaf and plant color with the older leaves turning yellow, leaves that will eventually turn brown and die. Plant growth is slow, plants will be stunted, and will mature early.' Phosphorus deficiency — 'Plant growth will be slow and stunted, and the older leaves will have a purple coloration, particularly on the underside.' Potassium deficiency — 'On the older leaves, the edges will look burned, a symptom known as scorch.' Magnesium deficiency — 'Older leaves will be yellow in color with interveinal chlorosis (yellowing between the veins) symptoms.' Sulfur deficiency — 'A general overall light green color of the entire plant with the older leaves being light green to yellow in color as the deficiency intensifies.' Iron deficiency — 'Interveinal chlorosis will occur on the emerging and young leaves with eventual bleaching of the new growth.' Zinc deficiency — 'Upper leaves will show interveinal chlorosis with an eventual whiting of the affected leaves. Leaves may be small and distorted with a rosette form.' The same page's own diagnostic cautions, verbatim: 'Visual evaluation of nutrient stress should be used only as a supplement to other diagnostic techniques (i.e., soil and plant analysis).' · 'The visual symptom may be caused by more than one nutrient.' · 'It is often difficult to distinguish among the deficiency symptoms in the field, as disease or insect damage can resemble certain micronutrients deficiencies.'",
+      "symptomTags": [
+        "part:LEAF",
+        "part:WHOLE_PLANT",
+        "pattern:YELLOWING",
+        "pattern:STUNTING",
+        "color:YELLOW",
+        "color:BROWN",
+        "color:PURPLE",
+        "distribution:LOWER_LEAVES",
+        "distribution:MARGINS"
+      ],
+      "tagDerivation": "part:LEAF ← 'Light green leaf... older leaves turning yellow'; part:WHOLE_PLANT ← 'Plant growth is slow, plants will be stunted'; pattern:YELLOWING ← 'older leaves turning yellow' and 'interveinal chlorosis'; pattern:STUNTING ← 'plants will be stunted'; color:YELLOW ← 'turning yellow'; color:BROWN ← 'leaves that will eventually turn brown and die'; color:PURPLE ← 'the older leaves will have a purple coloration'; distribution:LOWER_LEAVES ← 'older leaves' (mapped to lower-canopy position; the source says 'older', which on a chilli plant is the lower leaves — this mapping is asserted here, not by the source); distribution:MARGINS ← 'the edges will look burned, a symptom known as scorch'. distribution:UPPER_LEAVES is NOT tagged even though Fe/Zn deficiency affects young leaves, because tagging both LOWER and UPPER makes the distribution term meaningless; the trade-off is recorded in G-CND-2.",
+      "symptoms": [
+        "disease.CHILLI_NUTRIENT_DEFICIENCY.symptom.1",
+        "disease.CHILLI_NUTRIENT_DEFICIENCY.symptom.2",
+        "disease.CHILLI_NUTRIENT_DEFICIENCY.symptom.3",
+        "disease.CHILLI_NUTRIENT_DEFICIENCY.symptom.4"
+      ],
+      "inspect": [
+        "disease.CHILLI_NUTRIENT_DEFICIENCY.inspect.1",
+        "disease.CHILLI_NUTRIENT_DEFICIENCY.inspect.2",
+        "disease.CHILLI_NUTRIENT_DEFICIENCY.inspect.3"
+      ],
+      "nextSteps": [
+        "disease.CHILLI_NUTRIENT_DEFICIENCY.nextStep.1",
+        "disease.CHILLI_NUTRIENT_DEFICIENCY.nextStep.2"
+      ],
+      "prevention": ["disease.CHILLI_NUTRIENT_DEFICIENCY.prevention.1"],
+      "expertThreshold": 0.6,
+      "expertThresholdReason": "RAISED from the schema default of 0.4. Reason, and it is the source's own: TNAU states 'Visual evaluation of nutrient stress should be used only as a supplement to other diagnostic techniques (i.e., soil and plant analysis)' and 'It is often difficult to distinguish among the deficiency symptoms in the field, as disease or insect damage can resemble certain micronutrients deficiencies.' A photograph cannot name the nutrient, so a larger share of these cases must reach a human. This is a product-safety parameter, not an agronomic measurement; it is a PROPOSAL and is listed for approval in `gaps` (G-THRESH-1).",
+      "sourceRefs": [
+        {
+          "org": "TNAU",
+          "title": "TNAU Agritech Portal :: Agriculture :: Mineral Nutrition — Nutrient Deficiency Symptoms of Plants",
+          "url": "https://agritech.tnau.ac.in/agriculture/agri_min_nutri_def_symptoms.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "SCOPE WARNING: this is a GENERAL plant-nutrition page. It does not mention chilli. Every symptom key here is therefore a general-plant statement applied to a chilli class, which is disclosed in the farmer-facing text and recorded as gap G-CND-1. No chilli-specific nutrient-deficiency page could be located in this pass."
+        }
+      ]
+    },
+    {
+      "code": "CHILLI_POWDERY_MILDEW",
+      "cropCode": "CHILLI",
+      "names": {
+        "en": "Powdery mildew",
+        "hi": null,
+        "hiVerified": false
+      },
+      "publishedName": "TNAU: 'Powdery mildew: Leveillula taurica'.",
+      "publishedSymptoms": "TNAU Agritech (chilli_diseases_3.html), verbatim, the page's complete symptom list: 'Shedding of foliage' · 'white powdery growth on lower side of leaves'. — TNAU horticulture PDF p. 318, verbatim: 'White powdery growth on lower side of leaves leads to shedding of foliage causing severe reduction in fruit yield.'",
+      "symptomTags": ["part:LEAF", "pattern:POWDER", "color:WHITE"],
+      "tagDerivation": "part:LEAF ← 'white powdery growth on lower side of leaves'; pattern:POWDER ← 'powdery growth'; color:WHITE ← 'white'. NO distribution:LOWER_LEAVES: the source says the LOWER SIDE of the leaf (the underside), not the lower leaves of the plant, and the closed vocabulary has no underside member. Tagging LOWER_LEAVES would tell the engine something the source does not say. See G-TAG-2. NO weather tag: TNAU publishes no favourable conditions for chilli powdery mildew.",
+      "symptoms": [
+        "disease.CHILLI_POWDERY_MILDEW.symptom.1",
+        "disease.CHILLI_POWDERY_MILDEW.symptom.2"
+      ],
+      "inspect": [
+        "disease.CHILLI_POWDERY_MILDEW.inspect.1",
+        "disease.CHILLI_POWDERY_MILDEW.inspect.2"
+      ],
+      "nextSteps": [
+        "disease.CHILLI_POWDERY_MILDEW.nextStep.1",
+        "disease.CHILLI_POWDERY_MILDEW.nextStep.2"
+      ],
+      "prevention": [],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU",
+          "title": "TNAU Agritech Portal :: Crop Protection :: Chilli — Powdery mildew: Leveillula taurica",
+          "url": "https://agritech.tnau.ac.in/crop_protection/chilli_diseases_3.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Complete symptom text is two lines; both are reproduced. The page's management is entirely chemical (wettable sulphur, carbendazim, Dinocap, with rates and intervals) and was deliberately NOT reproduced — which is why `prevention` is EMPTY rather than populated (gap G-CPM-1). Its spray-timing phrase 'from the first appearance of symptoms' justifies nextStep.1 (record the date), which carries no dose."
+        },
+        {
+          "org": "TNAU — Centre for Plant Protection Studies",
+          "title": "Major Diseases of Horticultural Crops and this Management, 'DISEASES OF CHILLIES' §2 Powdery mildew, printed p. 318",
+          "url": "https://agritech.tnau.ac.in/pdf/9.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Corroborates the two symptoms and adds the yield consequence ('causing severe reduction in fruit yield'). Also publishes no cultural prevention."
+        }
+      ]
+    },
+    {
+      "code": "COTTON_BACTERIAL_BLIGHT",
+      "cropCode": "COTTON",
+      "names": {
+        "en": "Bacterial blight (angular leaf spot / black arm)",
+        "hi": null,
+        "hiVerified": false
+      },
+      "publishedName": "TNAU: 'Bacterial blight: Xanthomonas campestris p.v malvacearum'. The eagri courseware names the same disease 'Xanthomonas axonopodis pv. malvacearum'; the two names are the same organism under different nomenclature and neither is preferred here.",
+      "publishedSymptoms": "TNAU Agritech (cotton_d9.html), verbatim, five published phases: 'The bacterium attacks all stages from seed to harvest.' 1. Seedling blight — 'Small, water-soaked, circular or irregular lesions on the cotyledons. Infection spreads to stem through petiole and cause withering and death of seedlings.' 2. Angular Leaf Spot — 'Small, dark green, water soaked areas develop on lower surface of leaves. The spots become angular restricted by veins and veinlets and are visible on both the surface of leaves. Later they turn reddish brown colour and infection spreads to veins and veinlets.' 3. Vein necrosis or Vein banding — 'Blackening of the veins and veinlets, gives a typical ‘blighting’ appearance. On the lower surface of the leaf, bacterial oozes are formed as crusts or scales. The leaves become crinkled and twisted inward and show withering. The infection also spreads from veins to petiole and cause blighting leading to defoliation.' 4. Blackarm — 'On the stem and fruiting branches, dark brown to black lesions are formed. Girdle the stem and branches to cause premature drooping off of the leaves. Cracking of stem and gummosis, resulting in breaking of the stem and hang typically as dry black twig to give a characteristic “black arm” symptom.' 5. Square rot or boll rot — 'On the bolls, water soaked lesions appear and turn into dark black and sunken irregular spots. Infection slowly spreads to entire boll and shedding occurs. Infection on mature bolls lead to premature bursting. The bacterium spreads inside the boll and lint gets stained yellow because of bacterial ooze and loses its appearance and market value.' Favourable conditions, verbatim: 'Optimum soil temperature of 28˚C, High atmospheric temperature of 30-40˚C, Relative humidity of 85 per cent, Poor tillage, late irrigation, Potassium deficiency in soil. Rain followed by bright sunshine during the months of October and November.'",
+      "symptomTags": [
+        "part:LEAF",
+        "part:STEM",
+        "part:FRUIT",
+        "pattern:SPOTS",
+        "pattern:LESIONS",
+        "pattern:ROT",
+        "pattern:CURL",
+        "color:BROWN",
+        "color:BLACK",
+        "color:RED",
+        "color:YELLOW",
+        "distribution:VEINS",
+        "weather:HIGH_HUMIDITY",
+        "weather:RAIN"
+      ],
+      "tagDerivation": "part:LEAF ← 'water soaked areas develop on lower surface of leaves'; part:STEM ← 'On the stem and fruiting branches, dark brown to black lesions are formed'; part:FRUIT ← 'On the bolls, water soaked lesions appear' (the boll is the fruit); pattern:SPOTS ← 'The spots become angular'; pattern:LESIONS ← 'dark brown to black lesions are formed'; pattern:ROT ← 'Square rot or boll rot'; pattern:CURL ← 'The leaves become crinkled and twisted inward'; color:BROWN ← 'turn reddish brown colour'; color:BLACK ← 'Blackening of the veins and veinlets' and 'dry black twig'; color:RED ← 'reddish brown'; color:YELLOW ← 'lint gets stained yellow'; distribution:VEINS ← 'restricted by veins and veinlets' and 'Blackening of the veins and veinlets'; weather:HIGH_HUMIDITY ← 'Relative humidity of 85 per cent'; weather:RAIN ← 'Rain followed by bright sunshine during the months of October and November'. NO weather:HOT_DRY despite 'High atmospheric temperature of 30-40˚C', because that tag also asserts dryness and the same source requires 85% RH.",
+      "differentialCaveat": "pattern:CURL is genuinely published for this disease ('crinkled and twisted inward') and is tagged, so a farmer reporting leaf curl on cotton will legitimately see bacterial blight alongside COTTON_CURL_VIRUS and COTTON_LEAF_HOPPER_JASSIDS. The discriminating published features are the angular vein-bounded water-soaked spots and the black veins, neither of which the other two carry.",
+      "symptoms": [
+        "disease.COTTON_BACTERIAL_BLIGHT.symptom.1",
+        "disease.COTTON_BACTERIAL_BLIGHT.symptom.2",
+        "disease.COTTON_BACTERIAL_BLIGHT.symptom.3",
+        "disease.COTTON_BACTERIAL_BLIGHT.symptom.4",
+        "disease.COTTON_BACTERIAL_BLIGHT.symptom.5",
+        "disease.COTTON_BACTERIAL_BLIGHT.symptom.6",
+        "disease.COTTON_BACTERIAL_BLIGHT.symptom.7"
+      ],
+      "inspect": [
+        "disease.COTTON_BACTERIAL_BLIGHT.inspect.1",
+        "disease.COTTON_BACTERIAL_BLIGHT.inspect.2",
+        "disease.COTTON_BACTERIAL_BLIGHT.inspect.3",
+        "disease.COTTON_BACTERIAL_BLIGHT.inspect.4",
+        "disease.COTTON_BACTERIAL_BLIGHT.inspect.5"
+      ],
+      "nextSteps": [
+        "disease.COTTON_BACTERIAL_BLIGHT.nextStep.1",
+        "disease.COTTON_BACTERIAL_BLIGHT.nextStep.2",
+        "disease.COTTON_BACTERIAL_BLIGHT.nextStep.3",
+        "disease.COTTON_BACTERIAL_BLIGHT.nextStep.4"
+      ],
+      "prevention": [
+        "disease.COTTON_BACTERIAL_BLIGHT.prevention.1",
+        "disease.COTTON_BACTERIAL_BLIGHT.prevention.2",
+        "disease.COTTON_BACTERIAL_BLIGHT.prevention.3"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU",
+          "title": "TNAU Agritech Portal :: Crop Protection :: Cotton — Bacterial blight",
+          "url": "https://agritech.tnau.ac.in/crop_protection/cotton_diseases/cotton_d9.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of all symptom, favourable-condition and cultural-control text. Cultural measures used: 'Remove and destroy the infected plant debris', 'Rogue out the volunteer cotton plants and weed hosts', 'Follow crop rotation with non-host crops'. Its seed-treatment and spray recommendations (sulphuric acid delinting, carboxin/oxycarboxin, streptomycin sulphate + copper oxychloride, with rates) were read and deliberately NOT reproduced. Its 'Early thinning and early earthing up with potash' line was also NOT reproduced, to keep any fertilizer instruction out of a disease entry (docs/ai/ai-safety.md rule 3)."
+        },
+        {
+          "org": "TNAU / e-Krishi Shiksha courseware",
+          "title": "PATH 272 Lecture 13 Cotton :: MAJOR DISEASE :: BACTERIAL BLIGHT",
+          "url": "http://www.eagri.org/eagri50/PATH272/lecture13/008.html",
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Fetched and read as an independent corroboration of all five symptom phases and of the favourable conditions; its wording matches the TNAU page almost exactly. No claim in this entry rests on it alone."
+        }
+      ]
+    },
+    {
+      "code": "COTTON_CURL_VIRUS",
+      "cropCode": "COTTON",
+      "names": {
+        "en": "Cotton leaf curl disease",
+        "hi": null,
+        "hiVerified": false
+      },
+      "publishedName": "eagri: 'Leaf Curl Disease- Cotton leaf curl virus'.",
+      "publishedSymptoms": "eagri PATH 272 Lecture 13 (009.html), verbatim, the page's complete symptom text: 'Downward and upward curling of leaves and thickening of veins and enation on underside of leaves are the characteristic symptoms of the disease. In serve infection all the leaves are curled and growth retarded. Boll bearing capacity is reduced'. Disease cycle, verbatim: 'The primary source is the viruliferous whitefly vector Bemisia tabaci . The alternate hosts and cultivated hosts serve as virus reservoirs throughout the year. Not transmitted by seed or contact.'",
+      "symptomTags": [
+        "part:LEAF",
+        "part:WHOLE_PLANT",
+        "pattern:CURL",
+        "pattern:STUNTING",
+        "distribution:VEINS",
+        "distribution:ALL_LEAVES"
+      ],
+      "tagDerivation": "part:LEAF ← 'Downward and upward curling of leaves'; part:WHOLE_PLANT ← 'growth retarded'; pattern:CURL ← 'curling of leaves'; pattern:STUNTING ← 'growth retarded'; distribution:VEINS ← 'thickening of veins'; distribution:ALL_LEAVES ← 'In serve infection all the leaves are curled'. NO colour tag at all: the source describes no colour change, and the temptation to add color:YELLOW from general knowledge of begomoviruses is exactly the fabrication this file exists to prevent. NO weather tag: none published.",
+      "differentialCaveat": "ADR-021 decision 1(b): the corpus contains 39 near-identical image pairs labelled COTTON_CURL_VIRUS in one image and COTTON_HEALTHY in the other. Early curl virus on a still-green leaf is the case where a wrong call misleads a farmer most, and it is unresolved pending agronomist sign-off. Vein thickening and underside enations are the published features that separate this from leafhopper curl; leafhopper curl additionally reddens the leaf, which this entry does not claim.",
+      "symptoms": [
+        "disease.COTTON_CURL_VIRUS.symptom.1",
+        "disease.COTTON_CURL_VIRUS.symptom.2",
+        "disease.COTTON_CURL_VIRUS.symptom.3"
+      ],
+      "inspect": [
+        "disease.COTTON_CURL_VIRUS.inspect.1",
+        "disease.COTTON_CURL_VIRUS.inspect.2",
+        "disease.COTTON_CURL_VIRUS.inspect.3"
+      ],
+      "nextSteps": [
+        "disease.COTTON_CURL_VIRUS.nextStep.1",
+        "disease.COTTON_CURL_VIRUS.nextStep.2",
+        "disease.COTTON_CURL_VIRUS.nextStep.3"
+      ],
+      "prevention": [
+        "disease.COTTON_CURL_VIRUS.prevention.1",
+        "disease.COTTON_CURL_VIRUS.prevention.2"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU / e-Krishi Shiksha courseware (eagri.org)",
+          "title": "PATH 272 Diseases of Field Crops and their Management — Lecture 13 Cotton :: MAJOR DISEASE :: LEAF CURL DISEASE",
+          "url": "http://www.eagri.org/eagri50/PATH272/lecture13/009.html",
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "SOLE source for this entry. Graded S because it is courseware on a .org domain. Cultural measures used: 'Management of planting date to avoid peak vector population' and 'Elimination of volunteer perennial cotton and alternate hosts including malvaceous hosts like wild okra'. Its insecticide and bio-agent recommendations were read and deliberately NOT reproduced. TNAU's own Agritech cotton disease index does NOT list leaf curl at all (Tamil Nadu is outside the CLCuD belt), which is why no .ac.in page exists for it — see G-CCV-1."
+        }
+      ]
+    },
+    {
+      "code": "COTTON_HEALTHY",
+      "cropCode": "COTTON",
+      "isHealthyClass": true,
+      "names": {
+        "en": "Healthy cotton — no disease signs found",
+        "hi": null,
+        "hiVerified": false
+      },
+      "publishedSymptoms": null,
+      "publishedSymptomsNote": "No source fetched publishes a positive description of a healthy cotton leaf (G-HEALTHY-1). The `inspect` keys are scouting actions derived from where the sourced cotton problems first appear.",
+      "symptomTags": [],
+      "tagDerivation": "Intentionally empty, for the same reason as CHILLI_HEALTHY.",
+      "symptoms": [],
+      "inspect": [
+        "disease.COTTON_HEALTHY.inspect.1",
+        "disease.COTTON_HEALTHY.inspect.2",
+        "disease.COTTON_HEALTHY.inspect.3"
+      ],
+      "nextSteps": [],
+      "prevention": [
+        "disease.COTTON_HEALTHY.prevention.1",
+        "disease.COTTON_HEALTHY.prevention.2",
+        "disease.COTTON_HEALTHY.prevention.3",
+        "disease.COTTON_HEALTHY.prevention.4"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU",
+          "title": "TNAU Agritech Portal :: Crop Protection :: Cotton — Bacterial blight",
+          "url": "https://agritech.tnau.ac.in/crop_protection/cotton_diseases/cotton_d9.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Justifies inspect.2 (leaf underside — 'water soaked areas develop on lower surface of leaves'), inspect.3 ('Rain followed by bright sunshine during the months of October and November'), and prevention 1-3 ('Follow crop rotation with non-host crops', 'Remove and destroy the infected plant debris', 'Rogue out the volunteer cotton plants and weed hosts')."
+        },
+        {
+          "org": "TNAU",
+          "title": "TNAU Agritech Portal :: Crop Protection :: Pest of Cotton — Leafhopper",
+          "url": "https://agritech.tnau.ac.in/crop_protection/cotton/crop_prot_crop_insectpest%20_cotton_10.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Corroborates inspect.2: leafhopper nymphs are 'found between the veins of leaves on the under surface'."
+        },
+        {
+          "org": "TNAU / e-Krishi Shiksha courseware",
+          "title": "PATH 272 Lecture 13 Cotton :: LEAF CURL DISEASE — Management",
+          "url": "http://www.eagri.org/eagri50/PATH272/lecture13/009.html",
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Justifies prevention.4: 'Management of planting date to avoid peak vector population.'"
+        }
+      ]
+    },
+    {
+      "code": "COTTON_HERBICIDE_DAMAGE",
+      "cropCode": "COTTON",
+      "isAbioticDisorder": true,
+      "reportedAsObservation": true,
+      "names": {
+        "en": "Possible herbicide injury (not a disease)",
+        "hi": null,
+        "hiVerified": false
+      },
+      "publishedName": "No Indian source was located, so no Indian published name exists for this class. The UF/IFAS document is titled 'Diagnosing Herbicide Injury in Cotton'. The English name says 'possible' and 'not a disease' because the dataset label is broad — it does not identify which herbicide.",
+      "publishedSymptoms": "UF/IFAS EDIS SS-AGR-358/AG367, quoted: growth regulator herbicides (2,4-D, dicamba) — 'Twisting and curling (epinasty) of stems and petioles. Leaf shape can appear out of proportion (uncharacteristically long and narrow, called strapping) and leaf veins appear abnormal.' Glyphosate — 'The most common symptom of glyphosate injury is generalized chlorosis (leaf yellowing) that begins in the newest leaves and progresses to the entire plant.' The same document states 'Distinguishing glyphosate injury from ALS herbicide injury is difficult, if not impossible.'",
+      "symptomTags": [
+        "part:LEAF",
+        "part:STEM",
+        "part:WHOLE_PLANT",
+        "pattern:CURL",
+        "pattern:YELLOWING",
+        "color:YELLOW",
+        "distribution:UPPER_LEAVES",
+        "distribution:VEINS"
+      ],
+      "tagDerivation": "part:LEAF ← 'Leaf shape can appear out of proportion'; part:STEM ← 'Twisting and curling (epinasty) of stems and petioles'; part:WHOLE_PLANT ← 'progresses to the entire plant'; pattern:CURL ← 'Twisting and curling (epinasty)'; pattern:YELLOWING ← 'generalized chlorosis (leaf yellowing)'; color:YELLOW ← 'leaf yellowing'; distribution:UPPER_LEAVES ← 'begins in the newest leaves' (newest growth is the upper canopy — this mapping is asserted here, not by the source); distribution:VEINS ← 'leaf veins appear abnormal'. The closed vocabulary has NO tag for the single most diagnostic published feature, strapping (abnormally long narrow leaves) — see G-TAG-3. Because of that miss this entry is under-tagged relative to what the source describes.",
+      "symptoms": [
+        "disease.COTTON_HERBICIDE_DAMAGE.symptom.1",
+        "disease.COTTON_HERBICIDE_DAMAGE.symptom.2",
+        "disease.COTTON_HERBICIDE_DAMAGE.symptom.3"
+      ],
+      "inspect": [
+        "disease.COTTON_HERBICIDE_DAMAGE.inspect.1",
+        "disease.COTTON_HERBICIDE_DAMAGE.inspect.2",
+        "disease.COTTON_HERBICIDE_DAMAGE.inspect.3"
+      ],
+      "nextSteps": [
+        "disease.COTTON_HERBICIDE_DAMAGE.nextStep.1",
+        "disease.COTTON_HERBICIDE_DAMAGE.nextStep.2"
+      ],
+      "prevention": [],
+      "expertThreshold": 0.6,
+      "expertThresholdReason": "RAISED from 0.4. Two stated reasons: (1) ADR-021 decision 1(c) has NOT been signed off — whether herbicide damage should ship as a diagnosis carrying advice at all is an open agronomist question, so this entry is deliberately routed to humans more often; (2) the only source available says 'Distinguishing glyphosate injury from ALS herbicide injury is difficult, if not impossible', i.e. the source itself declines to discriminate within the class. PROPOSAL requiring approval — see G-THRESH-1.",
+      "sourceRefs": [
+        {
+          "org": "University of Florida IFAS Extension",
+          "title": "Berger, Ferrell & Devkota — 'Diagnosing Herbicide Injury in Cotton', EDIS SS-AGR-358/AG367",
+          "url": "https://ask.ifas.ufl.edu/publication/AG367",
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "SOLE source, NON-INDIAN, read via WebFetch rather than raw HTML. Used only because no ICAR / ICAR-CICR / SAU document on herbicide injury in cotton could be located — see G-CHD-1. `prevention` is EMPTY because no source fetched publishes prevention guidance that could be given without naming products or spray practice."
+        },
+        {
+          "org": "Repo doc",
+          "title": "docs/decisions/ADR-021-dataset-curation-decisions.md §1, item (c)",
+          "url": null,
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Authority for `reportedAsObservation: true` and for the raised threshold: '(c) whether Leaf Redding (physiological/nutritional) and Herbicide Growth Damage should ship as diagnoses carrying treatment advice at all, versus being reported as observations.'"
+        }
+      ]
+    },
+    {
+      "code": "COTTON_LEAF_HOPPER_JASSIDS",
+      "cropCode": "COTTON",
+      "isPestNotDisease": true,
+      "names": {
+        "en": "Leafhopper (jassid) damage",
+        "hi": null,
+        "hiVerified": false
+      },
+      "publishedName": "TNAU: 'Leafhopper: Amrasca (Biguttula biguttula) devastans'. This is an INSECT PEST, not a pathogen; the class sits in a disease KB because the dataset labels it, and the entry says so.",
+      "publishedSymptoms": "TNAU Agritech (cotton leafhopper page), 'Symptoms of Damage', verbatim and complete: 'Downward curling and reddening of leaves.' · 'Under severe infestation turn brick red colour.' · 'Growth retardation and death of plants.' Identification, verbatim: 'Nymph - Light green, translucent, wingless found between the veins of leaves on the under surface'; 'Adult - Green, wedge shaped leafhopper.' The page captions one image 'Hopper burn' and publishes 'ETL : 50 nymphs or adults / 50 leaves'.",
+      "symptomTags": [
+        "part:LEAF",
+        "part:WHOLE_PLANT",
+        "pattern:CURL",
+        "pattern:STUNTING",
+        "color:RED"
+      ],
+      "tagDerivation": "part:LEAF ← 'Downward curling and reddening of leaves'; part:WHOLE_PLANT ← 'Growth retardation and death of plants'; pattern:CURL ← 'Downward curling'; pattern:STUNTING ← 'Growth retardation'; color:RED ← 'reddening of leaves' and 'turn brick red colour'. NO distribution:MARGINS: 'hopper burn' is only an image caption on this page, with no accompanying text placing the burn at the leaf margin, so the margin claim is not made. NO weather tag: none published.",
+      "differentialCaveat": "This entry and COTTON_LEAF_REDDENING share color:RED on part:LEAF, and TNAU's own nutrition page warns that 'leaf hopper damage can be confused with deficiency'. The published discriminator is the insect itself — light green translucent wingless nymphs between the veins on the leaf underside — which is why finding the insect is the first inspect step.",
+      "symptoms": [
+        "disease.COTTON_LEAF_HOPPER_JASSIDS.symptom.1",
+        "disease.COTTON_LEAF_HOPPER_JASSIDS.symptom.2",
+        "disease.COTTON_LEAF_HOPPER_JASSIDS.symptom.3"
+      ],
+      "inspect": [
+        "disease.COTTON_LEAF_HOPPER_JASSIDS.inspect.1",
+        "disease.COTTON_LEAF_HOPPER_JASSIDS.inspect.2",
+        "disease.COTTON_LEAF_HOPPER_JASSIDS.inspect.3"
+      ],
+      "nextSteps": [
+        "disease.COTTON_LEAF_HOPPER_JASSIDS.nextStep.1",
+        "disease.COTTON_LEAF_HOPPER_JASSIDS.nextStep.2",
+        "disease.COTTON_LEAF_HOPPER_JASSIDS.nextStep.3"
+      ],
+      "prevention": [
+        "disease.COTTON_LEAF_HOPPER_JASSIDS.prevention.1",
+        "disease.COTTON_LEAF_HOPPER_JASSIDS.prevention.2",
+        "disease.COTTON_LEAF_HOPPER_JASSIDS.prevention.3"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU",
+          "title": "TNAU Agritech Portal :: Crop Protection :: Pest of Cotton — Leafhopper: Amrasca (Biguttula biguttula) devastans",
+          "url": "https://agritech.tnau.ac.in/crop_protection/cotton/crop_prot_crop_insectpest%20_cotton_10.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of the damage symptoms, the nymph/adult description, the published ETL of '50 nymphs or adults / 50 leaves' (a scouting threshold, reproduced as such — it is not a dose), and the cultural measures used ('Cultivate of hairy (hirsute) varieties of cotton', 'Adopt synchronised sowing', 'Apply nitrogenous fertilizers judiciously', 'Maintain weed free condition in field'). Its insecticide list (imidacloprid, buprofezin, diafenthiuron, thiacloprid, flonicamid, thiamethoxam, with per-acre rates) and its Beauveria seed-treatment rate were read and deliberately NOT reproduced. 'Apply nitrogenous fertilizers judiciously' is reproduced because it carries no quantity."
+        },
+        {
+          "org": "TNAU",
+          "title": "TNAU Agritech Portal :: Agriculture :: Mineral Nutrition — Nutrient Deficiency Symptoms of Plants",
+          "url": "https://agritech.tnau.ac.in/agriculture/agri_min_nutri_def_symptoms.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of the differential caveat: 'leaf hopper damage can be confused with deficiency'."
+        }
+      ]
+    },
+    {
+      "code": "COTTON_LEAF_REDDENING",
+      "cropCode": "COTTON",
+      "isAbioticDisorder": true,
+      "reportedAsObservation": true,
+      "names": {
+        "en": "Leaf reddening (red leaf) — a disorder, not a disease",
+        "hi": null,
+        "hiVerified": false
+      },
+      "publishedName": "ICAR publishes this as 'Red leaf symptoms in cotton', abbreviated RLS in the abstract. ADR-021 describes the dataset class as 'Leaf Redding (physiological/nutritional)'.",
+      "publishedSymptoms": "ICAR, Indian Farming 60(9) 2010, Praharaj & Sankaranarayanan, abstract verbatim: 'The cause for the RLS disorder has been both biotic and abiotic factors. The reddening in leaves is attributed to magnesium deficiency, lower leaf N content, sudden fall in night temperature, low soil N supply, high temperature during the day coupled with low temperature at night, water stress and waterlogging. However, the biochemical studies proved that reddening of cotton leaves was related to an increased formation of anthocyanin pigments mainly cyanidin glycosides. Foliar application of urea @2%, DAP @2 % and MgSO4@1% at boll development period is helpful for managing leaf reddening symptoms in cotton. Further research is needed to provide a better understanding of factors that influence cotton diseases and to develop management strategies that reduce economic losses.' — NOTE what this does and does not contain: it names CAUSES and biochemistry. It publishes NO description of how the reddening looks or progresses (which leaves, what shade, over how long). Corroborating mechanism from TNAU's nutrition page, verbatim: 'sugars in corn combine with flavones to form anthocyanins (purple, red, and yellow pigments) and their accumulation may be caused by an insufficient supply of P, low soil temperature, insect damage to the roots, or N deficiency.'",
+      "symptomTags": ["part:LEAF", "color:RED"],
+      "tagDerivation": "part:LEAF ← 'reddening of cotton leaves'; color:RED ← 'The reddening in leaves'. That is ALL that is published. No pattern tag is applied because the vocabulary has no member for whole-leaf discolouration and no published phrase supports SPOTS, BLOTCHES, STREAKS or YELLOWING. CONSEQUENCE FOR THE ENGINE: pattern carries weight 3, the largest single term in docs/ai/fallback-strategy.md, so this entry can never score highly and will rarely surface in the rule-based checker. That is an honest reflection of thin sourcing, not a bug to be patched with an invented tag. See G-CLR-1 and G-TAG-4.",
+      "differentialCaveat": "Reddening of cotton leaves is also a published symptom of leafhopper attack (TNAU: 'Downward curling and reddening of leaves... turn brick red colour'), and the ICAR abstract itself says the cause is 'both biotic and abiotic factors'. This entry must never be presented as identifying a specific cause.",
+      "symptoms": ["disease.COTTON_LEAF_REDDENING.symptom.1"],
+      "inspect": [
+        "disease.COTTON_LEAF_REDDENING.inspect.1",
+        "disease.COTTON_LEAF_REDDENING.inspect.2"
+      ],
+      "nextSteps": [
+        "disease.COTTON_LEAF_REDDENING.nextStep.1",
+        "disease.COTTON_LEAF_REDDENING.nextStep.2"
+      ],
+      "prevention": [],
+      "expertThreshold": 0.6,
+      "expertThresholdReason": "RAISED from 0.4, for the same two reasons as COTTON_HERBICIDE_DAMAGE: ADR-021 decision 1(c) is unresolved, and the published cause list is plural, non-exclusive and includes both biotic and abiotic factors, so a photograph cannot resolve it. PROPOSAL requiring approval — see G-THRESH-1.",
+      "sourceRefs": [
+        {
+          "org": "ICAR",
+          "title": "Praharaj, C. S. & Sankaranarayanan, K., 'Red leaf symptoms in cotton its causes and management options', Indian Farming 60(9), 2010 — abstract",
+          "url": "https://epubs.icar.org.in/index.php/IndFarm/article/view/49106",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "ABSTRACT ONLY — the full-text PDF returned HTTP 404. The abstract's management recommendation (foliar urea 2%, DAP 2%, MgSO4 1% at boll development) is a FERTILIZER DOSE and is deliberately NOT reproduced in any farmer-facing key (docs/ai/ai-safety.md rule 3). Only the cause list and the fact of reddening are used."
+        },
+        {
+          "org": "TNAU",
+          "title": "TNAU Agritech Portal :: Agriculture :: Mineral Nutrition — Nutrient Deficiency Symptoms of Plants",
+          "url": "https://agritech.tnau.ac.in/agriculture/agri_min_nutri_def_symptoms.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Corroborates the anthocyanin mechanism and the multi-cause caution, and supplies the 'a visual symptom may be caused by more than one factor' framing used in inspect.2."
+        },
+        {
+          "org": "TNAU",
+          "title": "TNAU Agritech Portal :: Crop Protection :: Pest of Cotton — Leafhopper",
+          "url": "https://agritech.tnau.ac.in/crop_protection/cotton/crop_prot_crop_insectpest%20_cotton_10.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of the leafhopper differential in inspect.1."
+        }
+      ]
+    },
+    {
+      "code": "MAIZE_COMMON_RUST",
+      "cropCode": "MAIZE",
+      "names": {
+        "en": "Common rust",
+        "hi": null,
+        "hiVerified": false
+      },
+      "publishedName": "TNAU: 'Common Rust: Puccinia sorghi'.",
+      "publishedSymptoms": "TNAU Agritech (maize_4.html), verbatim and complete: 'Minute flecks are appeared on both sides of leaves.' · 'Circular to elongate cinnamon brown, powdery, erumpent pustules on both leaf surfaces' · 'As the crop matures brownish black pustules develop' · 'In severe cases infection spreads to sheath and other parts'. Favourable condition, verbatim: 'Cool, warm and moist weather (15 - 25 o C)'. Survival and spread, verbatim: 'Primary spread through alternate hosts' · 'Secondary spread through wind borne uredospores'. Alternate hosts named: 'Oxalis europea, O. corniculata and O. stricta'.",
+      "symptomTags": [
+        "part:LEAF",
+        "pattern:SPOTS",
+        "pattern:POWDER",
+        "color:BROWN",
+        "color:BLACK",
+        "weather:COOL_MOIST"
+      ],
+      "tagDerivation": "part:LEAF ← 'Minute flecks are appeared on both sides of leaves'; pattern:SPOTS ← 'Minute flecks' and 'Circular to elongate... pustules'; pattern:POWDER ← 'powdery, erumpent pustules'; color:BROWN ← 'cinnamon brown'; color:BLACK ← 'brownish black pustules develop'; weather:COOL_MOIST ← 'Cool, warm and moist weather (15 - 25 o C)'. NO color:ORANGE — 'cinnamon brown' is a brown, and adding ORANGE from general rust knowledge would be unsourced. NO part:STEM — the source says the infection spreads to the SHEATH, which is part of the leaf, not the stem. NO distribution tag — 'on both leaf surfaces' is a surface, not a canopy position, and the vocabulary has no member for it (G-TAG-2).",
+      "symptoms": [
+        "disease.MAIZE_COMMON_RUST.symptom.1",
+        "disease.MAIZE_COMMON_RUST.symptom.2",
+        "disease.MAIZE_COMMON_RUST.symptom.3",
+        "disease.MAIZE_COMMON_RUST.symptom.4"
+      ],
+      "inspect": [
+        "disease.MAIZE_COMMON_RUST.inspect.1",
+        "disease.MAIZE_COMMON_RUST.inspect.2",
+        "disease.MAIZE_COMMON_RUST.inspect.3"
+      ],
+      "nextSteps": [
+        "disease.MAIZE_COMMON_RUST.nextStep.1",
+        "disease.MAIZE_COMMON_RUST.nextStep.2",
+        "disease.MAIZE_COMMON_RUST.nextStep.3"
+      ],
+      "prevention": [
+        "disease.MAIZE_COMMON_RUST.prevention.1",
+        "disease.MAIZE_COMMON_RUST.prevention.2"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU",
+          "title": "TNAU Agritech Portal :: Crop Protection :: Maize — Common Rust: Puccinia sorghi",
+          "url": "https://agritech.tnau.ac.in/crop_protection/maize_disease_new/maize_4.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of all symptom, favourable-condition and cultural text, including the named alternate hosts (Oxalis spp.) and the two cultural measures used ('Remove the alternate hosts', 'Collect the remains of the crop and destroy by burning or burying'). Its foliar-spray recommendation (kresoxim-methyl, tebuconazole, chlorothalonil, mancozeb with rates and DAS timings) was read and deliberately NOT reproduced."
+        },
+        {
+          "org": "TNAU / e-Krishi Shiksha courseware",
+          "title": "PATH 272 Lecture 05 Maize :: MAJOR DISEASES :: RUST",
+          "url": "http://www.eagri.org/eagri50/PATH272/lecture05/006.html",
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Fetched as independent corroboration: 'Circular to oval, elongated cinnamon- brown powdery pustules are scattered over both surface of the leaves. As the plant matures, the pustules become brown to black...' and 'Cool temperature and high relative humidity.' No claim rests on it alone."
+        }
+      ]
+    },
+    {
+      "code": "MAIZE_GRAY_LEAF_SPOT",
+      "cropCode": "MAIZE",
+      "names": {
+        "en": "Grey leaf spot",
+        "hi": null,
+        "hiVerified": false
+      },
+      "publishedName": "Crop Protection Network: 'Gray Leaf Spot of Corn', causal organism Cercospora zeae-maydis.",
+      "publishedSymptoms": "Crop Protection Network encyclopedia entry, quoted: lesions are 'long (up to 2 inches), narrow, rectangular, and light tan' and 'can turn gray'; they are 'usually delimited by leaf veins' and may 'join together and kill entire leaves'; symptoms appear 'on lower leaves about two to three weeks before tasseling'. Favourable conditions, quoted: 'warm (80s°F), humid (>90% for 12+ hours) weather'. Non-chemical management, quoted: 'Resistant hybrids and inbreds are available. Crop rotation and tillage reduce survival of the fungus.'",
+      "symptomTags": [
+        "part:LEAF",
+        "pattern:LESIONS",
+        "pattern:STREAKS",
+        "color:TAN",
+        "color:GREY",
+        "distribution:LOWER_LEAVES",
+        "distribution:VEINS",
+        "weather:HIGH_HUMIDITY"
+      ],
+      "tagDerivation": "part:LEAF ← lesions on leaves; pattern:LESIONS ← 'lesions'; pattern:STREAKS ← 'long (up to 2 inches), narrow, rectangular' lesions 'delimited by leaf veins', i.e. long stripes running lengthwise along the leaf — the STREAKS mapping is asserted here from that geometry, the source does not use the word 'streak'; color:TAN ← 'light tan'; color:GREY ← 'can turn gray'; distribution:LOWER_LEAVES ← 'on lower leaves'; distribution:VEINS ← 'usually delimited by leaf veins'; weather:HIGH_HUMIDITY ← 'humid (>90% for 12+ hours)'. NO weather:HOT_DRY despite 'warm (80s°F)', because the same clause requires >90% humidity.",
+      "symptoms": [
+        "disease.MAIZE_GRAY_LEAF_SPOT.symptom.1",
+        "disease.MAIZE_GRAY_LEAF_SPOT.symptom.2",
+        "disease.MAIZE_GRAY_LEAF_SPOT.symptom.3",
+        "disease.MAIZE_GRAY_LEAF_SPOT.symptom.4"
+      ],
+      "inspect": [
+        "disease.MAIZE_GRAY_LEAF_SPOT.inspect.1",
+        "disease.MAIZE_GRAY_LEAF_SPOT.inspect.2",
+        "disease.MAIZE_GRAY_LEAF_SPOT.inspect.3"
+      ],
+      "nextSteps": [
+        "disease.MAIZE_GRAY_LEAF_SPOT.nextStep.1",
+        "disease.MAIZE_GRAY_LEAF_SPOT.nextStep.2"
+      ],
+      "prevention": [
+        "disease.MAIZE_GRAY_LEAF_SPOT.prevention.1",
+        "disease.MAIZE_GRAY_LEAF_SPOT.prevention.2"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "Crop Protection Network",
+          "title": "Gray Leaf Spot of Corn — encyclopedia entry",
+          "url": "https://cropprotectionnetwork.org/encyclopedia/gray-leaf-spot-of-corn",
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "SOLE source and NON-INDIAN, read via WebFetch. THIS IS THE WEAKEST ENTRY IN THE FILE. Neither TNAU Agritech's maize disease index (which lists only Downy mildew/Crazy top, Turcicum Leaf Blight, Charcoal Rot, Common Rust, Aspergillus Rot) nor the eagri PATH 272 maize lecture (Downy mildew, Sorghum downy mildew, Philippine downy mildew, Crazy top, Leaf blight, Rust, Head smut, Charcoal rot, Bacterial stalk rot, Mosaic, Brown spot) covers grey leaf spot, and iimr.icar.gov.in did not resolve in DNS. See G-MGLS-1."
+        }
+      ]
+    },
+    {
+      "code": "MAIZE_HEALTHY",
+      "cropCode": "MAIZE",
+      "isHealthyClass": true,
+      "names": {
+        "en": "Healthy maize — no disease signs found",
+        "hi": null,
+        "hiVerified": false
+      },
+      "publishedSymptoms": null,
+      "publishedSymptomsNote": "No source fetched publishes a positive description of a healthy maize leaf (G-HEALTHY-1). The `inspect` keys are scouting actions derived from where the sourced maize diseases first appear.",
+      "symptomTags": [],
+      "tagDerivation": "Intentionally empty, for the same reason as CHILLI_HEALTHY.",
+      "symptoms": [],
+      "inspect": [
+        "disease.MAIZE_HEALTHY.inspect.1",
+        "disease.MAIZE_HEALTHY.inspect.2",
+        "disease.MAIZE_HEALTHY.inspect.3",
+        "disease.MAIZE_HEALTHY.inspect.4"
+      ],
+      "nextSteps": [],
+      "prevention": [
+        "disease.MAIZE_HEALTHY.prevention.1",
+        "disease.MAIZE_HEALTHY.prevention.2",
+        "disease.MAIZE_HEALTHY.prevention.3"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU",
+          "title": "TNAU Agritech Portal :: Crop Protection :: Maize — Leaf Blight (Turcicum Leaf Blight)",
+          "url": "https://agritech.tnau.ac.in/crop_protection/maize_disease_new/maize_2.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Justifies inspect.2 (start with the lower leaves — 'lesions on lower leaves') and prevention.1 ('Burn or bury the Infected maize stubbles')."
+        },
+        {
+          "org": "TNAU",
+          "title": "TNAU Agritech Portal :: Crop Protection :: Maize — Common Rust",
+          "url": "https://agritech.tnau.ac.in/crop_protection/maize_disease_new/maize_4.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Justifies inspect.3 (check both leaf surfaces — 'pustules on both leaf surfaces'), prevention.2 ('Collect the remains of the crop and destroy by burning or burying') and prevention.3 ('Remove the alternate hosts', named as Oxalis spp.)."
+        },
+        {
+          "org": "Crop Protection Network",
+          "title": "Gray Leaf Spot of Corn",
+          "url": "https://cropprotectionnetwork.org/encyclopedia/gray-leaf-spot-of-corn",
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "Justifies inspect.4 (check again two to three weeks before tasselling). NON-INDIAN and secondary; the timing claim is disclosed as such rather than blended with the TNAU material."
+        }
+      ]
+    },
+    {
+      "code": "MAIZE_NORTHERN_LEAF_BLIGHT",
+      "cropCode": "MAIZE",
+      "names": {
+        "en": "Turcicum leaf blight (northern leaf blight)",
+        "hi": null,
+        "hiVerified": false
+      },
+      "publishedName": "TNAU's maize disease index lists this as 'Turcicum Leaf Blight (TLB)'; the page it links to is headed 'Leaf Blight : Exserohilum turcicum & Helminthosporium maydis'. The dataset class code is MAIZE_NORTHERN_LEAF_BLIGHT. 'Turcicum leaf blight' and 'northern leaf blight' are the same disease under two names; both are kept in the English name.",
+      "publishedSymptoms": "TNAU Agritech (maize_2.html), verbatim and complete: 'Long cigar-shape grey-green to tan-coloured lesions on lower leaves.' · 'Tan lesions are slender and oblong tapering at the ends ranging in size 1 to 6 inches.' · 'Lesions run parallel to leaf margins and they coalesce and cover enter leaf.' · 'Spores are produced on the underside of leaf.' · 'Below the lesions, fungus giving the dusty black/green fuzz appearance' · 'Leaves become greyish-green and brittle, resembling leaves killed by frost'. Favourable conditions, verbatim: 'Wet humid cool weather typically found later in the growing season.' Survival and spread, verbatim: 'Survives on infected plant debris.' · 'Windblown spores spread the disease.'",
+      "symptomTags": [
+        "part:LEAF",
+        "pattern:LESIONS",
+        "pattern:STREAKS",
+        "color:GREY",
+        "color:TAN",
+        "color:BLACK",
+        "distribution:LOWER_LEAVES",
+        "weather:HIGH_HUMIDITY",
+        "weather:COOL_MOIST"
+      ],
+      "tagDerivation": "part:LEAF ← 'lesions on lower leaves'; pattern:LESIONS ← 'lesions'; pattern:STREAKS ← 'Long cigar-shape' lesions that 'run parallel to leaf margins', i.e. long stripes down the leaf — the STREAKS mapping is asserted here from that geometry, the source does not use the word 'streak'; color:GREY ← 'grey-green' and 'Leaves become greyish-green'; color:TAN ← 'tan-coloured lesions'; color:BLACK ← 'dusty black/green fuzz appearance'; distribution:LOWER_LEAVES ← 'on lower leaves'; weather:HIGH_HUMIDITY and weather:COOL_MOIST ← 'Wet humid cool weather'. Lesion size is kept as the published '1 to 6 inches' and is not converted.",
+      "differentialCaveat": "This entry and MAIZE_GRAY_LEAF_SPOT share part:LEAF, pattern:LESIONS, pattern:STREAKS, color:TAN, color:GREY, distribution:LOWER_LEAVES and weather:HIGH_HUMIDITY — seven of nine tags. The published discriminators are shape and boundary: northern leaf blight lesions are cigar-shaped and taper at the ends, while grey leaf spot lesions are rectangular and stop dead at the veins. The rule engine's tag vocabulary cannot express either discriminator, so the two will score near-identically for any farmer answer set. See G-TAG-5 — this is the single most consequential limitation this file found.",
+      "symptoms": [
+        "disease.MAIZE_NORTHERN_LEAF_BLIGHT.symptom.1",
+        "disease.MAIZE_NORTHERN_LEAF_BLIGHT.symptom.2",
+        "disease.MAIZE_NORTHERN_LEAF_BLIGHT.symptom.3",
+        "disease.MAIZE_NORTHERN_LEAF_BLIGHT.symptom.4",
+        "disease.MAIZE_NORTHERN_LEAF_BLIGHT.symptom.5"
+      ],
+      "inspect": [
+        "disease.MAIZE_NORTHERN_LEAF_BLIGHT.inspect.1",
+        "disease.MAIZE_NORTHERN_LEAF_BLIGHT.inspect.2",
+        "disease.MAIZE_NORTHERN_LEAF_BLIGHT.inspect.3",
+        "disease.MAIZE_NORTHERN_LEAF_BLIGHT.inspect.4"
+      ],
+      "nextSteps": [
+        "disease.MAIZE_NORTHERN_LEAF_BLIGHT.nextStep.1",
+        "disease.MAIZE_NORTHERN_LEAF_BLIGHT.nextStep.2"
+      ],
+      "prevention": ["disease.MAIZE_NORTHERN_LEAF_BLIGHT.prevention.1"],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU",
+          "title": "TNAU Agritech Portal :: Crop Protection :: Maize — Leaf Blight (indexed as 'Turcicum Leaf Blight (TLB)')",
+          "url": "https://agritech.tnau.ac.in/crop_protection/maize_disease_new/maize_2.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of all symptom, favourable-condition and cultural text ('Burn or bury the Infected maize stubbles'). Its spray recommendation (mancozeb/zineb/propiconazole with rates and DAS timings) was read and deliberately NOT reproduced. CAVEAT: the page heading names two pathogens on one page, so the symptom text cannot be attributed to Exserohilum turcicum alone with certainty — see G-MNLB-1."
+        }
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "id": "G-HI-1",
+      "field": "names.hi and every Hindi i18n value, ALL 17 codes",
+      "problem": "No Hindi-language official source was fetched in this pass. Every names.hi is null, every entry is hiVerified: false, and every value in the `hi` object of i18n.diseases.part-ccm.json is null.",
+      "checked": "TNAU Agritech's alternate-language portal is Tamil (agritech.tnau.ac.in/ta/), not Hindi. eagri.org courseware is English-only. The ICAR Indian Farming article fetched is English.",
+      "impact": "BLOCKING FOR COTTON. datasets/manifest.json -> support_tiers.COTTON requires 'a KB entry (en+hi)' per class before cotton may ship, and ADR-021 §1 repeats it: '6 cotton KB entries (en+hi) — no diagnosis ships without one.' The English half exists; the Hindi half does not. CLAUDE.md rule 8 additionally requires human verification of agronomic Hindi before demo.",
+      "resolution": "Left null. A Hindi-literate agronomist must author or verify the Hindi. Machine translation of disease names and symptom prose is explicitly not acceptable under CLAUDE.md rule 8."
+    },
+    {
+      "id": "G-CA-1",
+      "field": "CHILLI_ANTHRACNOSE — no leaf symptom, no part:LEAF tag",
+      "problem": "Both TNAU sources describe this disease on twigs, flowers, stems and fruits. Neither describes a LEAF lesion. The ML class is trained on chilli imagery that is predominantly leaf photography.",
+      "checked": "agritech.tnau.ac.in/crop_protection/chilli_diseases_2.html in full; agritech.tnau.ac.in/pdf/9.pdf 'DISEASES OF CHILLIES' §1 in full; the TNAU chilli disease index (7 diseases) for any second anthracnose page — there is none.",
+      "impact": "A farmer photographing a leaf can be classified CHILLI_ANTHRACNOSE by the model and then shown symptom text that describes fruits and twigs. In the rule-based checker, a farmer answering 'leaf' will never match this entry at all.",
+      "resolution": "part:LEAF NOT tagged and no leaf symptom asserted. Either an agronomist supplies a sourced leaf description, or the product decides how to present a leaf-photo prediction whose KB entry is about fruit. Note this is also the single chilli class that exists ONLY in chilli_secondary (see DC-CHILLI-CONFOUND)."
+    },
+    {
+      "id": "G-CBS-1",
+      "field": "CHILLI_BACTERIAL_SPOT — no favourable conditions, no distribution",
+      "problem": "Neither TNAU source publishes favourable weather conditions or a canopy position for chilli bacterial leaf spot.",
+      "checked": "chilli_diseases_4.html (has no 'Favourable Conditions' heading at all); agritech.tnau.ac.in/pdf/9.pdf p. 318.",
+      "impact": "The entry carries no weather or distribution tag, so it loses 2 of the engine's possible points and will under-score relative to entries that have them.",
+      "resolution": "Left untagged. Not patched from general bacterial-disease knowledge."
+    },
+    {
+      "id": "G-CND-1",
+      "field": "CHILLI_NUTRIENT_DEFICIENCY — the source is not about chilli",
+      "problem": "The only nutrient-deficiency source located is TNAU's GENERAL mineral-nutrition page. It never mentions chilli. Every symptom in that entry is therefore a general-plant statement attached to a chilli-specific class code.",
+      "checked": "Searched for a chilli-specific nutrient-deficiency page on agritech.tnau.ac.in (three candidate URLs, all HTTP 404) and for an ICAR-IIHR chilli nutrition page. The commercial agri portals that do publish chilli-specific deficiency symptoms (Agriplex, Aries Agro, worldofchillies) were deliberately not used — they are vendors.",
+      "impact": "The KB text is honest but generic. It cannot say anything chilli-specific about which nutrient is likely in Indian chilli soils.",
+      "resolution": "Used with the scope disclosed in the sourceRef, in the datasetCaveats and in the farmer-facing text itself. An ICAR-IIHR or SAU chilli nutrition source would replace it."
+    },
+    {
+      "id": "G-CND-2",
+      "field": "CHILLI_NUTRIENT_DEFICIENCY — distribution tag forced to a single choice",
+      "problem": "The published symptoms split by nutrient: N, P, K and Mg deficiency show on OLDER (lower) leaves, while Fe and Zn deficiency show on YOUNG (upper) leaves. One class code covers both.",
+      "checked": "The full 'Generalized Visual Leaf and Plant Nutrient Element Deficiency and Excess Symptoms' table.",
+      "impact": "Only distribution:LOWER_LEAVES is tagged, so a farmer reporting an upper-leaf problem will not match this entry even though the source supports it for Fe/Zn.",
+      "resolution": "Tagged LOWER_LEAVES only, because tagging both members of a two-member distinction makes the term carry no information. The alternative — tagging both — is defensible and is left to the engine owner."
+    },
+    {
+      "id": "G-CPM-1",
+      "field": "CHILLI_POWDERY_MILDEW — prevention array is EMPTY",
+      "problem": "Both TNAU sources publish only chemical management for chilli powdery mildew (wettable sulphur, carbendazim, Dinocap). Neither publishes any cultural or preventive practice.",
+      "checked": "chilli_diseases_3.html in full (management is two chemical lines); agritech.tnau.ac.in/pdf/9.pdf p. 318 (management is one chemical line).",
+      "impact": "This entry ships with no prevention advice. Feature DoD expects loading/empty states to be handled; the UI must render an empty prevention list without implying there is nothing a farmer can do.",
+      "resolution": "Left EMPTY rather than filled with generic 'improve air circulation'-style advice, which no fetched source publishes for this crop."
+    },
+    {
+      "id": "G-CCV-1",
+      "field": "COTTON_CURL_VIRUS — no primary Indian source",
+      "problem": "Cotton leaf curl disease is a north-west India problem (Punjab, Haryana, Rajasthan) and TNAU, a Tamil Nadu institution, does not list it among cotton diseases at all. The only fetched page describing its symptoms is TNAU courseware on eagri.org, graded S.",
+      "checked": "agritech.tnau.ac.in cotton disease index — 10 diseases, no leaf curl. cicr.org.in — reachable, but /cotton-health-management/ renders as an image slider with no text content, and no CLCuD symptom page was found in its link map. iimr-style deep search on cicr.org.in returned only research papers behind publishers.",
+      "impact": "A SPECIALIZED-tier crop's flagship virus class rests on a single secondary citation.",
+      "resolution": "Recorded as S with the reasoning in the sourceRef. An ICAR-CICR or PAU package-of-practices page should replace it before cotton ships."
+    },
+    {
+      "id": "G-CHD-1",
+      "field": "COTTON_HERBICIDE_DAMAGE — no Indian source at all; prevention EMPTY",
+      "problem": "No ICAR, ICAR-CICR, SAU or NIPHM document describing herbicide injury symptoms in cotton could be located. The entry rests entirely on a University of Florida extension publication.",
+      "checked": "Two web searches targeting CICR/ICAR advisories on 2,4-D and glyphosate drift in cotton; cicr.org.in link map. All returned US extension material or paywalled Weed Technology papers.",
+      "impact": "A SPECIALIZED-tier class documented only from US practice, where the herbicide mix, the crop's transgenic tolerance traits and the drift context all differ from India. `prevention` is empty because the only preventive advice available would be spray-practice advice, which this file does not give.",
+      "resolution": "Kept as an OBSERVATION with a raised expert threshold and no treatment guidance, pending ADR-021 decision 1(c). This is the entry most in need of Indian sourcing."
+    },
+    {
+      "id": "G-CLR-1",
+      "field": "COTTON_LEAF_REDDENING — the source publishes causes, not appearance; full text unreachable",
+      "problem": "The ICAR abstract names causes and the anthocyanin mechanism but never describes how the reddening looks — which leaves redden first, what shade, how fast it spreads. The full-text PDF at epubs.icar.org.in/index.php/IndFarm/article/download/49106/21048/119672 returned an HTTP 404 body when fetched with curl, so only the abstract could be read.",
+      "checked": "Article landing page fetched via WebFetch; PDF download URL fetched via curl (1,339 bytes of HTML beginning '<h1>4...'). No alternate host for Indian Farming 60(9) was found.",
+      "impact": "Only one symptom key and only two tags could be written. Because no `pattern` tag is possible, the entry can never score highly in the rule-based engine (pattern carries weight 3).",
+      "resolution": "Written thin rather than padded. Retrieving the full text, or an ICAR-CICR red-leaf advisory, would let a proper symptom description and at least one pattern tag be added."
+    },
+    {
+      "id": "G-MGLS-1",
+      "field": "MAIZE_GRAY_LEAF_SPOT — no Indian source; entire entry is secondary",
+      "problem": "Grey leaf spot appears on neither Indian maize disease page fetched. This is the only one of the 17 codes with no P citation anywhere in the entry.",
+      "checked": "TNAU Agritech maize disease index (Downy mildew/Crazy top, Turcicum Leaf Blight, Charcoal Rot, Common Rust, Aspergillus Rot — no GLS). eagri PATH 272 Lecture 05 maize (11 diseases listed — no GLS). iimr.icar.gov.in did not resolve in DNS (getaddrinfo ENOTFOUND) from this environment, on both curl and WebFetch, so the ICAR-IIMR 'IDM for important diseases of maize' and 'Predominant diseases of maize across India' pages could not be read; www.iimr.res.in resolves but its Crop Protection division page carries no disease descriptions. Two targeted searches for a Karnataka/UAS package-of-practices GLS page returned only US and South African material.",
+      "impact": "An Indian farmer would be shown lesion sizes in inches and a tasselling timing derived from US corn agronomy.",
+      "resolution": "Shipped as S with the failure stated. RETRY ICAR-IIMR when DNS permits — its pages are the obvious fix and were unreachable for network reasons, not because they lack the content."
+    },
+    {
+      "id": "G-MNLB-1",
+      "field": "MAIZE_NORTHERN_LEAF_BLIGHT — the source page conflates two pathogens",
+      "problem": "TNAU's page is headed 'Leaf Blight : Exserohilum turcicum & Helminthosporium maydis'. Those are two different diseases — turcicum (northern) leaf blight and maydis (southern) leaf blight — described under one symptom list. The eagri courseware is worse: it heads its page 'Leaf blight - Helminthosporium maydis (Syn : H. turcicum)', treating the two as synonyms, which they are not, and describes a different symptom picture ('Small yellowish round to oval spots... straw to grayish brown in the centre with dark brown margins').",
+      "checked": "agritech.tnau.ac.in/crop_protection/maize_disease_new/maize_2.html and its index heading 'Turcicum Leaf Blight (TLB)'; eagri PATH 272 lecture05/005.html.",
+      "impact": "The symptom text used here — cigar-shaped grey-green to tan lesions tapering at the ends — is the classic turcicum description and matches the class, so the entry is very probably right. But it cannot be attributed to Exserohilum turcicum ALONE on the strength of this page, and the eagri page was therefore NOT used for symptoms.",
+      "resolution": "TNAU used, index heading recorded as the evidence that TNAU means turcicum, conflation disclosed. An ICAR-IIMR page separating the two would settle it (blocked by the same DNS failure as G-MGLS-1)."
+    },
+    {
+      "id": "G-HEALTHY-1",
+      "field": "CHILLI_HEALTHY / COTTON_HEALTHY / MAIZE_HEALTHY — nothing published describes 'healthy'",
+      "problem": "Extension literature describes disease, not health. No page fetched publishes a positive description of what a healthy chilli, cotton or maize leaf looks like.",
+      "checked": "All 12 crop-protection pages fetched, plus the TNAU horticulture PDF and TNAU's mineral-nutrition page.",
+      "impact": "The 'what healthy looks like' guidance the brief asks for cannot be sourced as an agronomic claim.",
+      "resolution": "The healthy entries carry NO symptom text. Their `inspect` keys are scouting actions INVERTED from sourced disease facts — 'turn the leaf over, because powdery mildew and blight both start there', 'start with the lower leaves, because blight and grey leaf spot both start there' — and each inversion names its source in the sourceRefs note. Their `prevention` keys are the published cultural measures from the corresponding disease pages. No claim of the form 'a healthy leaf is uniformly green' is made anywhere, because nothing fetched says it."
+    },
+    {
+      "id": "G-TAG-1",
+      "field": "symptomTags vocabulary — no INTERVEINAL member",
+      "problem": "Both CHILLI_LEAF_CURL_VIRUS ('yellowing between the veins') and CHILLI_NUTRIENT_DEFICIENCY ('interveinal chlorosis (yellowing between the veins)') publish interveinal yellowing. distribution:VEINS reads as 'on/along the veins', which is the opposite placement.",
+      "checked": "The closed distribution list: LOWER_LEAVES, UPPER_LEAVES, ALL_LEAVES, SCATTERED, MARGINS, VEINS.",
+      "impact": "Interveinal chlorosis — one of the most recognisable and most farmer-answerable symptom patterns there is — cannot be expressed at all.",
+      "resolution": "Not tagged. A `distribution:INTERVEINAL` member would fix it; adding one is a vocabulary change and therefore an engine decision, not a data decision."
+    },
+    {
+      "id": "G-TAG-2",
+      "field": "symptomTags vocabulary — no LEAF_UNDERSIDE member",
+      "problem": "CHILLI_POWDERY_MILDEW ('white powdery growth on lower side of leaves'), COTTON_BACTERIAL_BLIGHT ('lower surface of leaves'), COTTON_CURL_VIRUS ('enation on underside of leaves'), MAIZE_NORTHERN_LEAF_BLIGHT ('Spores are produced on the underside of leaf') and MAIZE_COMMON_RUST ('on both leaf surfaces') all publish a LEAF SURFACE. The vocabulary has only canopy positions.",
+      "checked": "Same closed distribution list.",
+      "impact": "Five of 17 entries lose their most practical inspection cue from the tag layer. distribution:LOWER_LEAVES was NOT used as a substitute anywhere, because it would tell the engine 'lower part of the plant' when the source said 'underside of the leaf'.",
+      "resolution": "Not tagged. The underside cue survives in the `inspect` keys, which is where a farmer actually needs it."
+    },
+    {
+      "id": "G-TAG-3",
+      "field": "symptomTags vocabulary — no SHAPE_DEFORMITY / STRAPPING member",
+      "problem": "COTTON_HERBICIDE_DAMAGE's most diagnostic published feature is 'Leaf shape can appear out of proportion (uncharacteristically long and narrow, called strapping)'. CHILLI_LEAF_CURL_VIRUS publishes 'leaves greatly reduced in size'. Neither is expressible; the pattern list covers marks on a leaf, not the leaf's shape or size.",
+      "checked": "The closed pattern list, all 14 members.",
+      "impact": "Herbicide damage is under-tagged and will be hard to separate from the other curl entries.",
+      "resolution": "Not tagged. Recorded for the engine owner."
+    },
+    {
+      "id": "G-TAG-4",
+      "field": "symptomTags vocabulary — no DISCOLOURATION / REDDENING pattern member",
+      "problem": "COTTON_LEAF_REDDENING's entire published symptom is a colour change of the whole leaf. pattern:YELLOWING is the only colour-change member and it names the wrong colour.",
+      "checked": "The closed pattern list.",
+      "impact": "The entry carries NO pattern tag. Since pattern carries weight 3 — the heaviest term in docs/ai/fallback-strategy.md — this entry is structurally unable to rank. COTTON_LEAF_HOPPER_JASSIDS, which shares the reddening, does carry pattern:CURL and pattern:STUNTING and will therefore always outrank it, which is arguably the safer failure but is not a designed behaviour.",
+      "resolution": "Not tagged. Either a generic `pattern:DISCOLOURATION` member, or renaming YELLOWING to a colour-neutral member with the colour carried by the colour tags, would fix it."
+    },
+    {
+      "id": "G-TAG-5",
+      "field": "symptomTags — MAIZE_NORTHERN_LEAF_BLIGHT and MAIZE_GRAY_LEAF_SPOT are nearly indistinguishable",
+      "problem": "The two entries share 7 tags (part:LEAF, pattern:LESIONS, pattern:STREAKS, color:TAN, color:GREY, distribution:LOWER_LEAVES, weather:HIGH_HUMIDITY). The published discriminators are lesion GEOMETRY — cigar-shaped and tapering versus rectangular and vein-bounded — and the vocabulary cannot express shape.",
+      "checked": "Both entries' publishedSymptoms, tag by tag, against the closed vocabulary.",
+      "impact": "In the rule-based symptom checker these two maize diseases will score almost identically for any answer set a farmer can give. That is not a modelling accident; it is a limit of the question set. Both diseases are managed similarly in the published cultural advice (stubble/residue destruction), so the consequence of confusing them is small — but the app must not present a near-tie as a discrimination.",
+      "resolution": "Recorded rather than engineered around. The `inspect` keys for both entries lead with the geometry question ('do the lesion edges stop dead at the veins?' vs 'is the lesion cigar-shaped and tapering?'), which is where the distinction can actually be made."
+    },
+    {
+      "id": "G-THRESH-1",
+      "field": "expertThreshold raised to 0.6 on three entries — PROPOSAL, not a decision",
+      "problem": "CHILLI_NUTRIENT_DEFICIENCY, COTTON_HERBICIDE_DAMAGE and COTTON_LEAF_REDDENING carry expertThreshold 0.6 instead of the schema default 0.4. All three are abiotic/broad classes where the source itself declines to discriminate.",
+      "checked": "backend/src/models/CropRegistry.js diseaseSchema (default 0.4); docs/ai/fallback-strategy.md ('expert-referral threshold (score <0.4 ... )'); ADR-021 §1(c).",
+      "impact": "Raising the threshold routes more farmers to KVK for these three classes. 0.6 is a chosen number, not a measured one — no source publishes an expert-referral threshold for anything.",
+      "resolution": "Applied with the reason recorded on each entry, and flagged here as requiring human approval. If the reviewer prefers the uniform default, revert all three to 0.4; nothing else in the file depends on the value."
+    },
+    {
+      "id": "G-SEVERITY-1",
+      "field": "severity, spread speed, yield-loss figures — not attempted",
+      "problem": "No entry carries a severity grade, a spread-rate claim or a yield-loss percentage. Several sources publish qualitative severity ('causing severe reduction in fruit yield', 'resulting in reduced yield') but none publishes a scale this KB could key to, and CLAUDE.md rule 9 makes severity engine-assessed rather than KB-declared.",
+      "checked": "All 12 pages plus the horticulture PDF.",
+      "impact": "None for the current schema — diseaseSchema has no severity field.",
+      "resolution": "Deliberately omitted. If a severity field is ever added it must be sourced or engine-computed, not inherited from adjectives."
+    },
+    {
+      "id": "G-SCOPE-1",
+      "field": "Regional applicability of TNAU guidance",
+      "problem": "Nine of the 12 primary pages used are TNAU's — Tamil Nadu. Cotton is grown mainly in Maharashtra, Gujarat, Telangana, Punjab and Haryana; maize in Karnataka, Bihar, MP and Telangana. Favourable-condition statements tied to Tamil Nadu's calendar travel worst: the cotton bacterial blight page says 'Rain followed by bright sunshine during the months of October and November', which is a Tamil Nadu north-east-monsoon statement.",
+      "checked": "Source institution of every citation.",
+      "impact": "Month-specific and season-specific guidance may be wrong outside south India. It is reproduced because it is what the source says, but it is not universal.",
+      "resolution": "The month-bound cotton statement is kept inside an `inspect` key (a prompt to look), never inside a `nextSteps` key (an instruction to act). A reviewer covering the cotton belt should re-check it against ICAR-CICR."
+    }
+  ],
+  "verificationChecklistBeforeUse": [
+    "1. Fill every names.hi and the entire `hi` object of the i18n file with human-verified Hindi (G-HI-1). COTTON CANNOT SHIP UNTIL THIS IS DONE — manifest support_tiers.COTTON and ADR-021 §1 both require en+hi.",
+    "2. Obtain agronomist sign-off on ADR-021 §1 items (a)-(c). Until (c) is signed, COTTON_LEAF_REDDENING and COTTON_HERBICIDE_DAMAGE must stay observations, as written here.",
+    "3. Re-source MAIZE_GRAY_LEAF_SPOT from ICAR-IIMR when iimr.icar.gov.in resolves (G-MGLS-1). It is the only entry in this file with no primary citation.",
+    "4. Re-source COTTON_HERBICIDE_DAMAGE and COTTON_CURL_VIRUS from Indian institutions (G-CHD-1, G-CCV-1).",
+    "5. Decide the four vocabulary gaps G-TAG-1..G-TAG-4 with the engine owner before the rule-based checker is tuned; G-TAG-5 needs a question-set answer, not a data answer.",
+    "6. Approve or revert the three raised expertThresholds (G-THRESH-1).",
+    "7. Resolve CHILLI_ANTHRACNOSE's missing leaf description (G-CA-1) — it is the class most likely to be predicted from a leaf photo and least able to explain itself."
+  ]
+}

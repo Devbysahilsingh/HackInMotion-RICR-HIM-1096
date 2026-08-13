@@ -1,0 +1,6 @@
+{
+  "bodyOutbreakHigh": "पिछले सप्ताह {{district}} के {{reportCount}} किसानों ने {{cropCode}} पर यह बताया है। अभी अपनी फसल देखें।",
+  "bodyOutbreakInfo": "पिछले सप्ताह {{district}} के {{reportCount}} किसानों ने {{cropCode}} पर यह बताया है। अपनी फसल देख लेना ठीक रहेगा।",
+  "titleOutbreakHigh": "आपके क्षेत्र में व्यापक रिपोर्ट",
+  "titleOutbreakInfo": "आपके पास की रिपोर्ट"
+}

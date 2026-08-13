@@ -1,0 +1,18 @@
+# Test tooling only. NEVER installed into the runtime image — the Dockerfile
+# installs requirements.txt alone, so nothing here reaches production.
+#
+# Both additions are beyond the locked ml set in
+# docs/security/dependency-security.md and are justified as dev-only:
+#
+#   pytest — the repo already mandates a pytest suite for ml-service
+#            (docs/testing/ml-testing.md). There is no stdlib equivalent with
+#            fixtures and parametrisation, and unittest would make the contract
+#            suite materially harder to read.
+#   httpx  — a hard requirement of fastapi.testclient.TestClient. Without it the
+#            API contract could only be tested by starting a real server and
+#            talking to a socket, which is slower and flakier for no gain.
+
+-r requirements.txt
+
+pytest==9.1.1
+httpx==0.28.1

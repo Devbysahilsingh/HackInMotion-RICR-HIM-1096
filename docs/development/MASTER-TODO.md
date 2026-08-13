@@ -49,15 +49,26 @@ _All items P2-1..P2-9 implemented and tested. **930 backend tests passing** (was
 4. **~21 LIMITED crop roster** — still awaiting approval (carried from P1-6).
 5. **Render staging deploy** — still owner A (carried from P1-8).
 
-## PHASE 3 — Crop health chain (the hero)
-- [ ] [P0](C) Upload pipeline: multer limits→magic bytes→bomb guard→sharp re-encode→EXIF strip→Cloudinary ✔ ST-30 all fixtures
-- [ ] **P3-2** [P0](C) ml-service FastAPI skeleton (scaffold moved here from P0-3): /predict (service key), /healthz, preprocessing, ONNX runtime harness (stub model first) ✔ pytest contract suite
-- [ ] [P0](C) Gemini integration: prompt builder + responseSchema + zod validation + registry-closing + kill-switch ✔ recorded-payload tests + adversarial fixtures
-- [ ] [P0](C) OpenRouter tertiary (same contract) ✔ tier test
-- [ ] [P0](C) Rule-based symptom engine (KB weights) + symptom-check endpoint ✔ fixture answer-sets ordering
-- [ ] [P0](C) Health service conductor: registry routing, confidence gating, tier-down, source labeling, image-hash cache, recommendation emission ✔ 8-combination router matrix test
-- [ ] [P1](C) Severity follow-up endpoint (engine-derived) ✔ unit
-- [ ] [P2](C) Community consent field + aggregation job + alerts endpoint + fan-out ✔ ST-20 + job tests
+## PHASE 3 — Crop health chain (the hero) — **CODE COMPLETE 2026-08-13**
+- [x] **P3-1** [P0](C) Upload pipeline: multer limits→magic bytes→bomb guard→sharp re-encode→EXIF strip→Cloudinary ✔ ST-30 all fixtures (32 tests)
+- [x] **P3-2** [P0](C) ml-service FastAPI skeleton (scaffold moved here from P0-3): /predict (service key), /healthz, preprocessing, ONNX runtime harness (stub model first) ✔ pytest contract suite (141 tests)
+- [x] **P3-3** [P0](C) Gemini integration: prompt builder + responseSchema + zod validation + registry-closing + kill-switch ✔ payload + adversarial fixtures (64 tests, shared with P3-4)
+- [x] **P3-4** [P0](C) OpenRouter tertiary (same contract) ✔ tier test
+- [x] **P3-5** [P0](C) Rule-based symptom engine (KB weights) + symptom-check endpoint ✔ fixture answer-sets ordering (45 tests)
+- [x] **P3-6** [P0](C) Health service conductor: registry routing, confidence gating, tier-down, source labeling, image-hash cache, recommendation emission ✔ 8-combination router matrix test (22 tests)
+- [x] **P3-7** [P1](C) Severity follow-up endpoint (engine-derived) ✔ unit
+- [x] **P3-8** [P2](C) Community consent field + aggregation job + alerts endpoint + fan-out ✔ ST-20 (13) + job tests (36)
+
+**Prerequisite absorbed:** the disease KB did not exist (gap G12 — `cropRegistry.diseases` was empty for every crop), and registry-closing, the symptom engine, KB rendering and community fan-out all depend on it. Authored as a sourced research pass: **35 codes, 408 English strings**, TNAU/ICAR/NIPHM/eagri primary sources, zero dosages, gaps recorded per entry. Decisions: **ADR-024**.
+
+**Outstanding Phase 3 items (not code gaps):**
+1. **Disease-KB Hindi — 0/408 strings.** Rule 8 forbids machine-translating agronomic terms. Reported every run by `tests/i18n/disease-keys.test.js`; `dataGaps` carries it per crop. **This is ADR-021 §1's cotton ship gate** — cotton stays out of a bilingual demo until a Hindi-literate reviewer signs the KB off. Owner: human reviewer.
+2. **Calibrated thresholds.** τ, τ_healthy and the softmax temperature in `ml-service/model/model-manifest.json` are `"calibrated": false` / `"provisional": true` placeholders. The backend never re-derives the gate from `confidence` (the service decides `uncertain`), so training drops in without a backend change. The margin guard 0.15 is real — it is published in confidence-strategy.md.
+3. **Provider credentials.** `GEMINI_API_KEY`, `OPENROUTER_API_KEY`, `CLOUDINARY_URL`, `ML_SERVICE_URL` are all unset. Every tier is fixture-tested and every absence degrades honestly (`not_configured`, never a fabricated answer), but **no live provider call has been made**. Owner: A.
+4. **`OPENROUTER_MODEL` is an unverified free-tier choice** (`qwen/qwen2.5-vl-72b-instruct:free`) — no repository document names a model. If the `:free` suffix is retired the tier 4xxs and drops to the rule engine: degraded, never wrong. Re-check before demo.
+5. **HEVC-coded HEIC decoding is not demonstrated.** The libvips build has no HEVC *encoder*, so no valid fixture could be produced; the heif container path is proven with AVIF and the undecodable path with a truncated HEIF (ADR-024 §11).
+6. **Symptom-tag vocabulary has four recorded holes** (no interveinal, leaf-underside, shape-deformity, or colour-neutral discolouration). Consequence: `COTTON_LEAF_REDDENING` carries no `pattern` tag and is structurally unable to rank; `MAIZE_NORTHERN_LEAF_BLIGHT`/`MAIZE_GRAY_LEAF_SPOT` share 7 of 9 tags. Recorded in the KB files' `gaps`; widening the vocabulary means re-tagging both KB parts.
+7. **`MAIZE_GRAY_LEAF_SPOT` has no Indian primary source** — `iimr.icar.gov.in` did not resolve in DNS. Worth a retry.
 
 ## PHASE 4 — ML training (parallel track from Phase 0 completion; RTX 2050)
 - [ ] [P0](C) Training env: venv py3.12, torch cu12x, verify CUDA visible ✔ torch.cuda.is_available() true

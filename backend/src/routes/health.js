@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { readFileSync } from 'node:fs';
 
 import { databaseStatus } from '../config/db.js';
+import { tierConfig } from '../config/env.js';
 import { jobStatus } from '../jobs/index.js';
 import { providerCircuit } from '../utils/circuitBreaker.js';
 
@@ -38,6 +39,17 @@ healthRouter.get('/healthz', (req, res) => {
      */
     jobs: jobStatus(),
     services: providerCircuit.state(),
+    /**
+     * Which crop-health tiers are configured, and which an operator has
+     * switched off. Reported separately because they are different facts: a
+     * missing key is a deploy that is incomplete, a pulled switch is a
+     * deliberate act, and a chain answering from the rules tier for either
+     * reason should not look the same on a probe.
+     *
+     * Only booleans — no URL, no key, no provider hostname beyond what is
+     * already public.
+     */
+    tiers: tierConfig(),
     uptimeSeconds: Math.round(process.uptime()),
     timestamp: new Date().toISOString(),
   });

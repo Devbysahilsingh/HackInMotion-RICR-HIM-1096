@@ -46,6 +46,34 @@ export function isApproved(section) {
   return typeof section?.status === 'string' && /^approved\b/i.test(section.status.trim());
 }
 
+/**
+ * The disease KB arrives in two research parts (rice/tomato/potato and
+ * chilli/cotton/maize) because it was sourced in two passes against different
+ * institutions. They are concatenated rather than merged field-by-field: the
+ * parts are disjoint by crop, so a code appearing in both would be a genuine
+ * authoring conflict and is reported rather than silently resolved.
+ */
+export function loadDiseases() {
+  const parts = ['crops.diseases.part-rtp.json', 'crops.diseases.part-ccm.json']
+    .map((file) => readOptional(new URL(file, KNOWLEDGE_DIR)))
+    .filter(Boolean);
+
+  const byCode = new Map();
+  const duplicates = [];
+
+  for (const part of parts) {
+    for (const disease of part.diseases ?? []) {
+      if (byCode.has(disease.code)) {
+        duplicates.push(disease.code);
+        continue;
+      }
+      byCode.set(disease.code, disease);
+    }
+  }
+
+  return { entries: [...byCode.values()], duplicates };
+}
+
 export function loadKnowledge() {
   const limited = readOptional(new URL('crops.limited.proposal.json', KNOWLEDGE_DIR));
 
@@ -53,9 +81,38 @@ export function loadKnowledge() {
     agronomy: readOptional(new URL('crops.agronomy.json', KNOWLEDGE_DIR)),
     base: readOptional(new URL('crops.base.json', KNOWLEDGE_DIR)),
     fertilizer: readOptional(new URL('crops.fertilizer.json', KNOWLEDGE_DIR)),
+    diseases: loadDiseases(),
     limited: isApproved(limited) ? limited : null,
     limitedProposal: limited,
     manifest: readOptional(MANIFEST),
+  };
+}
+
+/**
+ * Research entry → registry sub-document.
+ *
+ * The knowledge files carry auditing fields the database has no use for —
+ * `publishedSymptoms` (the verbatim source text the tags were derived from),
+ * `tagDerivation`, `classCodeCaveat`. They stay in the repository, where a
+ * reviewer can check the mapping, and are deliberately not copied into Mongo:
+ * the registry serves farmers, and none of that is farmer-facing.
+ */
+export function composeDisease(entry) {
+  return {
+    code: entry.code,
+    names: {
+      en: entry.names?.en,
+      // Null until a Hindi-literate reviewer signs it off (rule 8).
+      hi: entry.names?.hi ?? null,
+      hiVerified: entry.names?.hiVerified === true,
+    },
+    symptoms: entry.symptoms ?? [],
+    inspect: entry.inspect ?? [],
+    nextSteps: entry.nextSteps ?? [],
+    prevention: entry.prevention ?? [],
+    symptomTags: entry.symptomTags ?? [],
+    expertThreshold: entry.expertThreshold ?? 0.4,
+    sourceRefs: normalizeSourceRefs(entry.sourceRefs),
   };
 }
 
@@ -147,6 +204,18 @@ function collectGaps(document) {
     gaps.push('disease KB entries absent for trained ML classes — blocks model ship');
   }
 
+  // The English KB may ship; the Hindi half may not, until a Hindi-literate
+  // reviewer signs it off (rule 8). ADR-021 gates cotton's ship on bilingual KB
+  // entries specifically, so this gap is what that gate reads.
+  const unverifiedHindi = (document.diseases ?? []).filter(
+    (disease) => !disease.names?.hi || disease.names?.hiVerified !== true,
+  );
+  if (unverifiedHindi.length) {
+    gaps.push(
+      `${unverifiedHindi.length} disease name(s) lack human-verified Hindi — blocks bilingual ship`,
+    );
+  }
+
   return gaps;
 }
 
@@ -154,7 +223,15 @@ function collectGaps(document) {
  * Builds one registry document. Pure: same inputs produce the same output,
  * which is what makes the seed re-runnable and its hash meaningful.
  */
-export function composeCrop({ cropCode, agronomy, base, fertilizer, manifest, mlClasses }) {
+export function composeCrop({
+  cropCode,
+  agronomy,
+  base,
+  fertilizer,
+  diseases,
+  manifest,
+  mlClasses,
+}) {
   const supportLevel = resolveSupportLevel({ cropCode, manifest, mlClasses, base });
 
   const document = {
@@ -188,7 +265,7 @@ export function composeCrop({ cropCode, agronomy, base, fertilizer, manifest, ml
     mlSupported: supportLevel.level === 'SPECIALIZED' && mlClasses.length > 0,
     mlClassCodes: mlClasses,
 
-    diseases: base?.diseases ?? [],
+    diseases: diseases ?? [],
     fertilizer: fertilizer ?? undefined,
     market: base?.market,
     yield: base?.yield,
@@ -232,6 +309,20 @@ export function composeRegistry(knowledge = loadKnowledge()) {
   const limited = toMap(knowledge.limited);
   const mlClasses = mlClassesByCrop(knowledge.manifest);
 
+  // Disease entries carry their own `cropCode`, so they are grouped here rather
+  // than being looked up per crop. Sorted by code so the composed document —
+  // and therefore the seed version hash — does not depend on the order the two
+  // research parts happened to be concatenated in.
+  const diseasesByCrop = new Map();
+  for (const entry of knowledge.diseases?.entries ?? []) {
+    const bucket = diseasesByCrop.get(entry.cropCode) ?? [];
+    bucket.push(composeDisease(entry));
+    diseasesByCrop.set(entry.cropCode, bucket);
+  }
+  for (const bucket of diseasesByCrop.values()) {
+    bucket.sort((a, b) => (a.code < b.code ? -1 : a.code > b.code ? 1 : 0));
+  }
+
   const codes = new Set([...agronomy.keys(), ...base.keys(), ...limited.keys()]);
   const documents = [];
   const incomplete = [];
@@ -244,6 +335,7 @@ export function composeRegistry(knowledge = loadKnowledge()) {
       agronomy: agronomy.get(cropCode),
       base: base.get(cropCode) ?? limited.get(cropCode),
       fertilizer: fertilizer.get(cropCode),
+      diseases: diseasesByCrop.get(cropCode) ?? [],
       manifest: knowledge.manifest,
       mlClasses: mlClasses.get(cropCode) ?? [],
     });

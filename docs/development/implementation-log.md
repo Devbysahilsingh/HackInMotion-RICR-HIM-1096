@@ -567,3 +567,86 @@ These are stated in the product surface, not only here.
 Created: `backend/src/utils/{httpClient,circuitBreaker,day}.js`, `config/failureFlags.js`, `integrations/{openMeteo,openWeatherMap,dataGovIn}.js`, `jobs/{scheduler,index,weatherRefresh,marketRefresh,feedRefresh,expiry}.js`, `services/{weatherValidation,weatherService,farmWeatherService,irrigationService,marketNormalizer,marketService,feedService,fertilizerService}.js`, `engines/{irrigation,weatherRisk,marketSignal,feedComposer,cropRec}/`, `routes/{market,dashboard,cropRecommendation}.js`, `scripts/{seed-market,trigger-jobs}.mjs`, 14 test files, `shared/constants/{agronomy,climate-normals}.js`, `shared/i18n/{en,hi}/{weather,irrigation,market,fertilizer,cropRec}.json`, `docs/decisions/ADR-023-phase2-engine-decisions.md`.
 
 Changed: `backend/src/{app,server}.js`, `config/{constants,env}.js`, `middleware/rateLimits.js`, `models/{MarketPrice,Recommendation,CropRegistry}.js`, `engines/stage/deriveStage.js`, `routes/{crops,farms,health,ownership-table}.js`, `backend/package.json`, `shared/i18n/{en,hi}/farm.json`, `render.yaml`, and the docs listed in ADR-023.
+
+---
+
+## PHASE 3 — Crop health chain (P3-1..P3-8) — 2026-08-13
+
+**1,203 backend tests / 1,203 pass / 0 fail** across 243 suites (Phase 2 finished at 931), plus **141 ml-service pytest / 141 pass**. Repo lint clean · `prettier --check` clean · web `tsc --noEmit` clean · `npm audit --omit=dev` **0 vulnerabilities** · layer-1 staged-secret scanner clean · `gitleaks detect` clean over both the committed history and a 471MB working-tree sweep. Four backend runtime dependencies added, all pre-approved in `docs/security/dependency-security.md`: `multer`, `sharp`, `file-type`, `cloudinary`. ml-service takes exactly its locked set (`fastapi`, `uvicorn`, `onnxruntime`, `pillow`, `pydantic`, `python-multipart`) plus `pytest`/`httpx` as dev-only.
+
+### The prerequisite that was not on the TODO list
+
+**The disease knowledge base did not exist.** `cropRegistry.diseases` was `[]` for all ten crops; `crops.agronomy.json` gap **G12** recorded diseases as "out of scope for this pass — not attempted". Registry-closing (P3-3), the symptom engine (P3-5), KB rendering (P3-6) and community fan-out (P3-8) all read it, and `docs/ml/crop-class-mapping.md` states the rule plainly: "every code has registry KB entry (symptoms/actions) BEFORE it may ship in the model (no diagnosis without guidance)."
+
+It was authored the way the other knowledge files were — a sourced research pass, not from memory. **35 codes, 408 English strings**, every entry carrying the verbatim `publishedSymptoms` its tags were derived from, a `tagDerivation` line, and `sourceRefs` naming the exact URL fetched. Primary sources: TNAU Agritech / Crop Protection Guide, NIPHM IPM packages, ICAR e-publications, eagri courseware. **No dosage, active ingredient or product name appears anywhere** — the chemical recommendations on those pages were read and deliberately discarded, and each `sourceRefs.note` says so. Where a source could not be reached (`iimr.icar.gov.in` did not resolve; the ICAR-CPRI potato manual DNS-failed; CABI returned 403) the failure is written into `gaps` rather than filled from elsewhere.
+
+Two source errors were quarantined rather than propagated: TNAU's tomato late-blight page prints "Sporangia formed when RH is < 90%" (inverted), and its potato early-blight page prints "Shot holes on fruits" (potato has no fruit a farmer inspects). Both are preserved verbatim in `publishedSymptoms`, both are untagged, and neither is ever rendered.
+
+### Engineering decisions (ADR-024 records the full set)
+
+| # | Decision | Why |
+|---|---|---|
+| 1 | Per-hop 10s bounded by a 15s E2E **deadline**; a hop with no budget is skipped, not started | Four docs say 10s per hop and the same doc says ≤15s E2E. 10+10 > 15, so a ceiling alone cannot honour the budget. |
+| 2 | LIMITED routes to the rule engine + honest notice | `crop-health.md` (wire contract) beats `crop-support-matrix.md`'s "Gemini best-effort" — same precedent as the weather risk-type spellings. |
+| 3 | Image cache keyed `(userId, cropId, imageHash)` over the **re-encoded** bytes, no new collection, no new index | Global would answer B's request with A's analysis (AU-1). Raw-byte hashes never collide — two shots of one leaf differ in EXIF timestamp. |
+| 4 | Cache hit answers **200**, not the documented 201 | Nothing was created. A second row would duplicate the timeline and inflate that farmer's community report count. |
+| 5 | Severity is declared **engine policy**, merged by `max` not average | No source publishes a banding function that generalises across pathogens. `evaluation-plan.md` names disease→HEALTHY as the dangerous direction; an average can under-call, a maximum cannot. |
+| 6 | Append-only narrowed, not abandoned: only `severityFollowUp` + `analysis.severityAssessment` mutate | The API contract defines a follow-up that amends the log. Bounded explicitly and regression-tested. |
+| 7 | Disease `names.hi` is nullable, with `hiVerified` | Requiring it left only two options: drop the sourced KB, or invent Hindi disease names. |
+| 8 | `source` = tier (farmer-facing); `provider` + `escalationPath` = record | Keeps "no Gemini key" distinguishable from "Gemini said UNKNOWN". |
+| 9 | `DISABLE_*` honoured in production; `FORCE_FAIL_*` still is not | Shedding a quota-exhausted tier without a redeploy is the whole point of a kill switch. Both stay routing-only. |
+| 10 | Uploads held in memory; **no temp file at all** | Stronger than the doc's "deleted in finally-block": no path from user input, nothing survives a crash, no directory for another process to read. |
+
+### Defects found and fixed within Phase 3, before completion
+
+| Severity | Finding | Fix |
+|---|---|---|
+| **HIGH** | **An animated image was accepted and analysed as a photograph.** `sharp().metadata()` reports `pages: undefined` unless the instance is constructed with `{animated: true}`, so the animated guard never fired — a three-frame WebP was flattened into one tall still and sent down the chain. Found by the hand-built animated-WebP fixture; sharp cannot author one, so without that fixture the guard was untestable and silently dead. | Metadata is read animation-aware, `pages > 1` is checked *before* dimensions (with `animated: true`, `height` is every frame stacked), and `pageHeight` is used for the edge check. |
+| **MEDIUM** | **A decompression bomb was reported as a corrupt photo.** `metadata()` at sharp's default `limitInputPixels` *throws* on an oversized declaration, so a 69-byte / 2.5-billion-pixel PNG landed in the catch branch and told the farmer to retake a photo that was never the problem — and told an operator "corrupt file" when they were being attacked. | The header read uses `limitInputPixels: false` (it decodes nothing, so no budget is at risk) and the explicit checks below produce the honest `DIMENSIONS_TOO_LARGE`. The decode step still carries the real limit, which is where a pixel budget protects something. |
+| **MEDIUM** | **Crop deletion orphaned every photograph.** `imagePublicId` has carried the comment "Needed to destroy the Cloudinary asset on cascade delete" since Phase 1, but nothing ever called destroy: `deleteCropCascade` removed the rows holding the only reference to each asset. `select: false` made it a trap — a naive `find()` returns `undefined` and the "cleanup" silently no-ops. | Images are destroyed before the rows, reading `+imagePublicId` explicitly, best-effort so a down image host cannot block a farmer's delete. Five regression tests, including one asserting the `select: false` field is actually read and one asserting a co-tenant's asset is never touched. |
+| **MEDIUM** | **Two reason vocabularies on one wire field.** `UPLOAD_ERROR.details[].rule` carried the reason class for ten cases but the coarse *storage* kind (`not_configured`) for the eleventh — caught while reconciling the API doc against the code. | One vocabulary: the class. The provider kind is logged server-side, where it is useful, and is of no use to a farmer who can only retry either way. |
+| **LOW** | **A flaky test, root-caused rather than retried.** `records a rejected upload in the audit log` passed alone and failed about one run in three under full-suite load. The audit write is deliberately fire-and-forget so an audit failure cannot mask the farmer's response — so reading immediately after the response is a race. | A bounded `eventually()` poll in the test. The route was left alone: awaiting the audit write to make a test deterministic would have traded a real property for a convenient one. Verified across three consecutive full runs. |
+| **LOW** | **An existing test asserted `gemini` was an unknown provider.** `httpClient.test.js` used it as its example of an id with no injection flag; P3-3 registered it, so the assertion began failing correctly. | The case now uses a permanently-unregistered id, so it tests the property (unknown implies never injected) independent of which providers exist, and a new case asserts each Phase 3 flag reaches exactly one provider and that the weather alias has not grown to cover the AI tiers. |
+
+### Verification performed (all executed, results real)
+
+| Check | Result |
+|---|---|
+| `backend && npm test` | **1203 / 1203 pass**, 243 suites, ~90s. Run three times consecutively after the flake fix; clean each time. |
+| `ml-service && pytest` | **141 passed**, 2.1s. One third-party `StarletteDeprecationWarning`. |
+| ST-30 upload (`tests/security/st-30-upload.test.js`) | 32 pass — polyglot JPEG+ZIP, PNG decompression bomb, oversize, exe-renamed-jpg, corrupt JPEG, EXIF-GPS stripped, heif container, animated, storage + cleanup failure |
+| ST-20 privacy (`tests/security/st-20-privacy.test.js`) | 13 pass — recursive payload scan for identifying fields, consent filtering at the *input*, single-farmer silence |
+| ST-10 authorization matrix | 100 pass (was 98 + 2 failing until `/community/alerts` was mounted — the table caught it) |
+| Router matrix (`tests/services/cropHealthRouter.test.js`) | 22 pass, **all 8 documented combinations** + cache, budget, consent and cleanup invariants |
+| Provider tiers (`tests/integrations/aiVision.test.js`) | 64 pass — primary to secondary to tertiary to safe failure, registry-closing, adversarial fixtures, kill switches |
+| Symptom engine | 45 pass — determinism asserted by shuffling the KB array ten ways and comparing serialised output |
+| `npm run lint` · `format:check` · web `tsc --noEmit` | clean |
+| `npm audit --omit=dev` | 0 vulnerabilities |
+| `gitleaks detect` (history) · `--no-git` (471MB tree) | no leaks. `.gitleaks.toml` now excludes `node_modules/` and `.venv/` — vendor code that is gitignored and can never be committed. |
+| Registry seed composition | 35 disease entries attached, matching `mlClassCodes` exactly per crop; 0 duplicates; 0 incomplete documents |
+
+### Honest limitations shipped in this phase
+
+- **No live provider call has been made.** `GEMINI_API_KEY`, `OPENROUTER_API_KEY`, `CLOUDINARY_URL` and `ML_SERVICE_URL` are all unset. Every tier is fixture-tested and every absence degrades to a labelled `not_configured` — but the fixtures are **synthetic-to-spec, not recorded live traffic**, and they are labelled as such inside each file. Nothing here claims a verified round-trip.
+- **Disease-KB Hindi is 0 of 408 strings.** Reported by name and count on every test run. This is ADR-021 §1's cotton ship gate.
+- **The model is a stub.** `stub-0.0.0-untrained`. τ, τ_healthy and the softmax temperature are `"calibrated": false` placeholders; the margin guard 0.15 is the one real value, because confidence-strategy.md publishes it. The backend never re-derives the gate — the service decides `uncertain` — so training drops in without a backend change.
+- **HEVC-coded HEIC decoding is not demonstrated.** The libvips build has no HEVC encoder (`heifsave: Unsupported compression`), so no valid fixture could be produced. The heif container path is proven with AVIF and the undecodable path with a truncated HEIF. `sharp.metadata()` does report `compression: 'hevc'` on a real HEIC, which indicates a decoder is present — an indication, not a proof.
+- **`OPENROUTER_MODEL` is an unverified free-tier guess.** No repository document names a model. If the `:free` suffix is retired the tier 4xxs and drops to the rule engine: degraded, never wrong.
+- **The symptom-tag vocabulary has four recorded holes** — no interveinal, leaf-underside, shape-deformity or colour-neutral discolouration tag. `COTTON_LEAF_REDDENING` consequently carries no `pattern` tag (weight 3) and is structurally unable to rank; `MAIZE_NORTHERN_LEAF_BLIGHT` and `MAIZE_GRAY_LEAF_SPOT` share 7 of 9 tags because their real discriminator is lesion geometry. Recorded in the KB `gaps`; widening the vocabulary means re-tagging both parts.
+- **`MAIZE_GRAY_LEAF_SPOT` has no Indian primary source.** Grey leaf spot appears on neither TNAU's maize index nor eagri's maize lecture, and `iimr.icar.gov.in` did not resolve in DNS. It rests on secondary sources and is graded `S`.
+- **`CHILLI_ANTHRACNOSE` carries no `part:LEAF` tag** — TNAU describes it only on twigs, flowers and fruit, and no published leaf lesion was found. Awkward for a class trained on leaf photography, and left as the source has it.
+- Three `expertThreshold` values were raised to 0.6 on broad/abiotic classes. They are **proposals, not measurements**; reverting all three to the 0.4 default breaks nothing.
+
+### Not done, deliberately
+
+- **No ML training.** No model was trained, exported or evaluated; `datasets/` is untouched. The ONNX harness is exercised against a ~700-byte hand-serialised graph so the code path is real, and `StubPredictor` is a deterministic hash — never a fabricated prediction dressed as one. `build_predictor` does **not** fall back: a configured-but-broken `MODEL_PATH` yields degraded health and 503, never silent hash noise.
+- **No deploy.** OD-2 (ml-service host) is still open; the 20-round-trip latency test has not been run.
+- **No `pip-audit`.** It is a pre-deploy gate and is recorded as such rather than claimed.
+- **No consent-toggle endpoint.** `setCommunityConsent` exists in the service and `communityConsent` is on the user model, but `docs/api/users.md` owns that surface and it is not a Phase 3 item.
+- **The four symptom-tag vocabulary holes were not patched.** Adding tags means re-tagging both KB parts against their sources; done badly it would introduce exactly the unsourced agronomy the pass exists to avoid.
+
+### Files
+
+Created: `backend/src/services/{imagePipeline,cropHealthService,aiVision,communityService}.js`, `integrations/{cloudinary,mlService,gemini,openRouter}.js`, `middleware/uploadImage.js`, `engines/{severity,symptom}/`, `routes/{cropHealth,cropHealthKeys,community}.js`, `jobs/communityAggregate.js`, `knowledge/crops.diseases.part-{rtp,ccm}.json`, `knowledge/i18n.diseases.part-{rtp,ccm}.json`, 9 test files (`tests/security/st-{20,30}-*.test.js`, `tests/api/cropHealth.test.js`, `tests/services/{cropHealthRouter,cropCascade}.test.js`, `tests/integrations/aiVision.test.js`, `tests/engines/symptomEngine.test.js`, `tests/jobs/communityAggregate.test.js`, `tests/i18n/disease-keys.test.js`), `tests/fixtures/images.js`, `tests/fixtures/external/ai/`, the whole of `ml-service/` (app, tests, Dockerfile, requirements, model manifest, scripts), `shared/i18n/{en,hi}/{health,community,disease}.json`, `docs/decisions/ADR-024-phase3-crop-health-decisions.md`.
+
+Changed: `backend/src/config/{constants,env,failureFlags}.js`, `models/{CropHealthLog,CropRegistry}.js`, `services/{cropService,registrySeedService}.js`, `middleware/rateLimits.js`, `routes/{health,ownership-table}.js`, `src/{app,jobs/index}.js`, `backend/package.json`, `tests/{utils/httpClient,i18n/message-keys}.test.js`, `shared/i18n/{en,hi}/errors.json`, `.gitleaks.toml`, `.env.example`, `render.yaml`, and the docs listed in ADR-024.

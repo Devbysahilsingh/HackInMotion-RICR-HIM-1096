@@ -6,5 +6,15 @@
   "rateLimited": "Too many attempts. Please wait a moment and try again.",
   "routeNotFound": "We could not find that.",
   "unsupportedEncoding": "That request used an unsupported format.",
+  "uploadAnimated": "Moving images cannot be analysed. Please send a still photo.",
+  "uploadDimensionsTooLarge": "That photo is too big to process. Please send a normal camera photo.",
+  "uploadNoFile": "No photo was attached. Please choose a photo and try again.",
+  "uploadNotAnImage": "That file is not a photo. Please attach a photo of the plant.",
+  "uploadStorageUnavailable": "We could not save your photo just now. Please try again in a moment.",
+  "uploadTooLarge": "That photo is larger than 8 MB. Please send a smaller photo.",
+  "uploadTooManyFiles": "Please attach one photo at a time.",
+  "uploadUnexpectedField": "That request was not in the expected form. Please try again.",
+  "uploadUnreadable": "That photo could not be opened. Please take the photo again.",
+  "uploadUnsupportedFormat": "That photo format is not supported. Please use JPEG, PNG, WebP or HEIC.",
   "validation": "Please check the highlighted fields and try again."
 }

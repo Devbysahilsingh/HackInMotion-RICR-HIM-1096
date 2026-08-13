@@ -1,0 +1,15 @@
+# Keep the runtime image to app code + model artefacts. Test code, virtualenvs
+# and dev tooling have no business in a production container.
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+tests/
+scripts/
+requirements-dev.txt
+pyproject.toml
+README.md
+.python-version
+.env
+.env.*

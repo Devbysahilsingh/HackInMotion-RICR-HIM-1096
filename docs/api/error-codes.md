@@ -24,10 +24,29 @@
 | EXTERNAL_SERVICE_ERROR | 503 | All fallbacks exhausted AND no cache (rare by design) |
 | AI_ERROR | 502 | Gemini/OpenRouter failure after retries (health flow degrades to rules instead of surfacing this where possible) |
 | ML_ERROR | 502 | ml-service failure (flow degrades to Gemini/rules; surfaced only if terminal) |
-| UPLOAD_ERROR | 400 | File failed validation pipeline; messageKey specifies reason class |
+| UPLOAD_ERROR | 400 | File failed the upload pipeline; messageKey specifies the reason class. **Always carries `details: [{field, rule}]`** — `field` is the multipart field (`image`) and `rule` is the reason class, matching the `{field, rule}` shape `VALIDATION_ERROR` uses. Implemented P3 (`src/middleware/uploadImage.js`) |
 | DATABASE_ERROR | 500 | Persistence failure (generic to client, detailed in server logs) |
 | NOT_IMPLEMENTED | 501 | Contract reserved but not built (the yield endpoint until P3). Added in P1-1 — `docs/api/intelligence.md` already specified a 501 with no code behind it |
 | INTERNAL_ERROR | 500 | Unhandled (logged with correlation id `meta.requestId`) |
+
+### `UPLOAD_ERROR` messageKeys (P3, `src/config/constants.js` → `UPLOAD_REJECTION_KEYS`)
+
+One key per reason class; the class is also the `rule` in `details`. Exhaustiveness over `UPLOAD_REJECTION` is asserted by the ST-30 suite, so a new reason cannot ship without a translation.
+
+| `rule` | `messageKey` |
+|---|---|
+| NO_FILE | `errors.uploadNoFile` |
+| TOO_LARGE | `errors.uploadTooLarge` |
+| UNEXPECTED_FIELD | `errors.uploadUnexpectedField` |
+| TOO_MANY_FILES | `errors.uploadTooManyFiles` |
+| NOT_AN_IMAGE | `errors.uploadNotAnImage` |
+| UNSUPPORTED_FORMAT | `errors.uploadUnsupportedFormat` |
+| DIMENSIONS_TOO_LARGE | `errors.uploadDimensionsTooLarge` |
+| ANIMATED | `errors.uploadAnimated` |
+| UNREADABLE | `errors.uploadUnreadable` |
+| STORAGE_UNAVAILABLE | `errors.uploadStorageUnavailable` |
+
+One exception to "`rule` is the reason class": the `STORAGE_UNAVAILABLE` response is raised by the route rather than the pipeline, and its `rule` carries the coarse storage kind (`not_configured` \| `timeout` \| `rejected` \| `injected`) so an operator can tell a missing Cloudinary credential from a provider timeout. The messageKey is the same either way — the farmer is told the same thing. Reason classes stay deliberately coarse: an honest user learns what to fix without a hostile one learning which guard fired.
 
 Never in any response: stack traces, driver errors, file paths, connection strings, keys, internal hostnames. Every response carries `X-Request-Id` for log correlation.
 

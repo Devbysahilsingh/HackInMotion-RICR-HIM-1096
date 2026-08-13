@@ -29,12 +29,21 @@ export const FAIL_FLAGS = {
   'open-meteo': 'FORCE_FAIL_OPENMETEO',
   openweathermap: 'FORCE_FAIL_OPENWEATHER',
   datagovin: 'FORCE_FAIL_DATAGOVIN',
+  // Phase 3 (RES-04..06): the crop-health tiers and the image store.
+  'ml-service': 'FORCE_FAIL_ML',
+  gemini: 'FORCE_FAIL_GEMINI',
+  openrouter: 'FORCE_FAIL_OPENROUTER',
+  cloudinary: 'FORCE_FAIL_CLOUDINARY',
 };
 
 export const SLOW_FLAGS = {
   'open-meteo': 'FORCE_SLOW_OPENMETEO',
   openweathermap: 'FORCE_SLOW_OPENWEATHER',
   datagovin: 'FORCE_SLOW_DATAGOVIN',
+  'ml-service': 'FORCE_SLOW_ML',
+  gemini: 'FORCE_SLOW_GEMINI',
+  openrouter: 'FORCE_SLOW_OPENROUTER',
+  cloudinary: 'FORCE_SLOW_CLOUDINARY',
 };
 
 /** Covers both weather providers at once (resilience.md demo script). */
@@ -71,3 +80,32 @@ export const ALL_INJECTION_FLAGS = [
   ...Object.values(SLOW_FLAGS),
   WEATHER_ALIAS,
 ];
+
+/**
+ * Operational kill switches — a different mechanism from the flags above.
+ *
+ * `DISABLE_*` is deliberately NOT short-circuited by `isProd`, because its
+ * whole purpose is production: shedding a tier whose free-tier quota is spent
+ * or whose provider is misbehaving, without a redeploy
+ * (docs/security/ai-security.md). Being honoured in production is exactly what
+ * separates it from the FORCE_FAIL_* demo flags, which are not.
+ *
+ * The safety property is unchanged and is what makes this acceptable: a
+ * disabled tier is *skipped by the router*. Nothing here is consulted by
+ * authentication, ownership, validation or rate limiting, so no value of any
+ * of these variables can widen access to anything.
+ */
+export const DISABLE_FLAGS = {
+  'ml-service': 'DISABLE_ML',
+  gemini: 'DISABLE_GEMINI',
+  openrouter: 'DISABLE_OPENROUTER',
+};
+
+/**
+ * @param {string} provider provider id, e.g. 'gemini'
+ * @param {NodeJS.ProcessEnv} [source] injectable for tests
+ */
+export function tierDisabled(provider, source = process.env) {
+  const flag = DISABLE_FLAGS[provider];
+  return Boolean(flag) && source[flag] === 'true';
+}

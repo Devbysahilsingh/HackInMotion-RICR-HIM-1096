@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-13T02:41:29Z",
+  "generatedBy": "ml-service/scripts/generate_model_manifest.py",
+  "modelVersion": "stub-0.0.0-untrained",
+  "modelFile": null,
+  "trained": false,
+  "calibrated": false,
+  "provisional": true,
+  "datasetManifest": {
+    "path": "datasets/manifest.json",
+    "sha256": "dc4e5e3dac5fe011650c49ae9531b986ffaabec89bd877f28160cd6290a05804",
+    "schemaVersion": 1,
+    "generatedAt": "2026-08-12T18:43:29+00:00"
+  },
+  "preprocessing": {
+    "resizeShortestSide": 256,
+    "centerCrop": 224,
+    "colorSpace": "RGB",
+    "exifNormalize": true,
+    "interpolation": "bilinear",
+    "mean": [0.485, 0.456, 0.406],
+    "std": [0.229, 0.224, 0.225],
+    "note": "Must be byte-identical to the training transform. Unverified until the golden-image parity test runs against real training code."
+  },
+  "inference": {
+    "temperature": 1.0,
+    "thresholds": {
+      "tau": 0.75,
+      "tauHealthy": 0.85,
+      "marginGuard": 0.15,
+      "cropMaskFloor": 0.01
+    }
+  },
+  "placeholders": {
+    "temperature": "PLACEHOLDER 1.0 = no calibration applied. Real T comes from LBFGS on validation NLL (docs/ml/confidence-strategy.md). 1.0 is the identity, chosen so the stub cannot pretend to be calibrated.",
+    "thresholds.tau": "PLACEHOLDER. Real tau is the precision-coverage point where val precision-of-accepted >= 0.90. The docs note an EXPECTED neighborhood of 0.70-0.80; 0.75 is the midpoint of that expectation and is NOT a measured value.",
+    "thresholds.tauHealthy": "PLACEHOLDER. Real tau_healthy is set where the false-negative-disease rate among accepted-healthy is <= 5% on val. 0.85 is only 'stricter than tau', which is the sole property the docs actually pin down.",
+    "thresholds.marginGuard": "NOT a placeholder. 0.15 is specified verbatim in docs/ml/confidence-strategy.md.",
+    "thresholds.cropMaskFloor": "PLACEHOLDER. The docs say 'a small floor' without a number. 0.01 is a provisional reading of 'small', constrained by one structural fact: it must sit BELOW the uniform probability 1/35 = 0.0286, otherwise a genuinely diffuse prediction would be reported as a wrong-crop photo instead of as low confidence. Must be set from the crop-mismatch evaluation fixtures once they exist.",
+    "classOrder": "PLACEHOLDER ORDERING. Sorted ascending by class code. The trained model's output index order is authoritative and MUST overwrite this list at export time — a silent mismatch here mislabels every prediction while looking perfectly healthy."
+  },
+  "classOrder": "sorted-ascending-by-code",
+  "classes": [
+    "CHILLI_ANTHRACNOSE",
+    "CHILLI_BACTERIAL_SPOT",
+    "CHILLI_CERCOSPORA_LEAF_SPOT",
+    "CHILLI_HEALTHY",
+    "CHILLI_LEAF_CURL_VIRUS",
+    "CHILLI_NUTRIENT_DEFICIENCY",
+    "CHILLI_POWDERY_MILDEW",
+    "COTTON_BACTERIAL_BLIGHT",
+    "COTTON_CURL_VIRUS",
+    "COTTON_HEALTHY",
+    "COTTON_HERBICIDE_DAMAGE",
+    "COTTON_LEAF_HOPPER_JASSIDS",
+    "COTTON_LEAF_REDDENING",
+    "MAIZE_COMMON_RUST",
+    "MAIZE_GRAY_LEAF_SPOT",
+    "MAIZE_HEALTHY",
+    "MAIZE_NORTHERN_LEAF_BLIGHT",
+    "POTATO_EARLY_BLIGHT",
+    "POTATO_HEALTHY",
+    "POTATO_LATE_BLIGHT",
+    "RICE_BACTERIAL_LEAF_BLIGHT",
+    "RICE_BLAST",
+    "RICE_BROWN_SPOT",
+    "RICE_NORMAL",
+    "RICE_TUNGRO",
+    "TOMATO_BACTERIAL_SPOT",
+    "TOMATO_EARLY_BLIGHT",
+    "TOMATO_HEALTHY",
+    "TOMATO_LATE_BLIGHT",
+    "TOMATO_LEAF_MOLD",
+    "TOMATO_MOSAIC_VIRUS",
+    "TOMATO_SEPTORIA_LEAF_SPOT",
+    "TOMATO_SPIDER_MITES",
+    "TOMATO_TARGET_SPOT",
+    "TOMATO_YELLOW_LEAF_CURL_VIRUS"
+  ],
+  "healthyClasses": [
+    "CHILLI_HEALTHY",
+    "COTTON_HEALTHY",
+    "MAIZE_HEALTHY",
+    "POTATO_HEALTHY",
+    "RICE_NORMAL",
+    "TOMATO_HEALTHY"
+  ],
+  "crops": {
+    "CHILLI": [
+      "CHILLI_ANTHRACNOSE",
+      "CHILLI_BACTERIAL_SPOT",
+      "CHILLI_CERCOSPORA_LEAF_SPOT",
+      "CHILLI_HEALTHY",
+      "CHILLI_LEAF_CURL_VIRUS",
+      "CHILLI_NUTRIENT_DEFICIENCY",
+      "CHILLI_POWDERY_MILDEW"
+    ],
+    "COTTON": [
+      "COTTON_BACTERIAL_BLIGHT",
+      "COTTON_CURL_VIRUS",
+      "COTTON_HEALTHY",
+      "COTTON_HERBICIDE_DAMAGE",
+      "COTTON_LEAF_HOPPER_JASSIDS",
+      "COTTON_LEAF_REDDENING"
+    ],
+    "MAIZE": [
+      "MAIZE_COMMON_RUST",
+      "MAIZE_GRAY_LEAF_SPOT",
+      "MAIZE_HEALTHY",
+      "MAIZE_NORTHERN_LEAF_BLIGHT"
+    ],
+    "POTATO": ["POTATO_EARLY_BLIGHT", "POTATO_HEALTHY", "POTATO_LATE_BLIGHT"],
+    "RICE": [
+      "RICE_BACTERIAL_LEAF_BLIGHT",
+      "RICE_BLAST",
+      "RICE_BROWN_SPOT",
+      "RICE_NORMAL",
+      "RICE_TUNGRO"
+    ],
+    "TOMATO": [
+      "TOMATO_BACTERIAL_SPOT",
+      "TOMATO_EARLY_BLIGHT",
+      "TOMATO_HEALTHY",
+      "TOMATO_LATE_BLIGHT",
+      "TOMATO_LEAF_MOLD",
+      "TOMATO_MOSAIC_VIRUS",
+      "TOMATO_SEPTORIA_LEAF_SPOT",
+      "TOMATO_SPIDER_MITES",
+      "TOMATO_TARGET_SPOT",
+      "TOMATO_YELLOW_LEAF_CURL_VIRUS"
+    ]
+  },
+  "knownLimitations": [
+    "RICE_NORMAL is 100% studio imagery; healthy-rice field performance is UNVALIDATED and must not be claimed (ADR-021 decision 2, option c).",
+    "Both chilli sources are studio imagery separable by capture style; the merged chilli label space is not trusted until the source-separability probe runs (ADR-021 decision 4).",
+    "Stock-image quarantine is filename-evidence only. Pixel-burned watermarks with neutral filenames are NOT caught and need the human review queue.",
+    "Rotated/mirrored publisher augmentations are undetectable by the duplicate method; augmented groups are excluded by construction, not by detection."
+  ],
+  "supportTiers": {
+    "COTTON": {
+      "tier": "SPECIALIZED",
+      "decision": "ADR-021 decision 1",
+      "note": "6 classes. Ships only once each has a KB entry (en+hi) and the agronomist items (a)-(c) are signed off."
+    },
+    "CHILLI": {
+      "tier": "GENERAL",
+      "decision": "ADR-021 decision 4",
+      "note": "Trainable, but no field-robustness claim: both sources are studio imagery and no field-realistic chilli evaluation set exists yet."
+    },
+    "RICE": {
+      "tier": "GENERAL",
+      "decision": "ADR-021 decision 2 (option c)",
+      "note": "Healthy-rice field-condition performance is unvalidated. Do not claim field robustness for healthy-rice classification."
+    }
+  },
+  "confoundEvaluationGates": [
+    {
+      "id": "chilli_source_disjoint_classes",
+      "crop": "CHILLI",
+      "evaluationGate": "Metrics for CHILLI_ANTHRACNOSE, CHILLI_BACTERIAL_SPOT, CHILLI_NUTRIENT_DEFICIENCY and CHILLI_POWDERY_MILDEW MUST be reported with this confound stated, and MUST NOT be presented as evidence of disease-discrimination ability. The Grad-CAM background-reliance probe in docs/ml/error-analysis.md is REQUIRED for chilli before any chilli accuracy figure is published.",
+      "residualRisk": "Not removed, only contained. The only complete fix is chilli imagery of the same classes from a second capture style — no such data exists in the corpus."
+    },
+    {
+      "id": "rice_healthy_brownspot_source_disjoint",
+      "crop": "RICE",
+      "evaluationGate": "The RICE_NORMAL <-> RICE_BROWN_SPOT confusion cell MUST be reported explicitly in the evaluation battery, not folded into macro-F1 alone. RICE_NORMAL recall MUST NOT be quoted as field performance. If RICE_NORMAL recall exceeds RICE_BROWN_SPOT recall by a wide margin, treat it as evidence of the shortcut, not of skill.",
+      "residualRisk": "Cannot be removed with the data on hand: no field-realistic healthy rice imagery exists in the corpus. The complete fix is field-realistic healthy rice data used FOR TRAINING, which ADR-021 decision 2 (option c) reserves for separate approval."
+    }
+  ]
+}

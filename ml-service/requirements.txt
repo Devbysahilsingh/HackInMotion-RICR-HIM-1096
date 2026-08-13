@@ -1,0 +1,23 @@
+# ml-service runtime dependencies.
+#
+# This list is exactly the locked ml set from docs/security/dependency-security.md
+# — fastapi, uvicorn, onnxruntime, pillow, pydantic, python-multipart — and
+# nothing else. Anything added here needs a stated reason in the PR.
+#
+# uvicorn is pinned WITHOUT the [standard] extra: uvloop/httptools/websockets
+# are throughput optimisations this service does not need (it serves one
+# internal caller on a free CPU host) and they would triple the supply-chain
+# surface for no measurable benefit at this traffic level.
+#
+# TODO before the first deploy: produce a full transitive lock by running
+# `pip freeze` inside the built Linux image and committing it as
+# requirements.lock.txt. The direct pins below are exact; their transitive
+# closure is not yet frozen, and pinning a Windows-resolved closure here would
+# have produced a lock that cannot build on python:3.12-slim.
+
+fastapi==0.141.1
+uvicorn==0.52.1
+onnxruntime==1.28.0
+pillow==12.3.0
+pydantic==2.13.4
+python-multipart==0.0.32

@@ -167,6 +167,42 @@ export const ROUTE_OWNERSHIP = [
   // Reference data: no farmer owns it and it contains nothing personal, so it
   // is readable without a token. Every other route above is authenticated.
   { method: 'GET', path: '/api/v1/registry/crops', auth: 'public', ownership: 'none' },
+
+  // ── Crop health ────────────────────────────────────────────────────────────
+  // `analyze` and `symptom-check` take `cropId` in the body, so like
+  // `/crop-recommendation` there is no `param` for the matrix to substitute;
+  // both still resolve the crop *and* its farm through userId-filtered queries
+  // (AU-3) and answer 404 for a crop the caller does not own.
+  { method: 'POST', path: '/api/v1/crop-health/analyze', auth: 'required', ownership: 'scoped' },
+  {
+    method: 'POST',
+    path: '/api/v1/crop-health/symptom-check',
+    auth: 'required',
+    ownership: 'scoped',
+  },
+  { method: 'GET', path: '/api/v1/crop-health/logs', auth: 'required', ownership: 'scoped' },
+  {
+    method: 'GET',
+    path: '/api/v1/crop-health/logs/:id',
+    auth: 'required',
+    ownership: 'direct',
+    resource: 'cropHealthLog',
+    param: 'id',
+  },
+  {
+    method: 'POST',
+    path: '/api/v1/crop-health/logs/:id/severity',
+    auth: 'required',
+    ownership: 'direct',
+    resource: 'cropHealthLog',
+    param: 'id',
+  },
+
+  // ── Community ──────────────────────────────────────────────────────────────
+  // District aggregates. Authenticated but unscoped: the documents are
+  // structurally PII-free counts that belong to no farmer (AU-6), and there is
+  // deliberately no write API — the aggregation job is the only writer.
+  { method: 'GET', path: '/api/v1/community/alerts', auth: 'required', ownership: 'none' },
 ];
 
 /** Routes the ST-10 matrix must exercise for 401 / 404 / scoping behaviour. */

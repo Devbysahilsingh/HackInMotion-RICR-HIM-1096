@@ -367,8 +367,27 @@ describe('failure-injection flags are routing-only and non-production', () => {
   it('reads only the exact string "true", and only for a known provider', () => {
     assert.equal(failureInjected('open-meteo', { FORCE_FAIL_OPENMETEO: '1' }), false);
     assert.equal(failureInjected('open-meteo', { FORCE_FAIL_OPENMETEO: 'TRUE' }), false);
-    assert.equal(failureInjected('gemini', { FORCE_FAIL_GEMINI: 'true' }), false);
     assert.equal(failureInjected('open-meteo', {}), false);
+
+    // An id with no entry in FAIL_FLAGS cannot be failed at all, no matter what
+    // the environment says. This case previously used `gemini`, which Phase 3
+    // then registered as a real provider — so the assertion started failing for
+    // the right reason. A permanently-unregistered id keeps the property under
+    // test (unknown ⇒ never injected) independent of which providers exist.
+    assert.equal(failureInjected('not-a-provider', { FORCE_FAIL_NOT_A_PROVIDER: 'true' }), false);
+  });
+
+  it('injects the Phase 3 crop-health providers under their own flags', () => {
+    // Registered in P3-3/P3-4/P3-6 so RES-04..06 can be demonstrated on a live
+    // system. Each flag reaches exactly one provider.
+    assert.equal(failureInjected('gemini', { FORCE_FAIL_GEMINI: 'true' }), true);
+    assert.equal(failureInjected('openrouter', { FORCE_FAIL_OPENROUTER: 'true' }), true);
+    assert.equal(failureInjected('ml-service', { FORCE_FAIL_ML: 'true' }), true);
+    assert.equal(failureInjected('cloudinary', { FORCE_FAIL_CLOUDINARY: 'true' }), true);
+
+    assert.equal(failureInjected('gemini', { FORCE_FAIL_ML: 'true' }), false);
+    // The weather alias must not have grown to cover the AI tiers.
+    assert.equal(failureInjected('gemini', { FORCE_FAIL_WEATHER: 'true' }), false);
   });
 
   it('reads a slow flag as a positive number of milliseconds, or zero', () => {
