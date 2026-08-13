@@ -1,0 +1,22 @@
+{
+  "gateNoEvidence": "We have no sourced information for this crop to rank it on.",
+  "gateSeason": "The published crop calendar does not list this crop for the {{season}} season.",
+  "gateSoil": "Published guidance rates this crop as unsuitable for {{soilType}} soil.",
+  "gateUnsupported": "This crop is not supported by the platform.",
+  "gateWater": "This crop needs at least {{needFloorMm}} mm a season and the district normally receives {{normalRainfallMm}} mm, with no assured irrigation.",
+  "limitationNoClimateNormals": "District rainfall and temperature normals are not yet loaded, so temperature suitability was not considered and rainfed water suitability could not be assessed.",
+  "limitationNoNormalForDistrict": "No climate normals are recorded for this district, so temperature suitability was not considered.",
+  "limitationSoilNotSourced": "Soil suitability scores are not published for some of these crops, so soil was not part of their score.",
+  "missingRainfallNormal": "Rainfall normals for this district are not available, so water suitability could not be assessed for a rainfed field.",
+  "missingSeasons": "The sowing seasons for this crop are not recorded.",
+  "missingSoilSuitability": "Soil suitability for {{soilType}} is not published for this crop.",
+  "missingTempNormal": "Temperature normals for this district are not available.",
+  "missingTempOpt": "The optimum temperature range for this crop is not recorded.",
+  "missingWaterNeed": "The seasonal water need for this crop is not recorded.",
+  "preferenceNotScored": "Your {{preference}} preference is noted but does not change this ranking — we have no sourced basis for scoring it.",
+  "registryDataGaps": "Some information for this crop is still missing from our records.",
+  "seasonMatch": "The published crop calendar lists this crop for this season.",
+  "soilSuitable": "Published guidance rates this crop {{published}} out of {{scaleMax}} for {{soilType}} soil.",
+  "tempOk": "The season's temperatures overlap this crop's preferred range.",
+  "waterOk": "This crop needs {{needMm}} mm a season, which your water source should meet. This part is our own estimate, not a published figure."
+}

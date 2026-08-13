@@ -35,11 +35,20 @@
   sensitivity: { frostTminC: 2, heatTmaxC: 38, heavyRainMm24h: 50, humidityDiseasePct: 85 },
   mlSupported: true, mlClassCodes: ["TOMATO_EARLY_BLIGHT", ...],
   diseases: [ { code, names:{en,hi}, symptoms[], inspect[], nextSteps[], prevention[], expertThreshold } ],
-  fertilizer: { stages:[ { stage, nutrientFocus, guidanceKey, sourceRef } ] },
+  fertilizer: {                                     // shipped shape — see note below
+    context: { region, condition, varietyClass },
+    recommendations: [ { source, basis:'blanket_no_soil_test'|'stcr_soil_test',
+                         totalNpk, organics, micronutrients,
+                         schedule:[ { stage, timing, fractionKey, note } ] } ],
+    deficiencySymptoms: [ { nutrient, symptomKey, sourceUrl } ],
+    verificationPending: bool
+  },
   market: { commodityCode: "TOMATO", aliases:["Tomato"] },
   yield: { apyCropName: "Tomato" }        // P3 hook
 }
 ```
+
+The earlier `fertilizer: { stages:[{stage, nutrientFocus, guidanceKey, sourceRef}] }` shape has been wrong since P1-6 and never existed in code. A published dose is one *recommendation* (a whole NPK package from one source, on one basis) carrying its own split schedule — not a per-stage guidance key — because state-university recommendations are published that way and flattening them would separate a dose from the source and basis that qualify it. `totalNpk`/`organics`/`micronutrients` stay Mixed: published doses vary (single figure, variety/hybrid split, range) and the printed unit (kg/ha vs kg/acre) is preserved exactly. `verificationPending` marks numbers still awaiting primary-PDF verification.
 
 ## Extending to a new crop (no code changes)
 1. Add registry document (agronomic fields sourced + cited in sourceRef).

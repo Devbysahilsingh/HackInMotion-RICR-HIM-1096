@@ -1,3 +1,5 @@
 {
-  "limitReached": "You have reached the maximum number of farms on this account."
+  "limitReached": "You have reached the maximum number of farms on this account.",
+  "onboardingCreateFarm": "Add your first farm to start getting advice.",
+  "onboardingCreateFarmCta": "Create your farm"
 }

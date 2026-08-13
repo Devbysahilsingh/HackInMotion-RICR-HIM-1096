@@ -49,6 +49,32 @@ const envSchema = z.object({
   MONGODB_URI: isProduction ? mongoUri : mongoUri.optional(),
   JWT_SECRET: productionSecret(32),
   SERVICE_KEY: productionSecret(32),
+
+  /**
+   * Phase 2 providers.
+   *
+   * Open-Meteo is deliberately absent: ADR-007 selects it precisely because it
+   * is keyless, so there is no `OPENMETEO_*` variable to forget.
+   *
+   * Both keys below stay **optional even in production**, which is a departure
+   * from the "required once the subsystem ships" convention and is deliberate:
+   *   - `OPENWEATHER_API_KEY` buys only the *fallback* leg. Without it the
+   *     primary still works, so making it required would turn a degraded mode
+   *     into a boot failure.
+   *   - `DATAGOVIN_API_KEY` is open decision OD-5 and has not been issued.
+   *     Requiring it would make the whole API unbootable over a subsystem that
+   *     is designed to fall back to seeded history.
+   * Each integration reports its own absence honestly instead.
+   */
+  OPENWEATHER_API_KEY: z.string().min(1).optional(),
+  DATAGOVIN_API_KEY: z.string().min(1).optional(),
+  /**
+   * The data.gov.in resource id for "Variety-wise Daily Market Prices".
+   * Configurable rather than hardcoded because the catalogue re-issues ids,
+   * and no repository document records one (docs/market/data-source.md names
+   * the dataset but publishes no id).
+   */
+  DATAGOVIN_RESOURCE_ID: z.string().min(1).optional(),
 });
 
 /**

@@ -45,6 +45,21 @@ const recommendationSchema = new Schema(
 
     validUntil: { type: Date, required: true },
     acknowledgedAt: { type: Date },
+
+    /**
+     * Idempotency key for the feed-refresh job.
+     *
+     * docs/api/recommendations.md requires "idempotent upserts, dedupe
+     * type+cropId+day", but that tuple is not sufficient and has no home on the
+     * document: two simultaneous weather risks on one crop share it (so one
+     * would silently overwrite the other), farm-level items have no `cropId`,
+     * and nothing carries `userId`, without which the key collides across
+     * accounts. The composed key — user | type | crop-or-farm | discriminator |
+     * IST day — is stored so the upsert filter is a single indexed equality and
+     * idempotency is enforced by the database rather than by job logic, exactly
+     * as `marketPrices` does it.
+     */
+    dedupKey: { type: String, required: true },
   },
   baseOptions('recommendations'),
 );
@@ -59,5 +74,7 @@ recommendationSchema.index(
  * days after validUntil rather than vanishing the instant they lapse.
  */
 recommendationSchema.index({ validUntil: 1 }, { name: 'validUntil' });
+/** The feed job's upsert target — makes a re-run a no-op at the storage layer. */
+recommendationSchema.index({ dedupKey: 1 }, { unique: true, name: 'dedupKey_unique' });
 
 export const Recommendation = model('Recommendation', recommendationSchema);

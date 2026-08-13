@@ -52,6 +52,15 @@ export const ROUTE_OWNERSHIP = [
     param: 'id',
   },
 
+  {
+    method: 'GET',
+    path: '/api/v1/farms/:id/weather',
+    auth: 'required',
+    ownership: 'direct',
+    resource: 'farm',
+    param: 'id',
+  },
+
   // ── Crops ──────────────────────────────────────────────────────────────────
   {
     method: 'POST',
@@ -93,6 +102,66 @@ export const ROUTE_OWNERSHIP = [
     resource: 'crop',
     param: 'id',
   },
+
+  // ── Irrigation (crop-scoped, so the full chain is verified) ────────────────
+  {
+    method: 'GET',
+    path: '/api/v1/crops/:id/irrigation',
+    auth: 'required',
+    ownership: 'nested',
+    resource: 'crop',
+    param: 'id',
+  },
+  {
+    method: 'POST',
+    path: '/api/v1/crops/:id/irrigation-log',
+    auth: 'required',
+    ownership: 'nested',
+    resource: 'crop',
+    param: 'id',
+  },
+  {
+    method: 'GET',
+    path: '/api/v1/crops/:id/irrigation-log',
+    auth: 'required',
+    ownership: 'nested',
+    resource: 'crop',
+    param: 'id',
+  },
+
+  // ── Fertilizer ─────────────────────────────────────────────────────────────
+  {
+    method: 'GET',
+    path: '/api/v1/crops/:id/fertilizer-guidance',
+    auth: 'required',
+    ownership: 'nested',
+    resource: 'crop',
+    param: 'id',
+  },
+
+  // ── Dashboard & feed ───────────────────────────────────────────────────────
+  { method: 'GET', path: '/api/v1/dashboard', auth: 'required', ownership: 'scoped' },
+  { method: 'GET', path: '/api/v1/recommendations', auth: 'required', ownership: 'scoped' },
+  {
+    method: 'POST',
+    path: '/api/v1/recommendations/:id/ack',
+    auth: 'required',
+    ownership: 'direct',
+    resource: 'recommendation',
+    param: 'id',
+  },
+
+  // ── Crop recommendation ────────────────────────────────────────────────────
+  // `farmId` arrives in the body rather than the path, so there is no `param`
+  // for the matrix to substitute; ownership is still a userId-filtered query
+  // and a farm the caller does not own answers 404.
+  { method: 'POST', path: '/api/v1/crop-recommendation', auth: 'required', ownership: 'scoped' },
+
+  // ── Market ─────────────────────────────────────────────────────────────────
+  // Mandi prices are public data with no owner, so `/prices` is authenticated
+  // but unscoped. `/my-crops` reads the caller's crops and IS scoped.
+  { method: 'GET', path: '/api/v1/market/prices', auth: 'required', ownership: 'none' },
+  { method: 'GET', path: '/api/v1/market/my-crops', auth: 'required', ownership: 'scoped' },
 
   // ── Registry ───────────────────────────────────────────────────────────────
   // Reference data: no farmer owns it and it contains nothing personal, so it

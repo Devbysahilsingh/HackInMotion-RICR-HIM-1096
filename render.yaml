@@ -46,10 +46,18 @@ services:
 
       # ── Consumed by subsystems that land in later phases ──────────────
       # Add these to the dashboard as each phase ships; the env schema only
-      # requires a variable once the code that reads it exists.
+      # requires a variable once the code that reads it exists. Every one of
+      # them is a secret, so declare each with `sync: false` when you move it
+      # out of this comment.
       #   GEMINI_API_KEY, OPENROUTER_API_KEY, GROQ_API_KEY,
-      #   OPENWEATHER_API_KEY, DATAGOVIN_API_KEY, CLOUDINARY_URL,
-      #   ML_SERVICE_URL
+      #   CLOUDINARY_URL, ML_SERVICE_URL
+      #
+      # Phase 2 (shipped) — all three are OPTIONAL even in production, so a
+      # deploy without them boots and degrades honestly rather than failing:
+      # weather runs on the keyless Open-Meteo primary (ADR-007 — there is no
+      # OPENMETEO_* variable by design), and market ingest reports
+      # `skipped: 'not_configured'` and serves seeded history (OD-5).
+      #   OPENWEATHER_API_KEY, DATAGOVIN_API_KEY, DATAGOVIN_RESOURCE_ID
       #
       # FORCE_FAIL_* / DISABLE_* failure-injection flags belong on a staging
       # service ONLY and must be absent in production (production checklist).

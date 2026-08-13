@@ -25,6 +25,7 @@ import { loadOwned } from '../middleware/loadOwned.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import { validate } from '../middleware/validate.js';
 import { Farm } from '../models/index.js';
+import { farmWeather } from '../services/farmWeatherService.js';
 import * as farmService from '../services/farmService.js';
 import { sendData, sendNoContent } from '../utils/respond.js';
 
@@ -157,6 +158,21 @@ farmsRouter.delete('/:id', loadOwned({ model: Farm }), async (req, res, next) =>
   try {
     await farmService.deleteFarmCascade(req.farm);
     sendNoContent(res);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * Weather for a farm (docs/api/weather.md). Served from weatherSnapshots only —
+ * the request path never reaches a provider (CLAUDE.md rule 3).
+ *
+ * A location with no snapshot yet answers 200 with `freshness.status:'pending'`
+ * and a retry hint rather than 5xx: "never 5xx for missing cache".
+ */
+farmsRouter.get('/:id/weather', loadOwned({ model: Farm }), async (req, res, next) => {
+  try {
+    sendData(res, await farmWeather(req.farm));
   } catch (err) {
     next(err);
   }

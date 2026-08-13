@@ -45,6 +45,14 @@ const ACTIVE_STATUS = 'active';
 const DEVELOPMENT_STAGE = 'DEVELOPMENT';
 
 /**
+ * The other interpolating stage. FAO-56 publishes Kc_end — the value reached at
+ * the *end* of the late season — and defines the late season as a linear
+ * decline from Kc_mid to it. Both stages therefore interpolate; they differ
+ * only in which pair of endpoints they span (see `resolveKc`).
+ */
+const LATE_STAGE = 'LATE';
+
+/**
  * Interpolated Kc is rounded so the trace shows a number a human can read back
  * against the source table rather than a float artefact. Three places keeps
  * more precision than FAO-56's published two, so rounding here can never be
@@ -270,7 +278,35 @@ function buildWindows(kcStages) {
  * @returns {{kc: number|null, traceEntry: object}}
  */
 function resolveKc(window_, windows, dayInStage) {
-  if (window_.stage !== DEVELOPMENT_STAGE) {
+  const previous = windows[window_.index - 1];
+  const next = windows[window_.index + 1];
+
+  // Two of the four stages are transitions rather than plateaus, and each
+  // interpolates between a different pair of endpoints:
+  //
+  //   DEVELOPMENT  Kc_ini → Kc_mid   — the neighbours' values; the stage
+  //                                    itself publishes no Kc (stored null).
+  //   LATE         Kc_mid → Kc_end   — the *previous* stage's value to its
+  //                                    own, because the Kc stored on LATE is
+  //                                    FAO-56's Kc_end, the value at the END
+  //                                    of the late season, not an average
+  //                                    over it (crops.agronomy.json,
+  //                                    `conventions.lateStageKc`: "The engine
+  //                                    must interpolate Kc_mid -> Kc_end
+  //                                    across the late stage, not hold it
+  //                                    flat.").
+  //
+  // Holding LATE flat at Kc_end understates ETc badly wherever the decline is
+  // steep — wheat drops 1.15 → 0.25 over 30 days — so the whole late-season
+  // water requirement would be modelled at the harvest-day value.
+  const interpolation =
+    window_.stage === DEVELOPMENT_STAGE
+      ? { fromWindow: previous, toWindow: next }
+      : window_.stage === LATE_STAGE && previous
+        ? { fromWindow: previous, toWindow: window_ }
+        : null;
+
+  if (!interpolation) {
     if (window_.kc == null) {
       return {
         kc: null,
@@ -287,10 +323,9 @@ function resolveKc(window_, windows, dayInStage) {
     };
   }
 
-  const previous = windows[window_.index - 1];
-  const next = windows[window_.index + 1];
-  const fromKc = previous?.kc ?? null;
-  const toKc = next?.kc ?? null;
+  const { fromWindow, toWindow } = interpolation;
+  const fromKc = fromWindow?.kc ?? null;
+  const toKc = toWindow?.kc ?? null;
 
   if (fromKc == null || toKc == null) {
     return {
@@ -299,9 +334,9 @@ function resolveKc(window_, windows, dayInStage) {
         step: STAGE_TRACE_STEPS.KC_UNAVAILABLE,
         stage: window_.stage,
         cause: 'INTERPOLATION_ENDPOINT_MISSING',
-        fromStage: previous?.stage ?? null,
+        fromStage: fromWindow?.stage ?? null,
         fromKc,
-        toStage: next?.stage ?? null,
+        toStage: toWindow?.stage ?? null,
         toKc,
       },
     };
@@ -316,9 +351,9 @@ function resolveKc(window_, windows, dayInStage) {
     traceEntry: {
       step: STAGE_TRACE_STEPS.KC_INTERPOLATED,
       stage: window_.stage,
-      fromStage: previous.stage,
+      fromStage: fromWindow.stage,
       fromKc,
-      toStage: next.stage,
+      toStage: toWindow.stage,
       toKc,
       dayInStage,
       stageDays: window_.days,

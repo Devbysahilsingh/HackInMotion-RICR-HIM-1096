@@ -25,6 +25,9 @@ import { healthRouter } from './routes/health.js';
 import { authRouter } from './routes/auth.js';
 import { farmsRouter } from './routes/farms.js';
 import { cropsRouter } from './routes/crops.js';
+import { cropRecommendationRouter } from './routes/cropRecommendation.js';
+import { dashboardRouter, recommendationsRouter } from './routes/dashboard.js';
+import { marketRouter } from './routes/market.js';
 import { registryRouter } from './routes/registry.js';
 
 export const API_PREFIX = '/api/v1';
@@ -85,6 +88,10 @@ export function createApp({ extraRouters = [] } = {}) {
   // for two user lookups per request.
   app.use(API_PREFIX, cropsRouter);
   app.use(`${API_PREFIX}/farms`, farmsRouter);
+  app.use(`${API_PREFIX}/dashboard`, dashboardRouter);
+  app.use(`${API_PREFIX}/recommendations`, recommendationsRouter);
+  app.use(`${API_PREFIX}/crop-recommendation`, cropRecommendationRouter);
+  app.use(`${API_PREFIX}/market`, marketRouter);
   app.use(`${API_PREFIX}/registry`, registryRouter);
 
   for (const router of extraRouters) app.use(router);

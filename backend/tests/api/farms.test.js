@@ -394,6 +394,8 @@ describe('Farms API', () => {
       titleKey: 'rec.irrigation.title',
       bodyKey: 'rec.irrigation.body',
       validUntil: new Date('2026-12-31'),
+      // Required since P2-7: the feed job's idempotent upsert key.
+      dedupKey: `${alice.user.id}|irrigation|${crop._id}|IRRIGATE_TODAY|cascade`,
     });
 
     // A second user's identical tree must survive the cascade untouched.

@@ -1,0 +1,14 @@
+{
+  "commodityNotFound": "We do not track mandi prices for that crop yet.",
+  "guidanceFalling": "Prices are down {{pct}}% this week. If your produce is perishable, selling sooner may protect its value.",
+  "guidanceRising": "Prices are up {{pct}}% this week in {{district}}. If you can store safely, waiting may pay — decide with your buyer.",
+  "guidanceStable": "Prices are steady at around ₹{{modal}} per quintal.",
+  "guidanceUnavailable": "There are not enough recent price reports to describe a trend yet.",
+  "momentumNote": "This is a recent change within a different month-long trend.",
+  "priceAdjusted": "The reported modal price fell outside the day's min–max range and was adjusted to the nearest bound.",
+  "sourceHistorical": "Historical prices — not today's mandi rates.",
+  "sourceSeed": "From archived mandi records.",
+  "titleFALLING": "Prices are falling",
+  "titleRISING": "Prices are rising",
+  "titleSTABLE": "Prices are steady"
+}

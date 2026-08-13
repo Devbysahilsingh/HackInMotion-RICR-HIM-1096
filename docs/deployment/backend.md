@@ -15,12 +15,12 @@ Rollback: Render redeploy previous commit; DB migrations: none destructive plann
 
 | Script | npm alias | Purpose |
 |---|---|---|
-| `build-indexes.mjs` | `npm run indexes:build` | Builds every declared index and prints what exists. `autoIndex` is off in production, so this is the deploy gate — 14 models, 23 declared indexes. |
+| `build-indexes.mjs` | `npm run indexes:build` | Builds every declared index and prints what exists. `autoIndex` is off in production, so this is the deploy gate — 14 models, 24 declared indexes. |
 | `seed-registry.mjs` | `npm run seed:registry` | Seeds the crop registry. Idempotent: the version is a content hash, so an unchanged re-run is a no-op. Accepts `--dry-run` and `--force`. Validates every document before writing any. |
 | `smoke.mjs` | `npm run smoke -- <url>` | Read-only post-deploy verification, safe against production. 18 checks. |
 
 **Deploy order:** set env vars → deploy → `npm run indexes:build` → `npm run seed:registry` → `npm run smoke -- <url>`.
 
-`/healthz` currently returns `{status, service, version, db, uptimeSeconds, timestamp}`. `db` reports the live Mongoose connection state, so a process that is up but detached from Atlas reads as unhealthy rather than "ok". Job and circuit-state fields arrive with the TODOs that introduce those subsystems — nothing reports "ok" for something that does not exist yet.
+`/healthz` returns `{status, service, version, db, jobs, services, uptimeSeconds, timestamp}`. `db` reports the live Mongoose connection state, so a process that is up but detached from Atlas reads as unhealthy rather than "ok". `jobs` and `services` closed the P1 deferral in P2: `jobs` is `{at, ok, durationMs}` per job from in-memory last-run state, `services` is `{consecutiveFailures, open}` per provider from the circuit breaker. Both are empty objects before the first tick, which is the honest answer — nothing has run yet. Neither carries per-location failure detail, which has no place in an auth-free probe.
 
 Still open: `seed-demo-farm`, `seed-market` and `trigger-jobs` belong to Phases 2 and 8.

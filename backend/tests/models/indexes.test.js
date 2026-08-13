@@ -56,6 +56,8 @@ const EXPECTED = {
   Recommendation: [
     { name: 'feed', key: { userId: 1, acknowledgedAt: 1, priority: 1, createdAt: -1 } },
     { name: 'validUntil', key: { validUntil: 1 } },
+    // Added in P2-7: the feed job's idempotent upsert target.
+    { name: 'dedupKey_unique', key: { dedupKey: 1 }, unique: true },
   ],
   CommunityAlert: [
     { name: 'district_cropCode_active', key: { district: 1, cropCode: 1, active: 1 } },

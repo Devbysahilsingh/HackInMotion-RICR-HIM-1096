@@ -1,0 +1,14 @@
+{
+  "bodyHoldForRain": "{{date}} को {{rainMm}} मिमी वर्षा की संभावना है। अभी सिंचाई न करें और बाद में दोबारा देखें।",
+  "bodyIRRIGATE_IN_N_DAYS": "पूर्वानुमान के अनुसार इस फसल को {{days}} दिन में लगभग {{amountMm}} मिमी पानी की आवश्यकता होगी।",
+  "bodyIRRIGATE_TODAY": "लगभग {{amountMm}} मिमी पानी दें — यानी करीब {{amountLitersPerAcre}} लीटर प्रति एकड़।",
+  "bodyMAINTAIN_WATER_LEVEL": "खेत में 2–5 सेमी पानी बनाए रखें।",
+  "bodyWAIT_RAIN_EXPECTED": "{{days}} दिन में वर्षा की संभावना है, जो इस फसल की आवश्यकता पूरी कर देगी।",
+  "modeSimplified": "वाष्पन-उत्सर्जन आंकड़ों के बिना अनुमानित — इसे मोटा अनुमान मानें।",
+  "soilUnknown": "इस खेत की मिट्टी का प्रकार दर्ज नहीं है, इसलिए यह अनुमान कम सटीक है।",
+  "titleHoldForRain": "सिंचाई रोकें — वर्षा की संभावना",
+  "titleIRRIGATE_IN_N_DAYS": "{{days}} दिन में सिंचाई करें",
+  "titleIRRIGATE_TODAY": "आज इस फसल की सिंचाई करें",
+  "titleMAINTAIN_WATER_LEVEL": "पानी का स्तर बनाए रखें",
+  "titleWAIT_RAIN_EXPECTED": "प्रतीक्षा करें — वर्षा की संभावना है"
+}

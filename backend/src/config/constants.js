@@ -107,3 +107,109 @@ export const GROWTH_STAGES = ['INITIAL', 'DEVELOPMENT', 'MID', 'LATE'];
 /** Sowing dates are bounded so a typo cannot produce nonsense stage maths. */
 export const SOWING_DATE_MAX_PAST_DAYS = 400;
 export const SOWING_DATE_MAX_FUTURE_DAYS = 180;
+
+// ── Phase 2: weather ─────────────────────────────────────────────────────────
+
+/**
+ * India is a single civil time zone, so every "day" in this system — a rainfall
+ * total, an irrigation ledger entry, a feed dedup key — is an IST day. No
+ * repository document states this; it is recorded here because a UTC day
+ * boundary would silently split an Indian afternoon's rain across two rows.
+ */
+export const APP_TIMEZONE = 'Asia/Kolkata';
+
+/** docs/weather/weather-architecture.md: "7-day past + 7-day forecast". */
+export const WEATHER_PAST_DAYS = 7;
+export const WEATHER_FORECAST_DAYS = 7;
+export const WEATHER_EXPECTED_DAYS = WEATHER_PAST_DAYS + WEATHER_FORECAST_DAYS;
+
+/** Snapshot TTL: "upsert weatherSnapshots {… expiresAt:+6h …}". */
+export const WEATHER_TTL_MS = 6 * 60 * 60 * 1000;
+
+/** Refresh cadence: "cron q3h". */
+export const WEATHER_REFRESH_INTERVAL_MS = 3 * 60 * 60 * 1000;
+
+/**
+ * Past this age a cached snapshot still serves, but the client is told to warn
+ * (resilience.md: "serve indefinitely, ● Cached + age; >48h adds warning").
+ */
+export const WEATHER_STALE_WARNING_MS = 48 * 60 * 60 * 1000;
+
+/** resilience.md: "8s (weather/AI) · 15s (market bulk)". */
+export const WEATHER_TIMEOUT_MS = 8_000;
+export const MARKET_TIMEOUT_MS = 15_000;
+
+/**
+ * Freshness vocabulary served to clients (docs/api/error-codes.md).
+ * The stored `weatherSnapshots.status` enum is only `ok|stale`; these are the
+ * boundary values derived from it, plus `pending` for "never fetched".
+ */
+export const FRESHNESS = {
+  LIVE: 'live',
+  CACHED: 'cached',
+  HISTORICAL: 'historical',
+  PENDING: 'pending',
+};
+
+/**
+ * Weather risk types.
+ *
+ * These are the spellings from docs/api/weather.md — the wire contract — which
+ * differs from docs/weather/weather-architecture.md's prose
+ * (EXTREME_HEAT/FROST_COLD/HIGH_WIND). The wire contract wins because clients
+ * are written against it; the prose doc is corrected to match.
+ */
+export const WEATHER_RISK_TYPES = {
+  HEAVY_RAIN: 'HEAVY_RAIN',
+  HEAT: 'HEAT',
+  FROST: 'FROST',
+  WIND: 'WIND',
+  HUMIDITY_DISEASE: 'HUMIDITY_DISEASE',
+  DRY_SPELL: 'DRY_SPELL',
+};
+
+export const RISK_LEVELS = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+
+// ── Phase 2: market ──────────────────────────────────────────────────────────
+
+/** Nightly ingest (docs/backend/architecture.md: "marketRefresh(nightly)"). */
+export const MARKET_REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000;
+
+/** docs/market/data-normalization.md sanity gates. */
+export const MARKET_PRICE_MIN_EXCLUSIVE = 0;
+export const MARKET_PRICE_MAX_EXCLUSIVE = 100_000;
+export const MARKET_MAX_AGE_DAYS = 90;
+/** "drop-rate >30% aborts the batch (schema-drift guard)". */
+export const MARKET_DROP_RATE_ABORT = 0.3;
+/** data-lifecycle.md: "180-day rolling purge (M0 size guard)". */
+export const MARKET_RETENTION_DAYS = 180;
+
+/** docs/market/market-insights.md: "RISING if changePct7d ≥ +5% · FALLING ≤ −5%". */
+export const MARKET_SIGNAL_THRESHOLD_PCT = 5;
+export const MARKET_SIGNAL_WINDOW_OBS = 7;
+export const MARKET_TREND_WINDOW_OBS = 30;
+export const MARKET_SIGNALS = ['RISING', 'FALLING', 'STABLE'];
+/** docs/database/validation.md: "date ranges ≤90d". */
+export const MARKET_QUERY_MAX_DAYS = 90;
+
+// ── Phase 2: feed & dashboard ────────────────────────────────────────────────
+
+/** "feed-refresh job (30min)". */
+export const FEED_REFRESH_INTERVAL_MS = 30 * 60 * 1000;
+
+/** "Cap: max 20 active/user; INFO evicted first (overload prevention)". */
+export const FEED_MAX_ACTIVE_PER_USER = 20;
+
+/**
+ * Priority rank for sorting.
+ *
+ * The `feed` index sorts `priority: 1` — i.e. the strings ascending, which is
+ * CRITICAL, HIGH, INFO, MEDIUM. That is NOT the documented order, so the feed
+ * is ordered in memory over a bounded candidate set using this map rather than
+ * by adding a rank field (which would change the schema and the asserted index
+ * set). Recorded as a decision in the implementation log.
+ */
+export const FEED_PRIORITY_RANK = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, INFO: 3 };
+
+/** Retained this long past validUntil before purge (data-lifecycle.md). */
+export const FEED_PURGE_GRACE_DAYS = 7;

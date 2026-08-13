@@ -1,0 +1,15 @@
+{
+  "bodyDRY_SPELL": "Only {{totalMm}} mm of rain across the past and coming week. Plan watering carefully.",
+  "bodyFROST": "Overnight temperature may fall to {{tMinC}}°C, below this crop's safe limit of {{thresholdC}}°C.",
+  "bodyHEAT": "Daytime temperature may reach {{tMaxC}}°C, above this crop's limit of {{thresholdC}}°C.",
+  "bodyHEAVY_RAIN": "About {{rainMm}} mm of rain is expected, with a {{rainProbPct}}% chance. Check drainage.",
+  "bodyHUMIDITY_DISEASE": "Humidity stays above {{humidityThresholdPct}}% in a warm range for {{consecutiveDays}} days — conditions fungal disease favours.",
+  "bodyWIND": "Winds of about {{windKmh}} km/h are expected, above the {{thresholdKmh}} km/h mark.",
+  "thresholdDefault": "Assessed against a general threshold — no crop-specific value has been recorded yet.",
+  "titleDRY_SPELL": "Dry spell",
+  "titleFROST": "Frost risk",
+  "titleHEAT": "Extreme heat",
+  "titleHEAVY_RAIN": "Heavy rain expected",
+  "titleHUMIDITY_DISEASE": "Disease-favourable weather",
+  "titleWIND": "Strong wind"
+}

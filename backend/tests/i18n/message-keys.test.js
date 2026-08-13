@@ -18,8 +18,22 @@ import path from 'node:path';
 const SRC = fileURLToPath(new URL('../../src/', import.meta.url));
 const I18N = fileURLToPath(new URL('../../../shared/i18n/', import.meta.url));
 
-/** Namespaces the backend emits keys into (docs/i18n/architecture.md). */
-const NAMESPACES = ['errors', 'auth', 'farm', 'crop'];
+/**
+ * Namespaces the backend emits keys into (docs/i18n/architecture.md).
+ * Extended as each subsystem lands; a namespace listed here must exist in both
+ * `en` and `hi` with identical key sets.
+ */
+const NAMESPACES = [
+  'errors',
+  'auth',
+  'farm',
+  'crop',
+  'weather',
+  'irrigation',
+  'market',
+  'fertilizer',
+  'cropRec',
+];
 
 /** Matches the quoted dotted keys passed to AppError/messageKey helpers. */
 const KEY_PATTERN = new RegExp(`'((?:${NAMESPACES.join('|')})\\.[a-zA-Z0-9]+)'`, 'g');

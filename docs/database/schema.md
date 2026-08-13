@@ -29,7 +29,7 @@ Rotation: on refresh, current jti revoked + new issued in same family; reuse of 
   waterBalance: { depletionMm, lastComputedAt, initialized: bool } }
 ```
 ## cropRegistry  (reference knowledge; structure in docs/product/crop-support-matrix.md)
-Seeded by script; read-heavy; includes diseases[] (knowledge base) and fertilizer.stages[] (KB) — **disease + fertilizer knowledge live inside the registry document** rather than separate `diseaseKnowledge`/`fertilizerKnowledge` collections: they are always fetched with the crop, never queried independently, and stay < 16MB by orders of magnitude. Revisit only if KBs grow past ~100 crops.
+Seeded by script; read-heavy; includes diseases[] (knowledge base) and fertilizer{} (KB) — **disease + fertilizer knowledge live inside the registry document** rather than separate `diseaseKnowledge`/`fertilizerKnowledge` collections: they are always fetched with the crop, never queried independently, and stay < 16MB by orders of magnitude. Revisit only if KBs grow past ~100 crops.
 
 ## cropHealthLogs  (= cropObservations + cropAnalyses merged — one observation always has 0..1 analysis; separate collections would force a join on every read)
 ```
@@ -57,16 +57,20 @@ Failed fetches never overwrite `daily`; they only update `status`.
 ```
 { _id, commodityCode, state, district, market, date,
   minPrice, modalPrice, maxPrice, unit:'quintal', source:'datagovin'|'seed',
+  flagged: bool (default false),                   // see below
   fetchedAt }   // unique index (commodityCode, market, date)
 ```
+`flagged` is set when the published modal price fell outside `[minPrice, maxPrice]` and was clamped to the nearest bound during ingest (docs/market/data-normalization.md §2). The rule was documented from the start but the field was not, so a clamped row was indistinguishable from a published one — an adjusted number presenting itself as the mandi's own, which honesty rule 9 forbids. Added P2-5.
 ## recommendations  (dashboard feed items — doubles as in-app notifications; no separate notifications collection)
 ```
 { _id, userId (idx), farmId?, cropId?, type:'irrigation'|'weather-risk'|'health'|'market'|'fertilizer'|'community'|'crop-suggestion',
   priority:'CRITICAL'|'HIGH'|'MEDIUM'|'INFO',
   source:'WEATHER'|'ML'|'RULE_ENGINE'|'MARKET'|'COMMUNITY'|'HYBRID',
   titleKey, bodyKey, data:{...}                      // i18n params + why-trace numbers
-  confidence?, validUntil (TTL-ish; job expires), acknowledgedAt? }
+  confidence?, validUntil (TTL-ish; job expires), acknowledgedAt?,
+  dedupKey (required, unique idx) }                  // see below
 ```
+`dedupKey` is the feed job's idempotent upsert key: `userId | type | cropId-or-farm:farmId | discriminator | IST day`. docs/api/recommendations.md specifies "dedupe type+cropId+day", which is insufficient and has no home on the document: two simultaneous weather risks on one crop share that tuple (one would silently overwrite the other), farm-level items have no `cropId`, and the tuple omits `userId`, so the key would collide across accounts. Storing the composed key makes the upsert filter a single indexed equality and puts idempotency in the database rather than in job logic — the same way `marketPrices` does it. Added P2-7.
 ## communityAlerts  (P2)
 ```
 { _id, district, state, cropCode, diseaseCode, windowStart, windowEnd,

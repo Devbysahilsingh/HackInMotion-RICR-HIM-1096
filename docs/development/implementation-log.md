@@ -476,3 +476,94 @@ Phase 1 approved COMPLETE (P1-1..P1-8) by the team. Final gate re-run at sign-of
 Committed alongside the code: `.claude/settings.json`, an approved project permission policy. It auto-approves routine development commands (repo file operations, npm/node scripts, tests, lint/format/typecheck, read-only git, shell inspection, the secret scanners, localhost smoke requests and read-only fetches of the project's documented data sources) while keeping publishing, history-rewriting, destructive, credential and arbitrary-egress operations behind an explicit prompt. Two pre-existing defects in the local settings were corrected in the same pass: `git commit`/`git push`/`git reset` had been auto-approved, and three entries embedded a live data.gov.in API key — all removed. Writes to `datasets/**` and reads of `.env`/`*.pem`/`*.key` are denied outright.
 
 **No ML work was performed.** `datasets/` is byte-for-byte untouched; the curated manifest, curation rules and class decisions from P0-6/P0-6b are unchanged. The crop registry only *reads* `datasets/manifest.json` for class codes and support tiers.
+
+---
+
+## PHASE 2 — Data pipelines & engines (P2-1..P2-9) — 2026-08-13
+
+**930 backend tests / 930 pass / 0 fail** across 177 suites (Phase 1 finished at 235). Repo lint clean · `prettier --check` clean · web `tsc --noEmit` clean · `npm audit --omit=dev` **0 vulnerabilities** · layer-1 staged-secret scanner clean · `gitleaks detect` over the full 470MB tree reports no leaks. **No new runtime dependency was added** — the scheduler, HTTP client, retry/jitter and circuit breaker are written against Node 20 built-ins, so even `node-cron` (which the dependency policy pre-approves) was not needed.
+
+### What the analysis found before any code was written
+
+Six parallel doc-analysis passes reconciled the Phase-2 specification against the shipped Phase-1 code. The specification turned out to be thorough on *policy* and largely absent on *protocol*: **no document in the repository publishes an Open-Meteo URL, an OpenWeatherMap endpoint, a data.gov.in resource id, a cron expression, or the severity function the weather-risk levels are defined in terms of.** Each had to be established rather than transcribed, and each is now recorded in the doc that should have had it.
+
+### Engineering decisions (ADR-023 records the architectural subset)
+
+| # | Decision | Why |
+|---|---|---|
+| 1 | **Open-Meteo request built from the named variables, then verified against the live API.** | The doc names the variables and nothing else. One real keyless call on 2026-08-13 returned 14 daily rows with every requested field non-null and `daily_units` of `°C / % / km/h / mm / % / mm`. That verified sample is the test fixture; units are pinned explicitly so an upstream default change cannot turn 15 km/h into 15 mph. |
+| 2 | **Weather payload validation is per-source, not the flat 14 days `validation.md` states.** | The free OWM `/forecast` endpoint returns ~5 days of 3-hourly steps, no history and no ET₀. Enforcing 14 against both providers would reject every fallback payload — breaking RES-01, the test that exists to prove fallback works. |
+| 3 | **Risk-type enum reconciled to `docs/api/weather.md`** (`HEAT`/`FROST`/`WIND`), not weather-architecture.md's `EXTREME_HEAT`/`FROST_COLD`/`HIGH_WIND`. | The API doc is the wire contract clients are written against. The prose doc was corrected to match. |
+| 4 | **Severity banding defined as declared engine policy.** | The architecture doc defines level as `f(magnitude, stage sensitivity, imminence)` without defining `f`. It is now a magnitude band plus at most one step for a sensitive stage and one for imminence, every input written into the trace. Each risk carries `thresholdSource: REGISTRY \| ENGINE_DEFAULT` — which matters because **no seeded crop publishes any `sensitivity` value at all**, so every threshold in production today is an engine default and says so. |
+| 5 | **No provider call on the weather request path.** | `docs/api/weather.md` and `docs/api/farms.md` both mandate an on-demand fetch; CLAUDE.md rule 3 forbids it and P1-5 already resolved this the same way. "On-demand" is instead: a location with no snapshot returns 200 `pending` with a retry hint and is queued for priority refresh on the next tick. A CLAUDE.md rule overrides doc prose. |
+| 6 | **IST is the single day boundary, everywhere.** | `setHours(0,0,0,0)` is host-local. Render runs UTC, so on the deployed instance every day boundary would sit at 05:30 IST — shifting ledger entries into the wrong day and splitting an evening's rain across two rows, while passing on an IST laptop. `utils/day.js` owns every boundary, and Open-Meteo is queried with `timezone=Asia/Kolkata` so the provider's day and ours are the same day. |
+| 7 | **Market fetch scope derived from reality, not from OD-7.** | The docs scope the nightly fetch to "demo commodities × states" where the states are an open decision. The work list is instead the commodities the registry can map and the states the platform's farms are actually in — no decision needed, cannot go stale, and nothing is fetched that nobody is farming. |
+| 8 | **`marketPrices.flagged` added.** | `data-normalization.md` has always required `flagged: true` on a clamped modal price, and the field never existed — so a clamped row was indistinguishable from a published one. An adjusted number presenting itself as the mandi's own is exactly what honesty rule 9 forbids. |
+| 9 | **`recommendations.dedupKey` added, with a unique index.** | The documented `type+cropId+day` tuple is insufficient: two simultaneous weather risks on one crop collide (one silently overwrites the other), farm-level items have no `cropId`, and it omits `userId` entirely. The composed key makes feed idempotency structural — enforced by the database, as `marketPrices` already does — rather than dependent on job logic. |
+| 10 | **Feed ordering is done in memory.** | The `feed` index sorts `priority: 1`, i.e. the strings ascending: CRITICAL, HIGH, **INFO, MEDIUM**. That is not the documented order. Ordering over the bounded candidate set avoids a schema change and a new index; the tie-break chain is total, so two identical runs render identically. |
+| 11 | **`NO_IRRIGATION_NEEDED` is not materialised into the feed.** | `relationships.md` says irrigation materialises "when priority ≥ MEDIUM"; the priority table puts `WAIT_RAIN` and `NO_NEED` at INFO. Resolved by what the item asks the farmer to *do*: `WAIT_RAIN_EXPECTED` changes today's behaviour and is emitted; a no-op confirmation would add one dead item per crop per day. |
+| 12 | **Crop-rec missing evidence excludes a factor and renormalises the weights.** | Two of the four scoring inputs do not exist (climate normals at all; soil suitability for 8 of 9 crops). Substituting a neutral 0.5 would present a guess as a score. `evidenceRatio` reports how much of the documented weight was actually backed by data, so a crop scored on two factors is not silently equated with one scored on four. |
+| 13 | **Ledger writes are deliberately not idempotent.** | No document specifies write-side dedupe, and a farmer genuinely can irrigate twice in one day. A unique `(cropId, date)` index would reject the second event and under-count applied water — the more dangerous error. Repeat submissions are bounded by the 10/day per-user limiter instead. |
+| 14 | **Per-*user* daily rate buckets added.** | Every existing bucket is IP-keyed, which is right for anonymous abuse but wrong for the "10/day" and "20/day" account quotas the API docs specify: IP-keying would let one account exhaust a shared village connection, and let a user reset their own quota by changing networks. |
+
+### Defect found and fixed in already-shipped Phase-1 code
+
+| Severity | Finding | Fix |
+|---|---|---|
+| **HIGH** | **`deriveStage` held Kc flat at Kc_end across the entire late season.** The value stored on the LATE stage is FAO-56's Kc_end — the coefficient at the *end* of the late season — and `crops.agronomy.json` states outright that "the engine must interpolate Kc_mid -> Kc_end across the late stage, not hold it flat". Wheat declines 1.15 → 0.25 over 30 days, so the whole late season was modelled at the harvest-day value, understating ETc badly and under-watering every crop in its final stage. | LATE now interpolates from the preceding stage's Kc to its own published Kc_end, with a distinct trace entry. The stage suite went 57 → 59 tests; the one asserting the flat value was corrected, not relaxed. |
+
+### Defects found and fixed within Phase 2, before completion
+
+Each was surfaced by an independent test-authoring pass, and each now carries a regression test that fails against the old code.
+
+| Severity | Finding | Fix |
+|---|---|---|
+| **HIGH** | **A partial irrigation log erased the whole standing deficit.** The ledger anchored on *any* log, so a farmer recording a 5 mm top-up reset an 80 mm deficit to zero and was then told no irrigation was needed. R8 makes only a log *without* `amountMm` a refill. | Only amount-less logs anchor; a measured application is subtracted like any other water. |
+| **HIGH** | **A non-retryable 4xx was retried.** The error was thrown inside the `try` and caught by the retry handler, which treated every HTTP-status error as retryable — burning three attempts of a finite free-tier quota against a fault that was ours, not the provider's. | Retryability is carried on the error. The default also dropped from 2 retries to the documented 1, and the promised ±25% jitter — which did not exist — was implemented. |
+| **HIGH** | **The irrigation engine threw on malformed input**, violating R14 ("never throws"): an unparseable `sowingDate` raised `RangeError` from `toISOString()` while building the trace, and a null `crop` or `registry` raised `TypeError` because `= {}` defaults only fire for `undefined`. One bad document would have 500'd the request. | Nullish coalescing plus a non-throwing ISO helper; both cases degrade to a designed no-verdict result carrying its trace. |
+| **HIGH** | **`varietyClass` was stripped between the knowledge file and the wire.** `CropRegistry`'s fertilizer sub-schema never declared the field, so Mongoose dropped it during the seed. TNAU publishes three distinct rice doses (120–150 / 150 / 175 kg N/ha) and two cotton doses; all of them reached the farmer as an unlabelled list with nothing to say which row applied to the variety in the ground. | Field declared; asserted end to end from knowledge file through seed to response. |
+| **MEDIUM** | **`p` clamped to zero made "irrigate today" permanently true.** Under extreme demand the Table-22 ETc correction yields a negative depletion fraction; clamping it to 0 makes RAW 0, so `D >= RAW` holds at *any* depletion including zero. | An out-of-range correction is discarded and the published table value stands, with the trace recording the rejection. No floor was invented — FAO publishes limits this repository has not transcribed. |
+| **MEDIUM** | **Feed items expired 5h30m late.** `validUntil` stamped 23:59:59.999 **UTC** onto an IST calendar date, i.e. 05:29 IST the next morning — so "irrigate today" stayed live into the following day and overlapped the next day's dedup key. | `endOfDay()` from `utils/day.js`. |
+| **MEDIUM** | **Every market feed item violated R12** ("no recommendation without trace data"): the engine produced a trace, but the projection feeding the feed job dropped it, so every market item was written with `data.trace: null`. | The trace stays in the projection. |
+| **MEDIUM** | **`toDailySeries` bucketed a null date into 1970-01-01.** `new Date(null)` is epoch 0, not an Invalid Date, so a dateless row passed the `isNaN` guard, sorted to the front of the series and padded the prior window — able to flip a signal. | Nullish inputs are rejected before construction, centrally in `utils/day.js`. |
+| **MEDIUM** | **`parseArrivalDate` did not calendar-validate its ISO branch.** `2026-02-31` rolled silently to 3 March and `2026-13-01` to next January, so a malformed seed date was stored on the wrong day instead of dropped and counted. | Both branches round-trip the parsed date back to its parts. |
+| **LOW** | **A `sensitivity` threshold of 0 produced a CRITICAL warning from a dry day** (`rainMm >= 0` always true, divide-by-zero → Infinity band). | Non-positive magnitude thresholds fall back to the engine default. Frost is exempted — a crop safe to −2 °C is a real registry value. |
+| **LOW** | **Prototype-chain hole in the AWC lookup.** `soilType: 'toString'` resolved to an inherited function — truthy, so the soil was reported as *known* while TAW became `NaN`. | `Object.hasOwn`. |
+| **LOW** | **The dry-spell window summed up to 15 days against a threshold calibrated for 7**, and the band was not normalised by window length, so a fortnight with 4.9 mm scored as a drought. | Exactly seven days, straddling today. |
+| **LOW** | **`runOnStart: false` made a job permanently undue**, not merely deferred: `lastStartedAt` was only ever written by `run()`, so a job that opted out of the boot run never became due at all. | The flag stamps the clock and defers by one interval. |
+| **LOW** | **The active-feed query took the 40 newest and *then* sorted by priority**, so a CRITICAL item older than those 40 would vanish from the feed entirely. | The scan ceiling is far above the cap; the cap, not the scan window, decides what is shown. |
+| **LOW** | **`runMarketRefresh` reported success when there was nothing to fetch**, making an empty platform indistinguishable from a total outage in the log. | A distinct `skipped: 'no_work'` outcome. |
+| **LOW** | **The unit-less-dose explanation had no key to render from** — the response carried only a boolean. | `unitNoteKey` emitted alongside `unitUnknown`. |
+
+### Performance
+
+`GET /dashboard`, which the product calls "the single most important endpoint", measured over 30 sequential requests after 3 warm-ups against the in-memory server, seeded with **5 farms × 30 active crops × 40 recommendations for one user**:
+
+**p50 10.5 ms · p95 15.7 ms · max 23.0 ms** (three runs: p95 13.5 / 13.9 / 15.7 ms)
+
+The local gate is <300 ms (`docs/testing/api-testing.md`); the production NFR is p95 <800 ms. The N+1 guard compares the 30-crop p95 against a 1-crop p95 measured identically: **ratio ≈ 1.0**, confirming the fixed six-query budget — thirty crops cost the same round trips as one.
+
+### Honest limitations shipped in this phase
+
+These are stated in the product surface, not only here.
+
+- **The market feed cannot go live.** Every stage after the fetch is built and fixture-tested, but `DATAGOVIN_API_KEY` and `DATAGOVIN_RESOURCE_ID` do not exist. The resource id is deliberately **not** defaulted: guessing it would produce a confident-looking request against an unverified endpoint. The job reports `skipped: 'not_configured'` naming both variables and touches nothing.
+- **`scripts/seed-market.mjs` will not generate a price series.** It reads a CEDA bulk export a human has downloaded; absent that file it exits with instructions. A fabricated mandi series is indistinguishable from a real one once it is in the database.
+- **`shared/constants/climate-normals.js` is empty by design.** Consequence: `S_temp` is never scored, `S_water` is scored only for irrigated farms, and the water hard gate cannot fire. The engine names the excluded factors in `limitations` and reports `evidenceRatio` so a thinly-evidenced ranking is not presented as a well-founded one.
+- **The soil AWC table is second-tier provenance.** Its only source is a prose line citing "FAO Ch.: soil water properties" with no chapter, table or URL, and four of its eight keys are ICAR soil *orders* that FAO-56's texture-class table does not tabulate. Transcribed exactly as published, marked `confidence: 'S'`, recorded as an open verification task — deliberately not upgraded to sit alongside the cell-by-cell FAO transcriptions.
+- **Chilli irrigation still rests on a bell-pepper Kc curve.** The registry seed drops the `proxy.isProxy` flag, so the engine cannot detect it and does not special-case any crop code. Labelling it remains a caller responsibility and an open item.
+- **Agronomic Hindi in the five new namespaces is unverified.** `weather`, `irrigation`, `market`, `fertilizer` and `cropRec` were authored to satisfy the en/hi parity gate; CLAUDE.md rule 8 requires human verification before demo. The fertilizer disclaimer is a safety-bearing string whose Hindi the knowledge file explicitly declined to author.
+- **`crops.fertilizer.json` publishes a stale disclaimer key** (`fertilizer.disclaimer.general`) that nothing reads; the code and the i18n bundle both use `fertilizer.disclaimerGeneral`. The knowledge file was left untouched — it is P1-6 approved content — but the divergence will mislead the next reader.
+
+### Not done, deliberately
+
+- **No ML work.** `datasets/` is byte-for-byte untouched; the manifest, curation rules and class decisions from P0-6/P0-6b are unchanged. No model was trained.
+- **`GET /market/compare`** is specified as P1 and sits outside this TODO's scope.
+- **`/system/status`** is referenced by two docs as a job-report sink but has no API contract and no FR mapping. The in-scope pieces are `systemStatus` inside `/dashboard`, plus `jobs` and `services` on `/healthz`.
+- **`shared/constants/geo`** still does not exist, so market geography is whitespace-normalised and required non-empty but not fuzzy-matched against a canonical list — the same resolution P1-5 reached for farm validation, and for the same reason.
+
+### Files
+
+Created: `backend/src/utils/{httpClient,circuitBreaker,day}.js`, `config/failureFlags.js`, `integrations/{openMeteo,openWeatherMap,dataGovIn}.js`, `jobs/{scheduler,index,weatherRefresh,marketRefresh,feedRefresh,expiry}.js`, `services/{weatherValidation,weatherService,farmWeatherService,irrigationService,marketNormalizer,marketService,feedService,fertilizerService}.js`, `engines/{irrigation,weatherRisk,marketSignal,feedComposer,cropRec}/`, `routes/{market,dashboard,cropRecommendation}.js`, `scripts/{seed-market,trigger-jobs}.mjs`, 14 test files, `shared/constants/{agronomy,climate-normals}.js`, `shared/i18n/{en,hi}/{weather,irrigation,market,fertilizer,cropRec}.json`, `docs/decisions/ADR-023-phase2-engine-decisions.md`.
+
+Changed: `backend/src/{app,server}.js`, `config/{constants,env}.js`, `middleware/rateLimits.js`, `models/{MarketPrice,Recommendation,CropRegistry}.js`, `engines/stage/deriveStage.js`, `routes/{crops,farms,health,ownership-table}.js`, `backend/package.json`, `shared/i18n/{en,hi}/farm.json`, `render.yaml`, and the docs listed in ADR-023.

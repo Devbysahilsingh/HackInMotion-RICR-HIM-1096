@@ -24,6 +24,18 @@ const marketPriceSchema = new Schema(
     /** 'seed' rows are labelled Historical in the UI — never passed off as live. */
     source: { type: String, enum: ['datagovin', 'seed'], required: true },
 
+    /**
+     * True when the published modal price fell outside [min, max] and was
+     * clamped to the nearest bound during ingest (docs/market/data-normalization.md:
+     * "modal ∉ [min,max] → clamp to nearest bound + `flagged:true`").
+     *
+     * The rule was documented from the start but the field was never added, so
+     * a clamped row was indistinguishable from a published one — an adjusted
+     * number presenting itself as the mandi's own, which honesty rule 9
+     * forbids. Added in P2-5 alongside the normalizer that sets it.
+     */
+    flagged: { type: Boolean, required: true, default: false },
+
     fetchedAt: { type: Date, required: true },
   },
   baseOptions('marketPrices'),

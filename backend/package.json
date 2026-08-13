@@ -15,7 +15,9 @@
     "test:watch": "node --import ./tests/env.mjs --test --watch tests/",
     "indexes:build": "node scripts/build-indexes.mjs",
     "seed:registry": "node scripts/seed-registry.mjs",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "seed:market": "node scripts/seed-market.mjs",
+    "jobs": "node scripts/trigger-jobs.mjs"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

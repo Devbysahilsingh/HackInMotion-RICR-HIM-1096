@@ -9,8 +9,14 @@
 import { Router } from 'express';
 import { z } from 'zod';
 
-import { CROP_STATUSES, LAND_UNITS } from '../config/constants.js';
+import {
+  CROP_STATUSES,
+  LAND_UNITS,
+  PAGE_SIZE_DEFAULT,
+  PAGE_SIZE_MAX,
+} from '../config/constants.js';
 import { loadOwned, ownedBy } from '../middleware/loadOwned.js';
+import { irrigationLogLimiter } from '../middleware/rateLimits.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import { validate } from '../middleware/validate.js';
 import { Crop, CropRegistry, Farm } from '../models/index.js';
@@ -21,8 +27,15 @@ import {
   deleteCropCascade,
   resolveCropCode,
 } from '../services/cropService.js';
+import {
+  assertLogDateInRange,
+  irrigationAdvice,
+  listIrrigationLogs,
+  recordIrrigation,
+} from '../services/irrigationService.js';
+import { fertilizerGuidance } from '../services/fertilizerService.js';
 import { deriveStage } from '../engines/stage/deriveStage.js';
-import { sendData, sendNoContent } from '../utils/respond.js';
+import { pageMeta, sendData, sendNoContent } from '../utils/respond.js';
 
 export const cropsRouter = Router();
 
@@ -181,6 +194,104 @@ cropsRouter.delete('/crops/:id', requireAuth, loadCrop, async (req, res, next) =
   try {
     await deleteCropCascade(req.crop._id, req.auth.userId);
     sendNoContent(res);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── Irrigation (docs/api/irrigation.md) ──────────────────────────────────────
+
+/**
+ * The engine runs on every read rather than being cached, which is affordable
+ * because it is pure and its inputs are already in memory. A missing snapshot
+ * is a designed 200 (`verdict:'UNAVAILABLE'`), never a 5xx: "never 5xx for
+ * missing cache".
+ */
+cropsRouter.get('/crops/:id/irrigation', requireAuth, loadCrop, async (req, res, next) => {
+  try {
+    sendData(res, await irrigationAdvice(req.crop, req.farm));
+  } catch (err) {
+    next(err);
+  }
+});
+
+const irrigationLogSchema = z
+  .object({
+    date: z.coerce.date(),
+    /** validation.md: "amountMm ∈ (0,200]" — absent means "refilled fully". */
+    amountMm: z.number().gt(0).max(200).optional(),
+  })
+  .strict();
+
+cropsRouter.post(
+  '/crops/:id/irrigation-log',
+  requireAuth,
+  loadCrop,
+  irrigationLogLimiter,
+  validate({ body: irrigationLogSchema }),
+  async (req, res, next) => {
+    try {
+      assertLogDateInRange(req.body.date, req.crop);
+
+      // userId comes from the token and cropId from the already-authorized
+      // document — neither is readable from the body, so no request shape can
+      // write a log into another account's ledger.
+      const log = await recordIrrigation({
+        crop: req.crop,
+        userId: req.auth.userId,
+        date: req.body.date,
+        amountMm: req.body.amountMm,
+      });
+
+      sendData(
+        res,
+        {
+          log: {
+            id: String(log._id),
+            date: log.date,
+            amountMm: log.amountMm ?? null,
+            source: log.source,
+          },
+        },
+        { status: 201 },
+      );
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+const ledgerQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(PAGE_SIZE_MAX).default(PAGE_SIZE_DEFAULT),
+});
+
+cropsRouter.get(
+  '/crops/:id/irrigation-log',
+  requireAuth,
+  loadCrop,
+  validate({ query: ledgerQuerySchema }),
+  async (req, res, next) => {
+    try {
+      const { page, limit } = req.query;
+      const { logs, total } = await listIrrigationLogs(req.crop, { page, limit });
+      sendData(res, { logs }, { meta: pageMeta({ page, limit, total }) });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// ── Fertilizer (docs/api/intelligence.md) ────────────────────────────────────
+
+/**
+ * Pure registry read — no computation, no LLM, no external call. Every dose is
+ * served in its published unit with its source attached, and the mandatory
+ * disclaimer is on every response including the uncovered-crop one.
+ */
+cropsRouter.get('/crops/:id/fertilizer-guidance', requireAuth, loadCrop, async (req, res, next) => {
+  try {
+    sendData(res, await fertilizerGuidance(req.crop));
   } catch (err) {
     next(err);
   }

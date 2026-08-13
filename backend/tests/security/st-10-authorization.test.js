@@ -12,6 +12,7 @@
 import { after, before, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
+import { Recommendation } from '../../src/models/index.js';
 import { addressableRoutes, protectedRoutes } from '../../src/routes/ownership-table.js';
 import { startTestServer } from '../helpers/app.js';
 import { clearCollections, startTestDatabase, stopTestDatabase } from '../helpers/db.js';
@@ -77,8 +78,29 @@ describe('ST-10 · Authorization matrix', () => {
       body: { cropCode: 'OTHER', freeTextLabel: 'Millet', sowingDate: '2026-07-01' },
     });
     assert.equal(crop.status, 201, `could not create a crop for ${email}: ${crop.text}`);
+    const cropId = crop.body.data.crop.id;
 
-    return { token, farmId, cropId: crop.body.data.crop.id };
+    // Feed items are written by a job, never by a client, so this one is
+    // inserted directly. It exists so the matrix can prove that another
+    // farmer's recommendation id is a 404 on the acknowledge route.
+    const me = await server.request('/api/v1/auth/me', { token });
+    const userId = me.body.data.user.id;
+
+    const recommendation = await Recommendation.create({
+      userId,
+      farmId,
+      cropId,
+      type: 'irrigation',
+      priority: 'HIGH',
+      source: 'RULE_ENGINE',
+      titleKey: 'irrigation.titleIRRIGATE_TODAY',
+      bodyKey: 'irrigation.bodyIRRIGATE_TODAY',
+      data: { verdict: 'IRRIGATE_TODAY' },
+      validUntil: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      dedupKey: `${userId}|irrigation|${cropId}|IRRIGATE_TODAY|st10`,
+    });
+
+    return { token, farmId, cropId, recommendationId: String(recommendation._id) };
   }
 
   beforeEach(async () => {
@@ -87,7 +109,13 @@ describe('ST-10 · Authorization matrix', () => {
     mallory = await seedFarmer('mallory@example.com');
   });
 
-  const idFor = (actor, resource) => (resource === 'farm' ? actor.farmId : actor.cropId);
+  /** Maps a route table row's `resource` to the seeded id it addresses. */
+  const idFor = (actor, resource) =>
+    ({
+      farm: actor.farmId,
+      crop: actor.cropId,
+      recommendation: actor.recommendationId,
+    })[resource] ?? actor.cropId;
 
   const buildPath = (row, id) => row.path.replace(`:${row.param}`, id);
 

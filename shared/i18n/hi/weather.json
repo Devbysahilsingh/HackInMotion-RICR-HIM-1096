@@ -1,0 +1,15 @@
+{
+  "bodyDRY_SPELL": "पिछले और आने वाले सप्ताह में कुल केवल {{totalMm}} मिमी वर्षा। सिंचाई की योजना ध्यान से बनाएं।",
+  "bodyFROST": "रात का तापमान {{tMinC}}°C तक गिर सकता है, जो इस फसल की {{thresholdC}}°C की सुरक्षित सीमा से नीचे है।",
+  "bodyHEAT": "दिन का तापमान {{tMaxC}}°C तक पहुँच सकता है, जो इस फसल की {{thresholdC}}°C की सीमा से ऊपर है।",
+  "bodyHEAVY_RAIN": "लगभग {{rainMm}} मिमी वर्षा की संभावना है, {{rainProbPct}}% आशंका के साथ। जल निकासी जाँच लें।",
+  "bodyHUMIDITY_DISEASE": "{{consecutiveDays}} दिनों तक आर्द्रता {{humidityThresholdPct}}% से ऊपर और तापमान अनुकूल रहेगा — फफूंद रोग के लिए अनुकूल परिस्थितियाँ।",
+  "bodyWIND": "लगभग {{windKmh}} किमी/घंटा की हवा की संभावना है, जो {{thresholdKmh}} किमी/घंटा से अधिक है।",
+  "thresholdDefault": "सामान्य सीमा के आधार पर आकलन — इस फसल के लिए विशेष मान अभी दर्ज नहीं है।",
+  "titleDRY_SPELL": "सूखा दौर",
+  "titleFROST": "पाले का खतरा",
+  "titleHEAT": "अत्यधिक गर्मी",
+  "titleHEAVY_RAIN": "भारी वर्षा की संभावना",
+  "titleHUMIDITY_DISEASE": "रोग-अनुकूल मौसम",
+  "titleWIND": "तेज़ हवा"
+}

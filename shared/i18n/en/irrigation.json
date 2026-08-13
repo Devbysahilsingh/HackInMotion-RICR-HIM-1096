@@ -1,0 +1,14 @@
+{
+  "bodyHoldForRain": "Rain of {{rainMm}} mm is expected on {{date}}. Hold off watering and check again afterwards.",
+  "bodyIRRIGATE_IN_N_DAYS": "Based on the forecast, this crop is likely to need about {{amountMm}} mm of water in {{days}} days.",
+  "bodyIRRIGATE_TODAY": "Apply about {{amountMm}} mm — roughly {{amountLitersPerAcre}} litres per acre.",
+  "bodyMAINTAIN_WATER_LEVEL": "Keep standing water at 2–5 cm in the field.",
+  "bodyWAIT_RAIN_EXPECTED": "Rain is expected in {{days}} day(s) and should cover what this crop needs.",
+  "modeSimplified": "Estimated without evapotranspiration data — treat this as a rough guide.",
+  "soilUnknown": "Soil type is not recorded for this field, so this estimate is less precise.",
+  "titleHoldForRain": "Hold irrigation — rain expected",
+  "titleIRRIGATE_IN_N_DAYS": "Water in {{days}} days",
+  "titleIRRIGATE_TODAY": "Water this crop today",
+  "titleMAINTAIN_WATER_LEVEL": "Maintain the water level",
+  "titleWAIT_RAIN_EXPECTED": "Wait — rain is expected"
+}

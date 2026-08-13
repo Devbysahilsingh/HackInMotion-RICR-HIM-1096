@@ -89,3 +89,30 @@ export const refreshLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   limit: 60,
 });
+
+/**
+ * Per-*user* daily buckets.
+ *
+ * Every bucket above is keyed on IP, which is the right key for anonymous
+ * abuse. The quotas docs/api specifies for authenticated write and compute
+ * endpoints ("RL 10/day", "20/day") are per-account quotas: keying them on IP
+ * would let one account exhaust a shared village connection, and would let one
+ * user reset their own quota by changing networks.
+ *
+ * These are only mounted behind `requireAuth`, so `req.auth.userId` is always
+ * present; the IP fallback exists so a misordered mount degrades to the old
+ * behaviour rather than to a single global bucket for every caller.
+ */
+const perUserDaily = (limit) =>
+  rateLimit({
+    ...baseOptions,
+    windowMs: 24 * 60 * 60 * 1000,
+    limit,
+    keyGenerator: (req) => req.auth?.userId ?? ipKeyGenerator(req.ip),
+  });
+
+/** docs/api/irrigation.md: "POST /crops/:id/irrigation-log | Auth · RL 10/day". */
+export const irrigationLogLimiter = perUserDaily(10);
+
+/** docs/api/intelligence.md: "POST /crop-recommendation | Auth · 20/day". */
+export const cropRecommendationLimiter = perUserDaily(20);

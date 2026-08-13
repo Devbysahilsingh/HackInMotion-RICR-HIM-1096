@@ -209,11 +209,29 @@ describe('deriveStage · stage boundaries are inclusive-start (R3)', () => {
 
 // ── Kc resolution ───────────────────────────────────────────────────────────
 
-describe('deriveStage · Kc outside DEVELOPMENT is used as published', () => {
-  it('reads the registry value for INITIAL, MID and LATE', () => {
+describe('deriveStage · Kc on the plateau stages is used as published', () => {
+  it('reads the registry value for INITIAL and MID', () => {
     assert.equal(deriveStage(active({ asOf: onDay(5) })).kc, 0.6);
     assert.equal(deriveStage(active({ asOf: onDay(80) })).kc, 1.15);
-    assert.equal(deriveStage(active({ asOf: onDay(120) })).kc, 0.8);
+  });
+
+  /**
+   * LATE is NOT a plateau. The Kc stored against it is FAO-56's Kc_end — the
+   * value at the *end* of the late season — so the stage is a decline from
+   * Kc_mid to it, not a flat 25 days at the harvest-day value.
+   * (crops.agronomy.json `conventions.lateStageKc`.)
+   *
+   * Day 120 is day 10 of a 25-day LATE window: 1.15 + (10/25)(0.8 − 1.15) = 1.01.
+   */
+  it('declines LATE from Kc_mid to the published Kc_end rather than holding it flat', () => {
+    assert.equal(deriveStage(active({ asOf: onDay(120) })).kc, 1.01);
+  });
+
+  it('reaches Kc_mid on the first LATE day and approaches Kc_end on the last', () => {
+    assert.equal(deriveStage(active({ asOf: onDay(110) })).kc, 1.15);
+    // Day 134 is dayInStage 24 of 25 — the published Kc_end is reached at the
+    // stage boundary itself, which the crop has left by then.
+    assert.equal(deriveStage(active({ asOf: onDay(134) })).kc, 0.814);
   });
 
   it('traces a direct read as such', () => {

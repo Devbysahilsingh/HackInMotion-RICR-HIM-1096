@@ -61,6 +61,18 @@ const diseaseSchema = new Schema(
 const fertilizerRecommendationSchema = new Schema(
   {
     source: { type: sourceRefSchema, required: true },
+    /**
+     * Which variety class the published dose applies to — "short_duration",
+     * "hybrid", "varieties" and so on, exactly as the source labels its rows.
+     *
+     * Missing until P2-8, which meant Mongoose stripped it during the seed and
+     * the guidance endpoint could only ever emit `null`. TNAU publishes three
+     * distinct rice doses (120–150 / 150 / 175 kg N per hectare) and two cotton
+     * doses, so without this field a farmer saw an unlabelled list of doses
+     * with nothing to say which row was theirs — the single most consequential
+     * ambiguity this surface can produce.
+     */
+    varietyClass: { type: String },
     basis: {
       type: String,
       enum: ['blanket_no_soil_test', 'stcr_soil_test'],
