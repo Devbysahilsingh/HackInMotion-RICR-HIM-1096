@@ -92,7 +92,21 @@ export const SOIL_TYPES = [
   'unknown',
 ];
 export const IRRIGATION_METHODS = ['canal', 'borewell', 'rainfed', 'drip', 'sprinkler', 'unknown'];
+/**
+ * What a *client* may declare. `geocoded` is deliberately absent: it is a
+ * statement the server earns by resolving a place, never something a request
+ * can assert about itself.
+ */
 export const LOCATION_SOURCES = ['gps', 'manual'];
+
+/**
+ * What may be *stored*. `geocoded` marks coordinates the server looked up from
+ * the farmer's district rather than measured on their device, so a reader can
+ * tell a gazetteer centroid from a real GPS fix — they differ by kilometres,
+ * which matters for nothing today and would matter a great deal to anyone
+ * later tempted to treat a farm outline as survey-grade.
+ */
+export const LOCATION_SOURCES_STORED = [...LOCATION_SOURCES, 'geocoded'];
 export const CROP_STATUSES = ['planned', 'active', 'harvested'];
 export const SUPPORT_LEVELS = ['SPECIALIZED', 'GENERAL', 'LIMITED', 'UNSUPPORTED'];
 export const SEASONS = ['KHARIF', 'RABI', 'ZAID'];
@@ -182,6 +196,14 @@ export const MARKET_MAX_AGE_DAYS = 90;
 /** "drop-rate >30% aborts the batch (schema-drift guard)". */
 export const MARKET_DROP_RATE_ABORT = 0.3;
 /** data-lifecycle.md: "180-day rolling purge (M0 size guard)". */
+/**
+ * How recent a state's mandi rows must be for a farm-creation warm to skip the
+ * provider. Two days, not one: Agmarknet publishes with a lag and many mandis
+ * do not trade daily, so a one-day window would re-fetch a whole state every
+ * morning for no new data.
+ */
+export const MARKET_WARM_FRESH_DAYS = 2;
+
 export const MARKET_RETENTION_DAYS = 180;
 
 /** docs/market/market-insights.md: "RISING if changePct7d ≥ +5% · FALLING ≤ −5%". */

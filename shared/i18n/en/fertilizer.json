@@ -1,7 +1,15 @@
 {
+  "basisBlanket": "General dose (no soil test)",
+  "basisSoilTest": "Soil-test based dose",
+  "deficiencyHeading": "Deficiency signs",
   "disclaimerGeneral": "General guidance compiled from published TNAU/PAU/ICAR recommendations. Doses vary with your soil and region. Not a substitute for a soil test or advice from your local Krishi Vigyan Kendra / Agriculture Officer. Get a free Soil Health Card: soilhealth.dac.gov.in · Kisan Call Centre 1800-180-1551.",
+  "dueNow": "Due around now",
   "limitations": "These are general figures for a region, not a prescription for your field. Soil, variety and season all change what a crop needs.",
+  "micronutrientsHeading": "Micronutrients",
   "notCovered": "We do not have a published fertilizer schedule for this crop yet.",
+  "npkHeading": "Total N–P–K",
+  "organicsHeading": "Organic matter",
+  "pageTitle": "Fertilizer guidance",
   "schedule.basal.full": "Full published dose at planting",
   "schedule.basal.fullNpk": "Full published N, P and K at planting",
   "schedule.basal.fullNpkPlusMicronutrients": "Full published N, P and K plus micronutrients at planting",
@@ -18,8 +26,11 @@
   "schedule.topdress.quarterNitrogen": "One quarter of the published nitrogen",
   "schedule.topdress.thirdDose": "One third of the published dose",
   "schedule.topdress.ureaProduct": "The published urea quantity",
+  "scheduleHeading": "When to apply",
   "soilTestCta": "A free Soil Health Card gives figures for your own field. Visit soilhealth.dac.gov.in or call the Kisan Call Centre on 1800-180-1551.",
   "typeGeneralNoSoilTest": "General recommendation (no soil test) — compiled from published TNAU, PAU and ICAR sources",
   "unitNotPublished": "The source did not print a unit for this quantity, so it is shown exactly as published.",
+  "varietyClassLabel": "For: {{varietyClass}}",
+  "varietyClassUnspecified": "The source does not name a variety class for this dose.",
   "verificationPending": "These figures are awaiting checking against the original publication."
 }

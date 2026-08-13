@@ -13,8 +13,11 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "scan:secrets": "node scripts/scan-staged-secrets.mjs",
-    "verify": "npm run lint && npm run format:check && npm test",
-    "test": "npm --prefix backend test"
+    "check:i18n": "node scripts/check-i18n.mjs",
+    "verify": "npm run lint && npm run format:check && npm run check:i18n && npm test && npm run test:web",
+    "test": "npm --prefix backend test",
+    "test:web": "npm --prefix web/frontend test",
+    "build:web": "npm --prefix web/frontend run build"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",

@@ -201,6 +201,79 @@ export function freshnessOf(snapshot, asOf = new Date()) {
 }
 
 /**
+ * Warms one grid cell so a newly-registered farm is not blank.
+ *
+ * ## Why this exists
+ *
+ * The refresh job's work list is built from farms that **already exist**, and
+ * it ticks every `WEATHER_REFRESH_INTERVAL_MS` (3 hours). A farmer who had just
+ * added their field therefore saw "Not fetched yet" on the weather screen — and
+ * an `UNAVAILABLE` irrigation verdict, because rule R14 needs a snapshot — for
+ * up to three hours, on the very screen that is supposed to introduce the
+ * product. Nothing was broken; the first run was simply empty.
+ *
+ * ## Why this does not violate rule 3
+ *
+ * Rule 3 forbids a *request path* depending on a provider: no farmer's request
+ * may be slow or fail because Open-Meteo is slow or down. This function is
+ * therefore called **fire-and-forget, after the response has already been
+ * sent** — the farm is created and returned regardless of what the provider
+ * does. Reads still come from `weatherSnapshots` alone; this only fills that
+ * table sooner than the next tick would.
+ *
+ * It is a no-op when the cell already holds a snapshot inside its TTL, so the
+ * common case — a farm in a cell some other farm already occupies — costs one
+ * indexed lookup and no provider call at all.
+ *
+ * Never throws: a failed warm leaves the screen exactly as it would have been
+ * without it, and the job will try again on its own schedule.
+ *
+ * @param {{locationKey: string, lat: number, lon: number, asOf?: Date, fetchImpl?: typeof fetch}} input
+ * @returns {Promise<{warmed: boolean, reason?: string}>}
+ */
+export async function warmLocation({ locationKey, lat, lon, asOf = new Date(), fetchImpl }) {
+  if (!locationKey || lat == null || lon == null) {
+    return { warmed: false, reason: 'no_coordinates' };
+  }
+
+  /**
+   * Under test, an *implicit* warm is suppressed.
+   *
+   * This is a request-path side effect, so without this guard every suite that
+   * creates a farm over HTTP would make a live Open-Meteo call and race the
+   * fixtures it seeds itself — which is exactly what happened: the dashboard
+   * suite died on a duplicate-key error when the warm wrote the snapshot the
+   * test was about to insert.
+   *
+   * The guard sits here once rather than at each call site, for the reason
+   * config/failureFlags.js gives for doing the same thing: a missed check at
+   * one call site would be invisible. It suppresses only the *implicit* path —
+   * passing an explicit `fetchImpl` is how the suites exercise this function
+   * deliberately, so the logic below is still fully covered.
+   */
+  if (env.NODE_ENV === 'test' && !fetchImpl) {
+    return { warmed: false, reason: 'suppressed_in_test' };
+  }
+
+  try {
+    const fresh = await WeatherSnapshot.findOne({
+      locationKey,
+      fetchedAt: { $gte: new Date(asOf.getTime() - WEATHER_TTL_MS) },
+    })
+      .select('_id')
+      .lean();
+
+    if (fresh) return { warmed: false, reason: 'already_fresh' };
+
+    const result = await refreshLocation({ locationKey, lat, lon, asOf, fetchImpl });
+    return { warmed: result.status === 'ok', reason: result.reason };
+  } catch (err) {
+    logger.warn({ err, locationKey }, 'weather warm failed — the scheduled job will retry');
+    return { warmed: false, reason: 'error' };
+  }
+}
+
+/**
  * The refresh job's work list: every distinct grid cell a farm sits in.
  *
  * Farms whose location was entered manually without coordinates have no

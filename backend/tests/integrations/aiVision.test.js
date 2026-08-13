@@ -463,7 +463,10 @@ describe('gemini · request shape', () => {
     });
 
     const [{ url, init }] = fetchImpl.calls;
-    assert.ok(url.endsWith('/models/gemini-2.5-flash:generateContent'));
+    // Bound to the constant rather than a literal: the previously pinned id was
+    // retired upstream and began answering 404, and a hardcoded copy here would
+    // have gone on asserting the dead value.
+    assert.ok(url.endsWith(`/models/${gemini.GEMINI_MODEL}:generateContent`));
     assert.ok(!url.includes('?'), 'no query string — that is where keys leak');
     assert.ok(!url.includes(FAKE_GEMINI_KEY));
     assert.equal(init.headers['x-goog-api-key'], FAKE_GEMINI_KEY);
@@ -586,7 +589,7 @@ describe('gemini · failure handling', () => {
     const result = await call({ fetchImpl: stubFetch({}, { status: 503 }) });
     assert.equal(
       result.endpoint,
-      'generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+      `generativelanguage.googleapis.com/v1beta/models/${gemini.GEMINI_MODEL}:generateContent`,
     );
     assert.ok(!result.endpoint.includes('?'));
   });

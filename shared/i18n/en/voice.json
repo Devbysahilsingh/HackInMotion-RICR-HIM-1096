@@ -1,0 +1,17 @@
+{
+  "heard": "We heard: “{{text}}”",
+  "intentDashboard": "Show my home screen",
+  "intentIrrigation": "Should I water today?",
+  "intentMarket": "What are today’s mandi prices?",
+  "intentScan": "Check a crop photo",
+  "intentWeather": "What is the weather?",
+  "intentsHeading": "Or tap what you want",
+  "listening": "Listening…",
+  "micStart": "Speak",
+  "micStop": "Stop",
+  "noMatch": "We did not recognise that. Try one of the buttons below.",
+  "notSupported": "Voice input is not available in this browser. You can still type or tap.",
+  "permissionDenied": "Microphone permission was refused. You can still type or tap.",
+  "speakNotSupported": "Read-aloud is not available in this browser.",
+  "title": "Ask by voice"
+}

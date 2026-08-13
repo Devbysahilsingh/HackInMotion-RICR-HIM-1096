@@ -64,8 +64,8 @@ _All items P2-1..P2-9 implemented and tested. **930 backend tests passing** (was
 **Outstanding Phase 3 items (not code gaps):**
 1. **Disease-KB Hindi — 0/408 strings.** Rule 8 forbids machine-translating agronomic terms. Reported every run by `tests/i18n/disease-keys.test.js`; `dataGaps` carries it per crop. **This is ADR-021 §1's cotton ship gate** — cotton stays out of a bilingual demo until a Hindi-literate reviewer signs the KB off. Owner: human reviewer.
 2. **Calibrated thresholds.** τ, τ_healthy and the softmax temperature in `ml-service/model/model-manifest.json` are `"calibrated": false` / `"provisional": true` placeholders. The backend never re-derives the gate from `confidence` (the service decides `uncertain`), so training drops in without a backend change. The margin guard 0.15 is real — it is published in confidence-strategy.md.
-3. **Provider credentials.** `GEMINI_API_KEY`, `OPENROUTER_API_KEY`, `CLOUDINARY_URL`, `ML_SERVICE_URL` are all unset. Every tier is fixture-tested and every absence degrades honestly (`not_configured`, never a fabricated answer), but **no live provider call has been made**. Owner: A.
-4. **`OPENROUTER_MODEL` is an unverified free-tier choice** (`qwen/qwen2.5-vl-72b-instruct:free`) — no repository document names a model. If the `:free` suffix is retired the tier 4xxs and drops to the rule engine: degraded, never wrong. Re-check before demo.
+3. **Provider credentials — RESOLVED 2026-08-13.** `GEMINI_API_KEY`, `OPENROUTER_API_KEY`, `CLOUDINARY_URL` and `ML_SERVICE_URL` are all set and **verified by live calls**: Cloudinary upload + destroy round-trip (after the account key was given Master Admin — a scoped key returned `403 missing permissions (actions=["create"])` while `api.ping()` still succeeded, so `/healthz` reporting `storage.configured: true` was not sufficient evidence), Open-Meteo ingest, data.gov.in ingest (220 fetched / 46 inserted, dropRate 0.20), and ml-service `/predict`.
+4. **`OPENROUTER_MODEL` / `GEMINI_MODEL` — RESOLVED 2026-08-13.** The predicted retirement happened to **both** providers at once, and both tiers were silently 404ing out of the chain. `qwen/qwen2.5-vl-72b-instruct:free` → 404 "unavailable for free" (OpenRouter's suggested paid slug refused under rule 10); `gemini-2.5-flash` → 404 "no longer available to new users". Replacements were chosen by calling every candidate with a real leaf photograph, not by guessing: `google/gemma-4-26b-a4b-it:free` (the only working free VLM of the eight OpenRouter advertises with image input) and the rolling alias `gemini-flash-latest`. The Gemini URL test now binds to the constant so a literal cannot rot again.
 5. **HEVC-coded HEIC decoding is not demonstrated.** The libvips build has no HEVC *encoder*, so no valid fixture could be produced; the heif container path is proven with AVIF and the undecodable path with a truncated HEIF (ADR-024 §11).
 6. **Symptom-tag vocabulary has four recorded holes** (no interveinal, leaf-underside, shape-deformity, or colour-neutral discolouration). Consequence: `COTTON_LEAF_REDDENING` carries no `pattern` tag and is structurally unable to rank; `MAIZE_NORTHERN_LEAF_BLIGHT`/`MAIZE_GRAY_LEAF_SPOT` share 7 of 9 tags. Recorded in the KB files' `gaps`; widening the vocabulary means re-tagging both KB parts.
 7. **`MAIZE_GRAY_LEAF_SPOT` has no Indian primary source** — `iimr.icar.gov.in` did not resolve in DNS. Worth a retry.
@@ -88,16 +88,19 @@ _All items P2-1..P2-9 implemented and tested. **930 backend tests passing** (was
 4. **Cotton still cannot ship bilingually** — disease-KB Hindi remains 0/408 (ADR-021 §1).
 
 ## PHASE 5 — Web frontend
-- [ ] [P0](C→B pass) Vite scaffold + Tailwind + router + Query + axios interceptors + i18n init + QueryBoundary ✔ auth bootstrap flow works
-- [ ] [P0](C/B) ui/ primitives (list in component-map) ✔ RTL chip/dot tests
-- [ ] [P0](C/B) Auth pages + guards ✔ E2E segment
-- [ ] [P0](C/B) Farm + crop forms/flows (GPS+manual, pickers) ✔ RTL validation
-- [ ] [P0](C/B) Dashboard (feed, crop cards, ack, why-trace) ✔ E2E
-- [ ] [P0](C/B) Scan flow + result page (all branches incl. uncertain) ✔ E2E + fixtures
-- [ ] [P0](C/B) Weather/irrigation page + market page (Recharts; load dataviz skill at build) ✔ visual review
-- [ ] [P1](B/C) History views; fertilizer tab; crop-rec wizard; freshness dots everywhere ✔ walkthrough
-- [ ] [P2](B) Community page; voice (web STT+TTS+intent buttons); TTS speak buttons
-- [ ] [P0](B/A) **Hindi resources verification pass** «all screens» ✔ parity script + human sign-off
+- [x] [P0](C→B pass) Vite scaffold + Tailwind + router + Query + axios interceptors + i18n init + QueryBoundary ✔ auth bootstrap flow works
+- [x] [P0](C/B) ui/ primitives (list in component-map) ✔ RTL chip/dot tests
+- [x] [P0](C/B) Auth pages + guards ✔ E2E segment
+- [x] [P0](C/B) Farm + crop forms/flows (GPS+manual, pickers) ✔ RTL validation
+- [x] [P0](C/B) Dashboard (feed, crop cards, ack, why-trace) ✔ E2E
+- [x] [P0](C/B) Scan flow + result page (all branches incl. uncertain) ✔ E2E + fixtures
+- [x] [P0](C/B) Weather/irrigation page + market page (Recharts; load dataviz skill at build) ✔ visual review
+- [x] [P1](B/C) History views; fertilizer tab; crop-rec wizard; freshness dots everywhere ✔ walkthrough
+- [x] [P2](B) Community page; voice (web STT+TTS+intent buttons); TTS speak buttons
+- [~] [P0](B/A) **Hindi resources verification pass** «all screens» ✔ parity script + human sign-off
+- [x] [P0](B) **Productization pass 2026-08-13** — land ledger (crop area ≤ farm area, server + form, 24 new tests), localization closure (registry names joined on market/community/feed surfaces; copy-reuse fixes; `<html lang>` pre-hydration), public landing page at `/` (new `landing` namespace, hi machine-authored + ledgered), IA repair (`/weather` entry, History reachable, crop-rec entry, farm-context headers, risks-first weather) ✔ implementation-log addendum
+
+**`[~]` — parity complete, sign-off partial.** `scripts/check-i18n.mjs` passes: **976 keys, 0 missing in hi**, parity in both directions, interpolation-placeholder parity, no empty values. `scripts/check-ui-strings.mjs` finds zero hardcoded user-facing strings. The disease KB, previously 0/408, is now **408/408** — translated from the English already sourced from TNAU/ICAR, so no agronomic fact, threshold, practice or product appears in the Hindi that is not in the English it renders, and no pesticide dose appears in either. Sign-off stands at **568/976**: the owner has accepted the 14 UI namespaces; the 408 disease strings are machine-translated and still await a Hindi-literate reviewer. `shared/i18n/hi/_verification.json` records who signed what. ADR-021's cotton gate is mechanically satisfied and editorially still open.
 
 ## PHASE 6 — Mobile
 - [ ] **P6-1** [P0](C) Expo scaffold (moved here from P0-3) + navigation + shared/i18n metro config + interceptors + SecureStore auth ✔ login on device

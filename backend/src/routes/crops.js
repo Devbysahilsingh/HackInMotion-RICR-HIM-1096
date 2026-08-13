@@ -21,11 +21,13 @@ import { requireAuth } from '../middleware/requireAuth.js';
 import { validate } from '../middleware/validate.js';
 import { Crop, CropRegistry, Farm } from '../models/index.js';
 import {
+  assertAreaWithinFarm,
   assertFarmHasCapacity,
   assertSowingDateInRange,
   assertTransitionAllowed,
   deleteCropCascade,
   resolveCropCode,
+  withStages,
 } from '../services/cropService.js';
 import {
   assertLogDateInRange,
@@ -34,7 +36,7 @@ import {
   recordIrrigation,
 } from '../services/irrigationService.js';
 import { fertilizerGuidance } from '../services/fertilizerService.js';
-import { deriveStage } from '../engines/stage/deriveStage.js';
+import { validationError } from '../utils/errors.js';
 import { pageMeta, sendData, sendNoContent } from '../utils/respond.js';
 
 export const cropsRouter = Router();
@@ -49,13 +51,21 @@ const createSchema = z
     areaValue: z.number().positive().optional(),
     areaUnit: z.enum(LAND_UNITS).optional(),
   })
-  .strict();
+  .strict()
+  // An area without a unit is not a measurement — the land ledger would have
+  // to guess what "3" means, and a wrong guess miscounts someone's field.
+  .superRefine((body, ctx) => {
+    if (body.areaValue !== undefined && body.areaUnit === undefined) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['areaUnit'], message: 'required' });
+    }
+  });
 
 const updateSchema = z
   .object({
     status: z.enum(CROP_STATUSES).optional(),
     variety: z.string().trim().max(60).optional(),
     areaValue: z.number().positive().optional(),
+    areaUnit: z.enum(LAND_UNITS).optional(),
   })
   .strict();
 
@@ -70,32 +80,9 @@ const loadCrop = loadOwned({
 const loadFarm = loadOwned({ model: Farm, param: 'farmId', as: 'farm' });
 
 /**
- * Attaches the derived growth stage. Registry lookups are batched so a list of
- * twelve crops costs one query, not twelve.
+ * `withStages` now lives in cropService so the farm detail route serves the
+ * same decorated shape this one does — see the note on its definition.
  */
-async function withStages(crops, asOf = new Date()) {
-  const codes = [...new Set(crops.map((crop) => crop.cropCode))];
-  const registry = await CropRegistry.find({ cropCode: { $in: codes } })
-    .select('cropCode kcStages supportLevel names')
-    .lean();
-  const byCode = new Map(registry.map((entry) => [entry.cropCode, entry]));
-
-  return crops.map((crop) => {
-    const entry = byCode.get(crop.cropCode);
-    return {
-      ...crop.toJSON(),
-      registry: entry
-        ? { supportLevel: entry.supportLevel, names: entry.names }
-        : { supportLevel: 'UNSUPPORTED', names: null },
-      stage: deriveStage({
-        sowingDate: crop.sowingDate,
-        status: crop.status,
-        kcStages: entry?.kcStages ?? [],
-        asOf,
-      }),
-    };
-  });
-}
 
 // ── Nested under a farm ──────────────────────────────────────────────────────
 
@@ -110,6 +97,7 @@ cropsRouter.post(
 
       assertSowingDateInRange(sowingDate);
       await assertFarmHasCapacity(req.farm._id);
+      await assertAreaWithinFarm(req.farm, { areaValue: rest.areaValue, areaUnit: rest.areaUnit });
       const resolved = await resolveCropCode(cropCode, freeTextLabel);
 
       const crop = await Crop.create({
@@ -176,6 +164,24 @@ cropsRouter.patch(
         // promotes them past the limit one PATCH at a time.
         if (req.body.status === 'active' && req.crop.status !== 'active') {
           await assertFarmHasCapacity(req.crop.farmId, req.crop._id);
+        }
+      }
+
+      // The land ledger runs against the *merged* area, same reasoning as the
+      // farm-size ceiling: a PATCH may change value without unit or vice
+      // versa, and only the result is meaningful. A crop ending up harvested
+      // occupies no ground, so its area is not re-checked.
+      if (req.body.areaValue !== undefined || req.body.areaUnit !== undefined) {
+        const merged = {
+          areaValue: req.body.areaValue ?? req.crop.areaValue,
+          areaUnit: req.body.areaUnit ?? req.crop.areaUnit,
+        };
+        if (merged.areaValue != null && merged.areaUnit == null) {
+          throw validationError([{ field: 'areaUnit', rule: 'required' }]);
+        }
+        const endStatus = req.body.status ?? req.crop.status;
+        if (endStatus !== 'harvested') {
+          await assertAreaWithinFarm(req.farm, { ...merged, excludeCropId: req.crop._id });
         }
       }
 

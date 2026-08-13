@@ -650,3 +650,117 @@ Two source errors were quarantined rather than propagated: TNAU's tomato late-bl
 Created: `backend/src/services/{imagePipeline,cropHealthService,aiVision,communityService}.js`, `integrations/{cloudinary,mlService,gemini,openRouter}.js`, `middleware/uploadImage.js`, `engines/{severity,symptom}/`, `routes/{cropHealth,cropHealthKeys,community}.js`, `jobs/communityAggregate.js`, `knowledge/crops.diseases.part-{rtp,ccm}.json`, `knowledge/i18n.diseases.part-{rtp,ccm}.json`, 9 test files (`tests/security/st-{20,30}-*.test.js`, `tests/api/cropHealth.test.js`, `tests/services/{cropHealthRouter,cropCascade}.test.js`, `tests/integrations/aiVision.test.js`, `tests/engines/symptomEngine.test.js`, `tests/jobs/communityAggregate.test.js`, `tests/i18n/disease-keys.test.js`), `tests/fixtures/images.js`, `tests/fixtures/external/ai/`, the whole of `ml-service/` (app, tests, Dockerfile, requirements, model manifest, scripts), `shared/i18n/{en,hi}/{health,community,disease}.json`, `docs/decisions/ADR-024-phase3-crop-health-decisions.md`.
 
 Changed: `backend/src/config/{constants,env,failureFlags}.js`, `models/{CropHealthLog,CropRegistry}.js`, `services/{cropService,registrySeedService}.js`, `middleware/rateLimits.js`, `routes/{health,ownership-table}.js`, `src/{app,jobs/index}.js`, `backend/package.json`, `tests/{utils/httpClient,i18n/message-keys}.test.js`, `shared/i18n/{en,hi}/errors.json`, `.gitleaks.toml`, `.env.example`, `render.yaml`, and the docs listed in ADR-024.
+
+---
+
+## PHASE 5 — Web frontend (P5-1..P5-10) — 2026-08-13
+
+The web client went from a scaffold that rendered one paragraph to the full farmer-facing surface: 18 routes, 15 i18n namespaces, and every screen wired to the real Phase 1–4 API. Architectural decisions are in **ADR-025**; this entry records what was found, what broke, and what is honestly still owed.
+
+### What the API actually returns, versus what the client assumed
+
+The single most valuable half-hour of this phase was spent walking every endpoint the client calls against a live local backend and printing the real response shapes. Three assumptions were wrong, and every one of them would have put a raw identifier or a false claim in front of a farmer:
+
+- **`recommendations.type` is hyphenated** (`weather-risk`), not snake-cased. The per-type deep links would have been silently dead — nothing throws, the link just never matches.
+- **`irrigation.verdict` can be `null`** when the engine declines to reach one at all; a crop that is not yet sown is the everyday case. `` `irrigation.title${verdict}` `` would have asked i18next for `irrigation.titlenull` and printed the key.
+- **`market.signal.trend` can be `null`** with no observations. Same key-composition failure — and the tempting fallback, `STABLE`, would have told a farmer "prices are steady" on the strength of no data at all.
+
+`freshness` also turned out to be three shapes rather than one: weather carries `fetchedAt`/`ageHours`/`staleWarning`, its pending branch carries `retryAfterSeconds`/`reason`, and market carries `latestDate`/`ageDays`. `FreshnessDot` now prefers the server's own `staleWarning` over its own arithmetic, because the 48-hour threshold is the server's to own.
+
+None of this was visible from the docs. It came from running the thing.
+
+### Defects found and fixed within Phase 5
+
+- **The app hung forever on "Checking your session…".** An "already bootstrapped" `useRef` guard combined with a per-run `cancelled` flag meant React StrictMode's double mount cancelled the only in-flight refresh and then declined to start a replacement. Every route sat on the bootstrap screen indefinitely. De-duplication belongs in `refreshSession()`, which is already single-flight, so the ref was removed. **Found by Playwright, not by the RTL suite** — `renderWithProviders` does not wrap in StrictMode and `main.tsx` does. A StrictMode regression test now closes that gap.
+- **A failed refresh left a dead access token in memory.** `refreshSession()` returned `null` on failure without clearing it, so the next request went out with a bearer token the server had just refused. Now cleared.
+- **A CRITICAL weather warning claimed "no calculation details were recorded".** The feed's `data.trace` is polymorphic — an array of engine steps for irrigation and market, but `risk.data` (a flat object of the compared numbers) for a weather risk. `WhyTrace` accepted only arrays, so the one item class where the numbers matter most rendered as having none. It now normalises both shapes.
+- **Irrigation feed items dropped their freshness label.** The composer attaches the weather freshness the verdict was computed from; the card ignored it. "Water this crop today" derived from a three-day-old forecast is exactly the case rule 9 exists for.
+
+### Verification performed (all executed, results real)
+
+| Check | Result |
+|---|---|
+| Frontend TypeScript (`tsc --noEmit`) | clean |
+| Frontend lint | 0 errors, 4 `react-refresh` HMR warnings |
+| Frontend unit + RTL (`vitest run`) | **87 passed**, 10 files |
+| Backend (`npm test`) | **1203 passed** |
+| ml-service (`pytest`) | **141 passed** |
+| Frontend production build | succeeds; largest lazy chunk is Recharts at 368 kB, loaded only by the two chart routes |
+| i18n parity (`scripts/check-i18n.mjs`) | passes — 976 keys, en↔hi both directions, interpolation-placeholder parity |
+| Hardcoded UI strings (`scripts/check-ui-strings.mjs`) | 0 violations |
+| Local MongoDB | connected (`him1096`), 24 indexes built, registry + demo seeded |
+| Weather ingest | real Open-Meteo fetch, 1 location |
+| Feed composition | 4 real items from those real conditions |
+| OpenWeather fallback | verified live: with `FORCE_FAIL_OPENMETEO`, the refresh completed from `openweathermap` |
+
+### Honest limitations shipped in this phase
+
+- **No human Hindi verification.** The parity gate passes and 0/976 strings are reviewer-verified; `shared/i18n/hi/_verification.json` is the ledger and it is empty. `disease` is 0/408 by policy — no Hindi-language official source has been fetched, and rule 8 forbids unsourced agronomic translation. Cotton's ADR-021 bilingual ship gate is unchanged.
+- **No visual review.** `MASTER-TODO` marks the charts row "✔ visual review"; no human has looked at these screens. The browser-automation extension was unavailable in this environment. Playwright exercises them at desktop and mobile viewports, which is not the same claim.
+- **No axe-core, no Lighthouse.** Both are Day-3 items and neither has been run, so no score is claimed. The structural work they would check is in place.
+- **The AI chain has not been exercised end to end.** Gemini and OpenRouter are now detected as configured, but no analysis has run against a real photograph, because image upload requires Cloudinary and the supplied `CLOUDINARY_URL` is malformed (see below). The scan flow's four result branches are covered by fixtures and E2E; the live chain is not.
+- **No mandi data.** `DATAGOVIN_RESOURCE_ID` is absent, so `marketRefresh` correctly reports `skipped: "not_configured"`. Market screens render their designed empty/no-signal states, which is what the engine's `NO_OBSERVATIONS` branch is for.
+
+### Environment findings (2026-08-13, credentials supplied by the owner)
+
+Verified by structure and by exercise, never by printing a value:
+
+| Variable | State |
+|---|---|
+| `GEMINI_API_KEY` | present · detected (`tiers.gemini.configured`) |
+| `OPENROUTER_API_KEY` | present · detected (`tiers.openrouter.configured`) |
+| `OPENWEATHER_API_KEY` | present · **exercised successfully against the live provider** |
+| `DATAGOVIN_API_KEY` | present · read (absent from `missingConfig`) |
+| `DATAGOVIN_RESOURCE_ID` | **absent** — no such line in `backend/.env`. Open decision OD-5. |
+| `CLOUDINARY_URL` | present but **malformed**: no `@<cloud-name>` segment. The API refuses to boot, which is the documented fail-fast behaviour, not a bug. |
+
+The Cloudinary shape check is deliberate (`config/env.js`: "a truncated paste fails at boot instead of at the first upload"). It was left exactly as it is.
+
+### Not done, deliberately
+
+- **No `i18next/no-literal-string` plugin.** `scripts/check-ui-strings.mjs` implements the rule against a locked dependency list.
+- **No `StatePicker`/`DistrictPicker` enums.** `shared/constants/geo` is deliberately empty and `farms.js` says why: "an invented list would be worse than a late one." Free text, as the API expects.
+- **No consent toggle in Settings.** The API exposes no user-update route, so the flag is shown read-only rather than as a control that does nothing.
+- **No weakening of any security control to suit the tests.** The login limiter (5/15min) and refresh limiter (60/hour) shaped the E2E design instead: one signed-in browser context per worker, and navigation through the app's own links rather than repeated document loads.
+
+### Addendum — 2026-08-13, credentials supplied and two integrations closed out
+
+**Secret-exposure incident, contained.** The provider credentials had been written into `.env.example` — the **tracked** template — rather than into `backend/.env`, which is why the API kept refusing to boot and why `DATAGOVIN_RESOURCE_ID` read as absent. Checked before acting: the values were in the working tree only, never committed (`git show HEAD:.env.example` is placeholders throughout). The six provider values were moved into `backend/.env` (gitignored, backed up first, every other line preserved byte-for-byte), and `.env.example` was restored from git. No value was printed at any point; the diagnosis was done on structure alone — presence, length, `@`-count, regex-component pass/fail.
+
+**Cloudinary.** The first value had no `@<cloud-name>` segment, so `config/env.js` refused to boot. That refusal is the documented Phase-3 fail-fast ("a truncated paste fails at boot instead of at the first upload") and was left exactly as written. With the corrected value the API boots and `tiers.storage.configured` is true.
+
+**data.gov.in — a real defect found and fixed.** With the key and resource id in place the portal answered with 505 live rows, and the job **aborted**: 396 of them were commodities the registry does not map (brinjal, pomegranate, drumstick, coriander seed), a 78% drop rate against `MARKET_DROP_RATE_ABORT` of 30%.
+
+The guard was doing its job; the fetch was not. `marketRefresh` filtered by **state only**, so it pulled a whole state's mandi feed and then discarded most of it — and `dropped.unmapped` conflated "out of scope" with "the portal renamed a field", which is the schema drift the guard exists to catch. The fetch now runs per **(state × commodity)**, driven by the registry's own alias list (the portal's spellings: `Paddy(Dhan)(Common)`, `Dry Chillies`, `Tomato`), which is what the job's own scope comment always described. Result on the same live data: **142 fetched, 101 inserted, 23% dropped, not aborted**, across 24 districts and 7 commodities including real Nashik onion markets (Lasalgaon, Pimpalgaon Baswant). Cost is ~12 requests a night instead of 1.
+
+`market.test.js` RES-07 was updated with it: a total outage now reports one failure per attempt rather than one per state, so the assertion moved from an exact array to the property it actually cares about — every failure recorded, attributed and not swallowed.
+
+**Market signals are still null, correctly.** One nightly run yields one arrival date; `MARKET_SIGNAL_WINDOW_OBS` needs seven. The screens render their designed "not enough recent reports" state until history accumulates, or until a CEDA export is placed for `npm run seed:market`.
+
+**Hindi disease KB: 0/408 → 408/408.** Translated from the English that was already sourced from TNAU/ICAR, so no agronomic fact, threshold, practice, product or condition appears in the Hindi that is not in the English string it renders, and no pesticide dose appears in either language — the KVK/Kisan-Call-Centre referral is carried through verbatim. Terminology follows `docs/i18n/agricultural-terminology.md`; register is the आप-form per the translation strategy. The merge refused to write unless all 408 keys matched the English set exactly, with no empties and Devanagari present in every value.
+
+**Sign-off is tracked separately from parity, deliberately.** `shared/i18n/hi/_verification.json` now records `verifiedBy` per namespace: `owner` for the 14 UI namespaces the project owner reviewed, `claude` for the disease KB. `check-i18n.mjs` reports 568/976 human-verified and flags the disease row as machine-translated. ADR-021's cotton gate is **mechanically satisfied and editorially still open** — the strings exist and render, but no Hindi-literate reviewer has read them. The `KNOWN_GAPS` exemption that let `disease` warn instead of fail was removed, so a missing disease key is now a hard failure like any other.
+
+A regression test asserts the KB guidance renders in Devanagari on the result page rather than silently falling back to English — the failure mode `fallbackLng: 'en'` would otherwise hide from the parity gate entirely.
+
+**Verification after all of the above:** backend 1203 passed · ml-service 141 passed · frontend 88 passed · tsc clean · repo lint 0 errors (4 `react-refresh` HMR warnings) · production build succeeds · i18n parity 976 keys, 0 missing · 0 hardcoded UI strings. The final E2E suite was **not** run — it is deferred to joint web+mobile integration verification at the owner's instruction.
+
+### Addendum — 2026-08-13, productization pass: land ledger, localization closure, public landing page, IA repair
+
+Owner-directed full-product pass ("audit → fix → verify, do not stop at prettier"). Everything below was driven by a three-way audit (page inventory, API contract, i18n coverage) whose findings are reproduced in the section they fixed.
+
+**The land ledger — the missing business rule.** Nothing anywhere prevented a farm's crops from exceeding the farm: a 2-acre field could carry twelve 100-acre crops. Now enforced server-side in acre-equivalents (`ACRES_PER_UNIT` reconciles acre/hectare/bigha into one ledger): `cropService.assertAreaWithinFarm` on crop create and on the merged result of PATCH (value, unit, or both), `farmService.updateFarm` refuses to shrink a farm below its planted area, and `areaUnit` became required whenever `areaValue` is sent — an area without a unit is not a measurement. `planned` counts (one PATCH from occupying ground), `harvested` frees its area, a crop with no recorded area occupies nothing. Refusals carry `availableAcres`/`allocatedAcres` in the validation details so the client can say how much ground is left, and the keys `crop.areaExceedsFarm` / `farm.sizeBelowCropArea` render it. The form mirrors the rule before the round trip: the crop form shows "You have N acre available for crops" under the area field and refuses locally with the same message; the farm edit form mirrors the shrink rule. 22 new backend tests (`tests/services/cropAreaValidation.test.js` arithmetic; `tests/api/cropAreaLedger.test.js` proves every curl-shaped bypass — create, PATCH growth, unit-switch inflation, farm shrink — answers 422) and 2 new form tests.
+
+**Localization closure — the "Onion stays Onion" bug.** The bilingual registry names were already used almost everywhere; the leaks were the market nearby-mandi surface (commodity dropdown and price rows rendered raw `WHEAT`/`ONION` codes), the community alert card (`alert.cropCode` raw), and feed/history strings that interpolate `{{cropCode}}` ("reported this on COTTON"). One hook (`useCropNames`) now joins registry names client-side; unknown codes fall back to title case of the provider's own id, never an invented translation. Also fixed: seven wrong-copy reuses found by the audit — the 404 page no longer says "Nothing here yet" (`errors.notFound*`), the history advice tab is no longer labelled "Home", the settings consent badge no longer reads "Done"/"Nothing here yet" (`community.consentOn/Off`), the crop seasons list is no longer headed "Status", the dataGaps notice no longer reuses the unsupported-crop text, both unit dropdowns are labelled "Unit" instead of "acre", and the dashboard's degraded-status line names Weather instead of Home. `<html lang>` is set from the saved preference before the bundle loads. Every machine-authored Hindi addition is recorded as `unverifiedAdditions` in `_verification.json` (blanket `"*"` sign-offs converted to explicit key lists for common/errors/community/crop, following the farm/market precedent).
+
+**Public landing page.** `/` was auth-gated — the product had no front door. It is now a public landing page (hero, problem, how-it-works, four feature cards, trust list, CTA, footer; new `landing` namespace, 29 keys en+hi, Hindi machine-authored and ledgered as unverified). Imagery is inline SVG drawn from the design tokens — no external image hosts, nothing can arrive broken on a rural connection. Signed-in visitors forward through `/home`, where `PostAuthLanding` applies the unchanged onboarding-vs-dashboard policy. `index.html` gained a real description and OG tags.
+
+**IA repair.** `/history` had zero inbound links and `/weather` did not exist. The sidebar now carries Weather and History (bottom tabs stay at five; History's mobile entry is the dashboard header). New `/weather` route: one farm forwards straight to its forecast, several ask which field, none shows the standard add-a-farm state. The voice "weather" intent now lands on `/weather` instead of the `/farms` nearest-guess. "What should I plant?" gained a durable entry in the farms-list header. Weather page: farm context in the header, risks moved above the charts (action first). Crop form and crop detail headers name the farm and district (context header). Other audit fixes: the crop form's registry fetch has an error+retry state (it used to fail into a picker offering only "Other"), history pagination no longer dead-ends when `meta.total` is absent, `Kc` is labelled "Crop coefficient (Kc)", Recharts actually got the vendor chunk the vite config comment claimed (385 kB no longer in the entry bundle), and the stale "0/408" comments in `resources.ts`/`types.ts` were corrected.
+
+**Docs.** `routes.md` (new routes), `state-management.md` (language is device-local; no `PATCH /users/me`), `ux-flows.md` (market is location-first; land ledger), and the QA runbook: new §0.5 landing page, §5.2 land ledger (crop areas in the canonical flow adjusted to fit the 2-acre farm — the old numbers would now be refused, which is the rule working), §8/§9/§12.1/§13.1 updated to the actual UI.
+
+**Verification:** backend 1260 passed (was 1238) · frontend 97 passed (was 95) · tsc clean · lint 0 errors (4 pre-existing HMR warnings) · i18n parity 1033 keys, 0 missing, 568 human-verified with every new key ledgered unverified · 0 hardcoded UI strings · production build succeeds (largest route chunk is the charts vendor split, loaded only by chart routes).
+
+**E2E suite run (first time since Phase 5 deferred it) — one suite defect found and fixed.** First full run: 26 passed, 12 failed — 11 of the 12 in the `mobile-chromium` project, every one failing at the fixture's sign-in with the page parked on `/login`. Direct probe confirmed the API answering `429 RATE_LIMITED`: `guards.spec.ts` documents a budget of "two of the login limiter's five attempts", but that accounting predates the two-project config — run in both projects, the suite spends 6+ logins per 15-minute window, and each failure's worker restart spends another, which is the cascade. Per rule 2 the limiter is untouched; the suite now spends less instead: guards (viewport-independent by subject — redirects, revocation, 404) run on desktop only via `testIgnore` on the mobile project, bringing the budget to 4 of 5. Not a regression from this pass — the suite had never been run in this configuration.
+
+**Second E2E finding — the suite is not idempotent.** A re-run against the same seed failed on every feed-dependent test: the previous run's acknowledge test had permanently acked the demo account's feed items (correct product behaviour — acked advice stays acked), `feedRefresh` deliberately does not resurrect them, so `feed-item` never rendered — and each of those failures restarted its worker, spent another fixture login, and re-triggered the limiter cascade downstream. Not a product bug: the reset is `npm run seed:dev -- --reset` + `weatherRefresh` + `feedRefresh` — the `--reset` flag matters, because without it the seed is deliberately additive (it must not reset a changed password), the demo user keeps its id, the day's dedup keys keep matching the acked rows, and `feedRefresh` reports `updated` rather than `inserted` for every candidate. Recorded here because the failure mode — "everything after test N failed at sign-in" — looks like an auth regression and is actually a spent budget.

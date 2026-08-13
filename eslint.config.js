@@ -70,8 +70,25 @@ export default [
     },
   },
   {
-    files: ['web/**/vite.config.ts'],
+    files: ['web/**/vite.config.ts', 'web/**/vitest.config.ts', 'web/**/playwright.config.ts'],
     languageOptions: { globals: { ...globals.node } },
+  },
+
+  /**
+   * Playwright specs are Node test code, not React.
+   *
+   * The hooks rule in particular produces a false positive here: Playwright's
+   * fixture API takes a callback named `use`, and `rules-of-hooks` reads any
+   * `use(...)` call as React's `use` hook being called outside a component.
+   * There are no components in this directory to apply the rule to.
+   */
+  {
+    files: ['web/**/e2e/**/*.{ts,tsx}'],
+    languageOptions: { globals: { ...globals.node } },
+    rules: {
+      'react-hooks/rules-of-hooks': 'off',
+      'react-refresh/only-export-components': 'off',
+    },
   },
 
   prettier,

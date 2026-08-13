@@ -476,8 +476,21 @@ describe('Market API and nightly ingest', () => {
       const report = await runMarketRefresh({ asOf: JOB_ASOF, fetchImpl });
 
       // The failure is recorded rather than swallowed.
+      //
+      // One entry per (state, commodity) attempt: the job fetches per
+      // commodity so the drop-rate guard measures schema drift rather than
+      // scope, which means a total outage reports every attempt it made
+      // instead of one line per state. What RES-07 actually requires is that
+      // the failure is recorded, attributed and not swallowed — asserted on
+      // shape rather than on an exact list, so adding a crop to the registry
+      // does not break this test.
       assert.equal(report.ok, false);
-      assert.deepEqual(report.failures, [{ state: 'Maharashtra', reason: 'network' }]);
+      assert.ok(report.failures.length > 0, 'the outage was not recorded');
+      for (const failure of report.failures) {
+        assert.equal(failure.reason, 'network');
+        assert.equal(failure.state, 'Maharashtra');
+        assert.equal(typeof failure.commodity, 'string');
+      }
       assert.equal(report.aborted, false);
       assert.equal(report.inserted, 0);
       assert.equal(report.duplicates, 0);

@@ -4,7 +4,7 @@ import {
   INDIA_BOUNDS,
   IRRIGATION_METHODS,
   LAND_UNITS,
-  LOCATION_SOURCES,
+  LOCATION_SOURCES_STORED,
   SOIL_TYPES,
 } from '../config/constants.js';
 import { baseOptions } from './shared.js';
@@ -19,7 +19,14 @@ const locationSchema = new Schema(
     lon: { type: Number, min: INDIA_BOUNDS.minLon, max: INDIA_BOUNDS.maxLon },
     state: { type: String, required: true, trim: true },
     district: { type: String, required: true, trim: true },
-    source: { type: String, enum: LOCATION_SOURCES, required: true },
+    /**
+     * The village or locality, as the farmer wrote it. Optional because many
+     * farmers will give only a district, and free-text because no canonical
+     * village list exists in this repository — inventing one would be worse
+     * than accepting what they typed.
+     */
+    village: { type: String, trim: true, maxlength: 80 },
+    source: { type: String, enum: LOCATION_SOURCES_STORED, required: true },
   },
   { _id: false },
 );

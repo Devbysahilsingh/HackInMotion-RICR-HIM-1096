@@ -8,7 +8,10 @@
  * involved (`/market/my-crops`), and there it is applied as a query filter,
  * never as a post-filter (AU-4).
  */
-import { MARKET_QUERY_MAX_DAYS } from '../config/constants.js';
+import { MARKET_QUERY_MAX_DAYS, MARKET_WARM_FRESH_DAYS } from '../config/constants.js';
+import { env } from '../config/env.js';
+import { runMarketRefresh } from '../jobs/marketRefresh.js';
+import { logger } from '../utils/logger.js';
 import { Crop, CropRegistry, Farm, MarketPrice } from '../models/index.js';
 import { computeMarketSignal, guidanceKeyFor } from '../engines/marketSignal/marketSignal.js';
 
@@ -204,4 +207,154 @@ export async function myCropSignals(userId, { days = 30 } = {}) {
 
   // Deterministic ordering so two identical requests render identically.
   return results.sort((a, b) => a.cropCode.localeCompare(b.cropCode));
+}
+
+/**
+ * Warms the mandi data for a farm's state so a newly-created farm has market
+ * context immediately, instead of waiting for the nightly ingest.
+ *
+ * ## Why this exists
+ *
+ * `marketRefresh` builds its work list from `Farm.distinct('location.state')` —
+ * states where farms *already* exist — and runs on a nightly schedule. A farmer
+ * who created the first farm in their state therefore saw an empty market
+ * screen until the next run, which for a demo or a new region meant "no prices
+ * near you" on a product whose whole promise is prices near you.
+ *
+ * ## Why this is safe
+ *
+ * Called fire-and-forget **after** the farm-creation response is sent, so rule
+ * 3 holds: no farmer's request waits on data.gov.in, and a provider outage
+ * cannot fail a farm creation. It is a no-op when the state already holds
+ * recent rows, so the common case — a farm in a state some other farmer already
+ * covers — costs one indexed count and no provider call.
+ *
+ * Rows go through the same normalizer and the same sanity gates as the nightly
+ * job, so warmed data can never be cleaner than ingested data.
+ *
+ * @param {{state: string, asOf?: Date, fetchImpl?: typeof fetch}} input
+ * @returns {Promise<{warmed: boolean, reason?: string, inserted?: number}>}
+ */
+export async function warmMarketForState({ state, asOf = new Date(), fetchImpl } = {}) {
+  if (!state) return { warmed: false, reason: 'no_state' };
+
+  // Same reasoning as weatherService.warmLocation: an implicit warm must not
+  // put live provider calls inside the test suite, where it would race the
+  // fixtures each suite seeds for itself. An explicit fetchImpl is never
+  // suppressed, so the logic below stays covered.
+  if (env.NODE_ENV === 'test' && !fetchImpl) {
+    return { warmed: false, reason: 'suppressed_in_test' };
+  }
+
+  try {
+    const since = new Date(asOf.getTime() - MARKET_WARM_FRESH_DAYS * MS_PER_DAY);
+    const existing = await MarketPrice.countDocuments({ state, date: { $gte: since } });
+    if (existing > 0) return { warmed: false, reason: 'already_fresh', inserted: 0 };
+
+    const report = await runMarketRefresh({ asOf, fetchImpl, states: [state] });
+    return { warmed: (report.inserted ?? 0) > 0, inserted: report.inserted ?? 0 };
+  } catch (err) {
+    logger.warn({ err, state }, 'market warm failed — the nightly job will retry');
+    return { warmed: false, reason: 'error' };
+  }
+}
+
+/**
+ * Nearby mandis for a farm, each with every commodity it actually trades.
+ *
+ * ## Why this shape
+ *
+ * `priceSeries` answers "where can I sell ONION?" — commodity first. That is
+ * the wrong first question for a farmer opening the market screen, who wants
+ * "what is trading near me?" A mandi is not a crop: Nagpur APMC carries seven
+ * commodities in the live feed, and a commodity-keyed API can only ever show
+ * one of them at a time. This groups the other way round, so one mandi appears
+ * once with its whole basket.
+ *
+ * ## Ranking, and why there are no distances
+ *
+ * Nearest-first would need mandi coordinates. **Agmarknet publishes none** — a
+ * row carries state, district and market name and nothing else — so a distance
+ * in kilometres would have to be invented, which rule 7 forbids. Proximity is
+ * therefore expressed the only way the data supports: the farmer's own district
+ * first, then the rest of their state. Each group says which it is, so the UI
+ * can say "in your district" instead of a fabricated "12 km away".
+ *
+ * @param {{state?: string, district?: string, days?: number, commodityCode?: string}} query
+ */
+export async function nearbyMandis({ state, district, days = 30, commodityCode } = {}) {
+  const windowDays = Math.min(days, MARKET_QUERY_MAX_DAYS);
+  const since = new Date(Date.now() - windowDays * MS_PER_DAY);
+
+  const filter = { date: { $gte: since } };
+  if (state) filter.state = state;
+  if (commodityCode) filter.commodityCode = commodityCode;
+
+  const rows = await MarketPrice.find(filter)
+    .select('commodityCode market district state date minPrice maxPrice modalPrice source unit')
+    .sort({ date: -1 })
+    .lean();
+
+  /**
+   * One entry per (market, commodity), holding that commodity's most recent
+   * observation. The sort above means the first row seen for a pair is already
+   * the newest, so this is a single pass.
+   */
+  const byMandi = new Map();
+  for (const row of rows) {
+    const mandiKey = `${row.state}|${row.district ?? ''}|${row.market}`;
+    if (!byMandi.has(mandiKey)) {
+      byMandi.set(mandiKey, {
+        market: row.market,
+        district: row.district ?? null,
+        state: row.state,
+        // Named rather than measured — see the note above on distances.
+        proximity:
+          district && row.district && row.district.toLowerCase() === district.toLowerCase()
+            ? 'SAME_DISTRICT'
+            : 'SAME_STATE',
+        commodities: new Map(),
+      });
+    }
+    const mandi = byMandi.get(mandiKey);
+    if (!mandi.commodities.has(row.commodityCode)) {
+      mandi.commodities.set(row.commodityCode, {
+        commodityCode: row.commodityCode,
+        minPrice: row.minPrice,
+        maxPrice: row.maxPrice,
+        modalPrice: row.modalPrice,
+        unit: row.unit ?? null,
+        date: row.date,
+        source: row.source,
+      });
+    }
+  }
+
+  const mandis = [...byMandi.values()]
+    .map((m) => ({ ...m, commodities: [...m.commodities.values()] }))
+    .sort(
+      (a, b) =>
+        // The farmer's own district first, then the widest basket, then by name
+        // so the list is stable between identical requests.
+        (a.proximity === b.proximity ? 0 : a.proximity === 'SAME_DISTRICT' ? -1 : 1) ||
+        b.commodities.length - a.commodities.length ||
+        a.market.localeCompare(b.market),
+    );
+
+  /** Everything actually on offer nearby — what the crop filter chooses from. */
+  const available = [
+    ...new Set(mandis.flatMap((m) => m.commodities.map((c) => c.commodityCode))),
+  ].sort();
+
+  return {
+    scope: { state: state ?? null, district: district ?? null, days: windowDays },
+    mandis,
+    availableCommodities: available,
+    counts: {
+      mandis: mandis.length,
+      inDistrict: mandis.filter((m) => m.proximity === 'SAME_DISTRICT').length,
+      commodities: available.length,
+    },
+    freshness: marketFreshness(rows),
+  };
 }

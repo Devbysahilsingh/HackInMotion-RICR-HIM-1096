@@ -41,11 +41,33 @@ export async function marketWorkList() {
     Farm.distinct('location.state'),
   ]);
 
+  /**
+   * The portal's own commodity spellings, taken from the registry's alias
+   * lists — "Paddy(Dhan)(Common)", "Dry Chillies", "Tomato". These are the
+   * strings the *request* is filtered by, which is different from the
+   * `commodityCode` the rows are normalized *to*.
+   *
+   * Filtering the request matters (see the fetch loop): without it the job
+   * pulls a whole state's mandi feed, of which the crops we support are a
+   * minority, and the schema-drift guard fires on scope rather than on drift.
+   */
+  const commodityFilters = [
+    ...new Set(
+      registryDocs.flatMap((doc) => {
+        const aliases = doc.market?.aliases ?? [];
+        // Fall back to the code only where a crop publishes no alias — the
+        // portal spells commodities in title case, so a bare code rarely hits.
+        return aliases.length > 0 ? aliases : [doc.market?.commodityCode ?? doc.cropCode];
+      }),
+    ),
+  ].filter(Boolean);
+
   return {
     registryDocs,
     commodities: registryDocs
       .map((doc) => doc.market?.commodityCode ?? doc.cropCode)
       .filter(Boolean),
+    commodityFilters,
     states: states.filter(Boolean),
   };
 }
@@ -56,9 +78,16 @@ export async function marketWorkList() {
  *   fixture rows and no network at all.
  * @returns {Promise<object>} the drop-rate report
  */
-export async function runMarketRefresh({ asOf = new Date(), fetchImpl, records } = {}) {
+export async function runMarketRefresh({ asOf = new Date(), fetchImpl, records, states: statesOverride } = {}) {
   const startedAt = Date.now();
-  const { registryDocs, commodities, states } = await marketWorkList();
+  const { registryDocs, commodities, commodityFilters, states: derivedStates } = await marketWorkList();
+
+  /**
+   * `statesOverride` narrows the run to one state. Used by the farm-creation
+   * warm, which needs the state the farmer just registered in and must not
+   * re-fetch every other state's mandi feed to get it.
+   */
+  const states = statesOverride ?? derivedStates;
   const aliasIndex = buildAliasIndex(registryDocs);
 
   const report = {
@@ -113,24 +142,53 @@ export async function runMarketRefresh({ asOf = new Date(), fetchImpl, records }
       return report;
     }
 
+    /*
+     * Fetched per (state × commodity), not per state.
+     *
+     * Filtering by state alone returns the mandi feed for **every** commodity
+     * that state trades — brinjal, pomegranate, drumstick, coriander seed —
+     * of which the nine crops the registry maps are a small minority. Against
+     * a real Maharashtra response that was 505 rows in and 396 unmapped: a
+     * 78% drop rate, which tripped `MARKET_DROP_RATE_ABORT` and aborted the
+     * whole batch.
+     *
+     * That guard exists to catch **schema drift** — the portal renaming a
+     * field or changing a format — and an out-of-scope commodity is not
+     * drift. Asking the portal for the commodities we can map restores the
+     * guard's meaning: after this change every row we fetch is one we asked
+     * for by name, so an unmapped row really does mean the spelling moved.
+     *
+     * It costs one request per (state, alias) instead of one per state —
+     * about a dozen on the current registry, comfortably inside a nightly
+     * free-tier budget.
+     */
     sourceRows = [];
     for (const state of states) {
-      try {
-        const page = await dataGovIn.fetchAll({ filters: { state }, fetchImpl });
-        if (!page.records) {
+      for (const commodity of commodityFilters) {
+        try {
+          const page = await dataGovIn.fetchAll({ filters: { state, commodity }, fetchImpl });
+          if (!page.records) {
+            report.ok = false;
+            report.failures = [
+              ...(report.failures ?? []),
+              { state, commodity, reason: page.invalid },
+            ];
+            continue;
+          }
+          sourceRows.push(...page.records);
+          providerCircuit.recordSuccess(dataGovIn.DATAGOVIN_PROVIDER);
+        } catch (err) {
+          providerCircuit.recordFailure(dataGovIn.DATAGOVIN_PROVIDER, asOf.getTime());
           report.ok = false;
-          report.failures = [...(report.failures ?? []), { state, reason: page.invalid }];
-          continue;
+          report.failures = [
+            ...(report.failures ?? []),
+            {
+              state,
+              commodity,
+              reason: err instanceof ProviderError ? err.reason : 'unexpected',
+            },
+          ];
         }
-        sourceRows.push(...page.records);
-        providerCircuit.recordSuccess(dataGovIn.DATAGOVIN_PROVIDER);
-      } catch (err) {
-        providerCircuit.recordFailure(dataGovIn.DATAGOVIN_PROVIDER, asOf.getTime());
-        report.ok = false;
-        report.failures = [
-          ...(report.failures ?? []),
-          { state, reason: err instanceof ProviderError ? err.reason : 'unexpected' },
-        ];
       }
     }
 

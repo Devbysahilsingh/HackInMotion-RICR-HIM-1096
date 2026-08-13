@@ -18,7 +18,13 @@ import { z } from 'zod';
 import { MARKET_QUERY_MAX_DAYS } from '../config/constants.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import { validate } from '../middleware/validate.js';
-import { myCropSignals, priceSeries, resolveCommodity } from '../services/marketService.js';
+import { Farm } from '../models/index.js';
+import {
+  myCropSignals,
+  nearbyMandis,
+  priceSeries,
+  resolveCommodity,
+} from '../services/marketService.js';
 import { notFound } from '../utils/errors.js';
 import { sendData } from '../utils/respond.js';
 
@@ -62,6 +68,61 @@ marketRouter.get('/my-crops', validate({ query: myCropsQuerySchema }), async (re
   try {
     const crops = await myCropSignals(req.auth.userId, { days: req.query.days });
     sendData(res, { crops }, { meta: { total: crops.length } });
+  } catch (err) {
+    next(err);
+  }
+});
+
+const nearbyQuerySchema = z
+  .object({
+    farmId: z.string().trim().min(1),
+    commodity: z.string().trim().min(1).max(40).optional(),
+    days: z.coerce.number().int().positive().max(MARKET_QUERY_MAX_DAYS).default(30),
+  })
+  .strict();
+
+/**
+ * What is trading near this farm.
+ *
+ * Farm-first, not commodity-first. `GET /prices` answers "where can I sell
+ * ONION?", which is the wrong opening question for a farmer who just wants to
+ * know what their local mandis are doing — and, being keyed on one commodity,
+ * it can never show that a single mandi trades seven.
+ *
+ * The farm already carries the state and district, so the farmer never
+ * re-selects a location they have already given: they pass a `farmId` and get
+ * their own area back. `commodity` is an optional *filter* on that result,
+ * which is the correct relationship between a mandi and a crop.
+ */
+marketRouter.get('/nearby', validate({ query: nearbyQuerySchema }), async (req, res, next) => {
+  try {
+    const { farmId, commodity, days } = req.query;
+
+    // Ownership in the query filter, as everywhere else: another farmer's
+    // holding is a 404, never a 403 (invariant AU-2). A malformed id is
+    // rejected before Mongo so a CastError cannot surface as a 500.
+    const farm = /^[a-f\d]{24}$/i.test(farmId)
+      ? await Farm.findOne({ _id: farmId, userId: req.auth.userId }).lean()
+      : null;
+    if (!farm) return next(notFound());
+
+    let commodityCode;
+    if (commodity) {
+      commodityCode = await resolveCommodity(commodity);
+      // "we have no such commodity" and "no prices for it near you" are
+      // different answers and must not collapse into one empty list.
+      if (!commodityCode) return next(notFound('market.commodityNotFound'));
+    }
+
+    sendData(
+      res,
+      await nearbyMandis({
+        state: farm.location?.state,
+        district: farm.location?.district,
+        days,
+        commodityCode,
+      }),
+    );
   } catch (err) {
     next(err);
   }

@@ -13,11 +13,12 @@
     "lint": "eslint src tests scripts",
     "test": "node --import ./tests/env.mjs --test tests/",
     "test:watch": "node --import ./tests/env.mjs --test --watch tests/",
-    "indexes:build": "node scripts/build-indexes.mjs",
-    "seed:registry": "node scripts/seed-registry.mjs",
+    "indexes:build": "node --env-file=.env scripts/build-indexes.mjs",
+    "seed:registry": "node --env-file=.env scripts/seed-registry.mjs",
     "smoke": "node scripts/smoke.mjs",
-    "seed:market": "node scripts/seed-market.mjs",
-    "jobs": "node scripts/trigger-jobs.mjs"
+    "seed:market": "node --env-file=.env scripts/seed-market.mjs",
+    "jobs": "node --env-file=.env scripts/trigger-jobs.mjs",
+    "seed:dev": "node --env-file=.env scripts/seed-dev.mjs"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

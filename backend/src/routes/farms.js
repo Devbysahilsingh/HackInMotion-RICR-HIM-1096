@@ -27,7 +27,31 @@ import { validate } from '../middleware/validate.js';
 import { Farm } from '../models/index.js';
 import { farmWeather } from '../services/farmWeatherService.js';
 import * as farmService from '../services/farmService.js';
+import { warmLocation } from '../services/weatherService.js';
+import { warmMarketForState } from '../services/marketService.js';
 import { sendData, sendNoContent } from '../utils/respond.js';
+import { logger } from '../utils/logger.js';
+
+/**
+ * Fire-and-forget cache warm for a farm's grid cell.
+ *
+ * Deliberately not awaited and deliberately unable to reject: it runs after the
+ * response has been sent, so an unhandled rejection here would crash the
+ * process for something the farmer neither asked for nor is waiting on.
+ */
+function warmFarmLocation(farm) {
+  void warmLocation({
+    locationKey: farm.locationKey,
+    lat: farm.location?.lat,
+    lon: farm.location?.lon,
+  }).catch((err) => logger.warn({ err }, 'weather warm rejected'));
+
+  // The same treatment for mandi data: a farmer who registers the first farm in
+  // their state should not face an empty market screen until the nightly job.
+  void warmMarketForState({ state: farm.location?.state }).catch((err) =>
+    logger.warn({ err }, 'market warm rejected'),
+  );
+}
 
 export const farmsRouter = Router();
 
@@ -58,6 +82,12 @@ const locationSchema = z
     lon: lonSchema.optional(),
     state: placeSchema,
     district: placeSchema,
+    /**
+     * Village or locality, as the farmer writes it. Optional, free text: no
+     * canonical village list exists here, and the geocoder is given whatever
+     * they typed rather than being restricted to a list we would have to invent.
+     */
+    village: z.string().trim().min(1).max(80).optional(),
     source: z.enum(LOCATION_SOURCES),
   })
   .superRefine((value, ctx) => {
@@ -127,6 +157,10 @@ farmsRouter.post('/', validate({ body: createFarmSchema }), async (req, res, nex
   try {
     const farm = await farmService.createFarm(req.auth.userId, req.body);
     sendData(res, { farm: farm.toJSON() }, { status: 201 });
+    // After the response, never before it: rule 3 forbids a farmer's request
+    // depending on a provider. Without this the new field showed "Not fetched
+    // yet" until the 3-hourly job ran. See weatherService.warmLocation.
+    warmFarmLocation(farm);
   } catch (err) {
     next(err);
   }
@@ -146,8 +180,12 @@ farmsRouter.patch(
   validate({ body: updateFarmSchema }),
   async (req, res, next) => {
     try {
+      const previousKey = req.farm.locationKey;
       const farm = await farmService.updateFarm(req.farm, req.body);
       sendData(res, { farm: farm.toJSON() });
+      // Only when the field actually moved to a new grid cell — an edit to the
+      // name or size must not spend a provider call.
+      if (farm.locationKey && farm.locationKey !== previousKey) warmFarmLocation(farm);
     } catch (err) {
       next(err);
     }

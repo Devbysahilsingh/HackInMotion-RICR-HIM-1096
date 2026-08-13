@@ -1,6 +1,16 @@
 {
   "bodyOutbreakHigh": "पिछले सप्ताह {{district}} के {{reportCount}} किसानों ने {{cropCode}} पर यह बताया है। अभी अपनी फसल देखें।",
   "bodyOutbreakInfo": "पिछले सप्ताह {{district}} के {{reportCount}} किसानों ने {{cropCode}} पर यह बताया है। अपनी फसल देख लेना ठीक रहेगा।",
+  "consentOff": "साझा नहीं हो रहा",
+  "consentOn": "बिना नाम की रिपोर्ट साझा हो रही हैं",
+  "districtFilter": "ज़िला",
+  "empty": "पिछले हफ़्ते आपके खेतों के आस-पास कोई प्रकोप की सूचना नहीं है।",
+  "pageTitle": "आस-पास की सूचनाएँ",
+  "privacyNote": "ये आपके ज़िले के किसानों की सूचनाओं की गिनती हैं। किसी का नाम, फ़ोटो या सटीक जगह कभी नहीं दिखाई जाती।",
+  "reportCount_one": "{{count}} किसान ने यह बताया",
+  "reportCount_other": "{{count}} किसानों ने यह बताया",
+  "stateFilter": "राज्य",
   "titleOutbreakHigh": "आपके क्षेत्र में व्यापक रिपोर्ट",
-  "titleOutbreakInfo": "आपके पास की रिपोर्ट"
+  "titleOutbreakInfo": "आपके पास की रिपोर्ट",
+  "windowLabel": "{{start}} – {{end}}"
 }

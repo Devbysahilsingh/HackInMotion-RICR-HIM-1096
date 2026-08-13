@@ -27,8 +27,25 @@ import { AI_FAILURE, postJsonToProvider, providerFailure } from '../services/aiV
 
 export const GEMINI_PROVIDER = AI_PROVIDERS.GEMINI;
 
-/** docs/ai/gemini-integration.md: "Model: `gemini-2.5-flash` (free tier, vision, structured output)". */
-export const GEMINI_MODEL = 'gemini-2.5-flash';
+/**
+ * The free-tier vision model, in exactly one place.
+ *
+ * docs/ai/gemini-integration.md originally pinned `gemini-2.5-flash`. That id
+ * was retired for new API keys on Google's side and now answers **404
+ * NOT_FOUND** — "no longer available to new users" — which took the whole
+ * Gemini tier down to the rule engine. Verified live against this project's key
+ * on 2026-08-13: `gemini-2.5-flash` and `gemini-2.5-flash-lite` both 404, while
+ * `gemini-flash-latest`, `gemini-flash-lite-latest`, `gemini-3-flash-preview`
+ * and `gemini-3.1-flash-lite` all returned 200 on a real leaf photograph.
+ *
+ * A rolling alias is chosen deliberately over a pinned id. The failure we hit
+ * is precisely what pinning causes: a hard 404 the day Google retires a
+ * version. `gemini-flash-latest` tracks the current free flash model, so the
+ * tier keeps working across retirements. Model drift is contained by the layer
+ * above — every response is schema-validated and registry-closed (rule 6), so a
+ * changed model cannot widen what the tier is allowed to say.
+ */
+export const GEMINI_MODEL = 'gemini-flash-latest';
 
 const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 

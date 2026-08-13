@@ -1,5 +1,5 @@
 {
-  "status": "RESEARCH OUTPUT — PART 1 of 2 (CHILLI / COTTON / MAIZE). Companion to crops.diseases.part-ccm.json. Not merged into shared/i18n yet.",
+  "status": "RESEARCH OUTPUT — PART 1 of 2 (CHILLI / COTTON / MAIZE). Companion to crops.diseases.part-ccm.json. Merged into shared/i18n: the 181 `en` strings below ship verbatim in shared/i18n/en/disease.json, and shared/i18n/hi/disease.json now carries a machine-translated Hindi counterpart for each. The `hi` block in THIS file stays null by design — it is the research artifact, and a Hindi value may only be written here once a Hindi-literate reviewer authors one. Authoritative verification state: shared/i18n/hi/_verification.json (disease namespace = verifiedBy 'claude', NOT owner-reviewed).",
   "purpose": "Farmer-facing strings for every i18n key referenced by crops.diseases.part-ccm.json. The knowledge file stores keys only (CropRegistry.js diseaseSchema: 'i18n key arrays — the API never returns display prose'); the prose lives here.",
   "accessed": "2026-08-13",
   "hiVerified": false,

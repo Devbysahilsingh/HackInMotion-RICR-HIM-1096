@@ -36,11 +36,21 @@ const BASE_URL = 'https://openrouter.ai/api/v1/chat/completions';
  * **This id is a free-tier choice and will need updating.** OpenRouter rotates
  * which models carry the `:free` suffix; when this one is retired the call fails
  * with a 4xx and the tier drops to the local rule engine — degraded, never
- * wrong. No repository document names a model, and this one has not been
- * verified against a live account (no key is provisioned). Check the current
- * free vision list before the demo and change this constant only.
+ * wrong.
+ *
+ * That is exactly what happened to the previous value. `qwen/qwen2.5-vl-72b-
+ * instruct:free` now answers **404** — "This model is unavailable for free. The
+ * paid version is available now" — and OpenRouter's suggested paid slug is
+ * refused here on principle: rule 10 forbids introducing a paid service.
+ *
+ * Replacement verified live on 2026-08-13 by calling every model OpenRouter
+ * advertises with `image` in its input modalities at zero prompt/completion
+ * price, using a real leaf photograph. Of the eight advertised, this was the
+ * only genuine free VLM that answered correctly: the nemotron content-safety
+ * model returns an empty completion (it is a classifier, not a VLM), and the
+ * remainder returned 400/429/502.
  */
-export const OPENROUTER_MODEL = 'qwen/qwen2.5-vl-72b-instruct:free';
+export const OPENROUTER_MODEL = 'google/gemma-4-26b-a4b-it:free';
 
 /** Matches the primary's setting — perception, not composition. */
 const TEMPERATURE = 0.2;

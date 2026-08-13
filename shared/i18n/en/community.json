@@ -1,6 +1,16 @@
 {
   "bodyOutbreakHigh": "{{reportCount}} farmers in {{district}} have reported this on {{cropCode}} in the past week. Check your crop now.",
   "bodyOutbreakInfo": "{{reportCount}} farmers in {{district}} have reported this on {{cropCode}} in the past week. Worth checking your crop.",
+  "consentOff": "Not sharing",
+  "consentOn": "Sharing anonymised reports",
+  "districtFilter": "District",
+  "empty": "No outbreak reports near your fields in the past week.",
+  "pageTitle": "Reports near you",
+  "privacyNote": "These are counts of reports from farmers in your district. No name, photo or exact location is ever shown.",
+  "reportCount_one": "{{count}} farmer reported this",
+  "reportCount_other": "{{count}} farmers reported this",
+  "stateFilter": "State",
   "titleOutbreakHigh": "Widespread reports near you",
-  "titleOutbreakInfo": "Reports near you"
+  "titleOutbreakInfo": "Reports near you",
+  "windowLabel": "{{start}} – {{end}}"
 }

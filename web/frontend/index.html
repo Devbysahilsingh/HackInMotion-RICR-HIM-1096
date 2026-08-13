@@ -3,8 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Smart Farm Decision Support System" />
-    <title>Smart Farm Decision Support System</title>
+    <meta
+      name="description"
+      content="Weather, mandi prices, irrigation, crop health and farm guidance for Indian farmers — in one place, in your language."
+    />
+    <meta property="og:title" content="KrishiSaarthi — Smart Farm Decision Support" />
+    <meta
+      property="og:description"
+      content="Know what your farm needs — before it becomes a problem. Weather, mandi prices, irrigation and crop health advice for Indian farmers."
+    />
+    <meta property="og:type" content="website" />
+    <title>KrishiSaarthi — Smart Farm Decision Support</title>
+    <script>
+      // The saved language, applied before the bundle loads, so a Hindi
+      // farmer's tab never flashes lang="en" semantics pre-hydration. The key
+      // mirrors src/i18n/index.ts (him1096.language); i18next re-applies it
+      // authoritatively after init.
+      try {
+        var lang = localStorage.getItem('him1096.language');
+        if (lang === 'hi' || lang === 'en') document.documentElement.lang = lang;
+      } catch (e) {
+        /* storage unavailable — keep the default */
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

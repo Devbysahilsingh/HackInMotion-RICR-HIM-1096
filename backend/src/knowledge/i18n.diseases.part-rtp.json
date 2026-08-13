@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "status": "RESEARCH OUTPUT — PART (RICE, TOMATO, POTATO). NOT merged into shared/i18n. Requires human review and Hindi authoring.",
+    "status": "RESEARCH OUTPUT — PART (RICE, TOMATO, POTATO). Merged into shared/i18n: the 227 `en` strings below ship verbatim in shared/i18n/en/disease.json, and shared/i18n/hi/disease.json now carries a machine-translated Hindi counterpart for each. The `hi` block in THIS file stays null by design — it is the research artifact, and a Hindi value may only be written here once a Hindi-literate reviewer authors one. Human review of the Hindi is STILL OWED. Authoritative verification state: shared/i18n/hi/_verification.json (disease namespace = verifiedBy 'claude', NOT owner-reviewed).",
     "partOf": "i18n.diseases.json",
     "companionKnowledgeFile": "crops.diseases.part-rtp.json",
     "accessed": "2026-08-13",

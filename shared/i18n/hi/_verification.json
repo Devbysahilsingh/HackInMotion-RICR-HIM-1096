@@ -1,0 +1,418 @@
+{
+  "$comment": [
+    "Hindi verification ledger (docs/i18n/translation-strategy.md step 3).",
+    "",
+    "The strategy document asks for verification state to be tracked in a",
+    "`_meta.verified` array per file. It cannot live inside the namespace files",
+    "themselves: backend/tests/i18n/message-keys.test.js asserts that every",
+    "value in a scanned namespace is a non-empty string, and a `_meta` object",
+    "would fail that. So the ledger sits beside them, and check-i18n.mjs reads",
+    "it from here.",
+    "",
+    "`verifiedBy` records WHO signed a namespace off, because that is the fact",
+    "the ADR-021 ship gate actually turns on. Two values are used:",
+    "  owner   — the project owner reviewed and accepted these strings.",
+    "  claude  — machine-translated from the sourced English, NOT yet read by",
+    "            a Hindi-literate reviewer. Present and parity-complete, but",
+    "            not the same claim as `owner`."
+  ],
+  "status": "OWNER_VERIFIED_UI__DISEASE_KB_AWAITING_REVIEW",
+  "reviewer": "project owner (UI namespaces)",
+  "reviewedAt": "2026-08-13",
+  "namespaces": {
+    "common": {
+      "verifiedBy": "owner",
+      "verified": [
+        "action.add",
+        "action.back",
+        "action.cancel",
+        "action.close",
+        "action.confirm",
+        "action.continue",
+        "action.delete",
+        "action.done",
+        "action.edit",
+        "action.finish",
+        "action.hideWhy",
+        "action.next",
+        "action.refresh",
+        "action.retry",
+        "action.save",
+        "action.saving",
+        "action.showWhy",
+        "action.skip",
+        "action.speak",
+        "action.stopSpeaking",
+        "action.submit",
+        "action.viewAll",
+        "app.name",
+        "app.tagline",
+        "freshness.cached",
+        "freshness.cachedAge",
+        "freshness.historical",
+        "freshness.label",
+        "freshness.live",
+        "freshness.pending",
+        "freshness.staleWarning",
+        "freshness.tooltipCached",
+        "freshness.tooltipHistorical",
+        "freshness.tooltipLive",
+        "freshness.tooltipPending",
+        "language.en",
+        "language.hi",
+        "language.label",
+        "language.switchTo",
+        "nav.community",
+        "nav.dashboard",
+        "nav.farms",
+        "nav.history",
+        "nav.market",
+        "nav.menu",
+        "nav.primary",
+        "nav.scan",
+        "nav.settings",
+        "nav.skipToContent",
+        "priority.CRITICAL",
+        "priority.HIGH",
+        "priority.INFO",
+        "priority.MEDIUM",
+        "state.empty",
+        "state.error",
+        "state.loading",
+        "state.offline",
+        "state.offlineShort",
+        "state.showingCached",
+        "time.daysAgo_one",
+        "time.daysAgo_other",
+        "time.hoursAgo_one",
+        "time.hoursAgo_other",
+        "time.justNow",
+        "time.minutesAgo_one",
+        "time.minutesAgo_other",
+        "time.today",
+        "time.tomorrow",
+        "time.yesterday",
+        "unit.acre",
+        "unit.bigha",
+        "unit.celsius",
+        "unit.cm",
+        "unit.days_one",
+        "unit.days_other",
+        "unit.hectare",
+        "unit.kmh",
+        "unit.litresPerAcre",
+        "unit.mm",
+        "unit.percent",
+        "unit.quintal",
+        "unit.rupeesPerQuintal",
+        "validation.email",
+        "validation.max",
+        "validation.maxValue",
+        "validation.min",
+        "validation.minValue",
+        "validation.number",
+        "validation.outsideIndia",
+        "validation.required",
+        "why.heading",
+        "why.noTrace",
+        "why.step",
+        "why.value"
+      ],
+      "note": "UI vocabulary. Reviewed and accepted by the owner. The blanket \"*\" was replaced with the explicit key list on 2026-08-13, when the productization pass added new keys: those additions are machine-translated and are NOT covered by this sign-off. They are listed in unverifiedAdditions below.",
+      "unverifiedAdditions": {
+        "verifiedBy": "claude",
+        "keys": [
+          "greeting.title",
+          "history.advice"
+        ]
+      }
+    },
+    "auth": {
+      "verifiedBy": "owner",
+      "verified": [
+        "*"
+      ],
+      "note": "UI vocabulary. Reviewed and accepted by the owner."
+    },
+    "farm": {
+      "verifiedBy": "owner",
+      "verified": [
+        "addCropCta",
+        "coordinatesHeading",
+        "createCta",
+        "cropsEmpty",
+        "cropsHeading",
+        "deleteConfirmBody",
+        "deleteConfirmTitle",
+        "deleteCta",
+        "detailTitle",
+        "districtLabel",
+        "districtPlaceholder",
+        "editTitle",
+        "gpsDenied",
+        "gpsLocating",
+        "gpsNotSupported",
+        "gpsOutsideIndia",
+        "gpsSuccess",
+        "gpsTimeout",
+        "gpsUnavailable",
+        "irrigationLabel",
+        "latLabel",
+        "limitHint",
+        "limitReached",
+        "listEmpty",
+        "listEmptyCta",
+        "listTitle",
+        "locationHeading",
+        "locationSourceGps",
+        "locationSourceManual",
+        "lonLabel",
+        "manualHeading",
+        "nameLabel",
+        "namePlaceholder",
+        "newTitle",
+        "notesLabel",
+        "notesPlaceholder",
+        "onboardingCreateFarm",
+        "onboardingCreateFarmCta",
+        "saveCta",
+        "sizeLabel",
+        "soilLabel",
+        "soilUnknownNudge",
+        "stateLabel",
+        "statePlaceholder",
+        "useGps",
+        "weatherHeading"
+      ],
+      "note": "UI vocabulary. Reviewed and accepted by the owner. The blanket \"*\" was replaced with the explicit key list on 2026-08-13, when the location-driven UI added new keys: those additions are machine-translated and are NOT covered by this sign-off. They are listed in unverifiedAdditions below.",
+      "unverifiedAdditions": {
+        "verifiedBy": "claude",
+        "keys": [
+          "defaultName",
+          "locationWhy",
+          "nameOptionalHint",
+          "sizeBelowCropArea",
+          "sizeUnitLabel",
+          "villageLabel",
+          "villagePlaceholder"
+        ]
+      }
+    },
+    "crop": {
+      "verifiedBy": "owner",
+      "verified": [
+        "addTitle",
+        "areaLabel",
+        "cropCodeLabel",
+        "cropCodePlaceholder",
+        "daysSinceSowing",
+        "deleteConfirmBody",
+        "deleteConfirmTitle",
+        "detailTitle",
+        "freeTextHint",
+        "freeTextLabel",
+        "limitHint",
+        "limitReached",
+        "markHarvested",
+        "noStage",
+        "otherOption",
+        "registryNotFound",
+        "saveCta",
+        "sowingDateHint",
+        "sowingDateLabel",
+        "stageHeading",
+        "statusLabel",
+        "tabFertilizer",
+        "tabHealth",
+        "tabIrrigation",
+        "tabMarket",
+        "tabStatus",
+        "unsupportedNotice",
+        "varietyLabel",
+        "varietyPlaceholder"
+      ],
+      "note": "UI vocabulary. Reviewed and accepted by the owner. The blanket \"*\" was replaced with the explicit key list on 2026-08-13, when the crop-area land ledger added new keys: those additions are machine-translated and are NOT covered by this sign-off. They are listed in unverifiedAdditions below.",
+      "unverifiedAdditions": {
+        "verifiedBy": "claude",
+        "keys": [
+          "areaAvailable",
+          "areaExceedsFarm",
+          "areaUnitLabel",
+          "dataGapsNotice",
+          "kcLabel",
+          "registryLoadError",
+          "seasonsLabel"
+        ]
+      }
+    },
+    "health": {
+      "verifiedBy": "owner",
+      "verified": [
+        "*"
+      ],
+      "note": "Tier labels and severity wording. Reviewed and accepted by the owner."
+    },
+    "weather": {
+      "verifiedBy": "owner",
+      "verified": [
+        "*"
+      ],
+      "note": "Risk titles and bodies. Reviewed and accepted by the owner."
+    },
+    "irrigation": {
+      "verifiedBy": "owner",
+      "verified": [
+        "*"
+      ],
+      "note": "Verdict wording. Reviewed and accepted by the owner."
+    },
+    "landing": {
+      "verifiedBy": "claude",
+      "verified": [],
+      "note": "Public landing-page copy, added 2026-08-13. Machine-translated from the English written in the same change; no agronomic dose or threshold appears in it. Awaiting a Hindi-literate review like the disease KB."
+    },
+    "market": {
+      "verifiedBy": "owner",
+      "verified": [
+        "change30d",
+        "change7d",
+        "chartTitle",
+        "commodityNotFound",
+        "compareHeading",
+        "dateColumn",
+        "emptySeries",
+        "guidanceFalling",
+        "guidanceRising",
+        "guidanceStable",
+        "guidanceUnavailable",
+        "latestPrice",
+        "marketColumn",
+        "maxColumn",
+        "minColumn",
+        "modalColumn",
+        "momentumNote",
+        "myCropsEmpty",
+        "myCropsHeading",
+        "neverPredicts",
+        "noSignal",
+        "pageTitle",
+        "priceAdjusted",
+        "priceAxis",
+        "range30",
+        "range60",
+        "range90",
+        "rangeLabel",
+        "sourceHistorical",
+        "sourceSeed",
+        "titleFALLING",
+        "titleRISING",
+        "titleSTABLE"
+      ],
+      "note": "Price guidance wording. Reviewed and accepted by the owner. The blanket \"*\" was replaced with the explicit key list on 2026-08-13, when the location-driven UI added new keys: those additions are machine-translated and are NOT covered by this sign-off. They are listed in unverifiedAdditions below.",
+      "unverifiedAdditions": {
+        "verifiedBy": "claude",
+        "keys": [
+          "allCrops",
+          "inYourDistrict",
+          "inYourState",
+          "mandiCountLabel",
+          "nearbyEmpty",
+          "nearbyForFarm",
+          "nearbyTitle",
+          "noDistanceNote"
+        ]
+      }
+    },
+    "fertilizer": {
+      "verifiedBy": "owner",
+      "verified": [
+        "*"
+      ],
+      "note": "Schedule labels and the mandatory disclaimer. Reviewed and accepted by the owner."
+    },
+    "cropRec": {
+      "verifiedBy": "owner",
+      "verified": [
+        "*"
+      ],
+      "note": "Ranking reasons and gates. Reviewed and accepted by the owner."
+    },
+    "community": {
+      "verifiedBy": "owner",
+      "verified": [
+        "bodyOutbreakHigh",
+        "bodyOutbreakInfo",
+        "districtFilter",
+        "empty",
+        "pageTitle",
+        "privacyNote",
+        "reportCount_one",
+        "reportCount_other",
+        "stateFilter",
+        "titleOutbreakHigh",
+        "titleOutbreakInfo",
+        "windowLabel"
+      ],
+      "note": "UI vocabulary. Reviewed and accepted by the owner. The blanket \"*\" was replaced with the explicit key list on 2026-08-13, when the productization pass added new keys: those additions are machine-translated and are NOT covered by this sign-off. They are listed in unverifiedAdditions below.",
+      "unverifiedAdditions": {
+        "verifiedBy": "claude",
+        "keys": [
+          "consentOff",
+          "consentOn"
+        ]
+      }
+    },
+    "voice": {
+      "verifiedBy": "owner",
+      "verified": [
+        "*"
+      ],
+      "note": "UI vocabulary. Reviewed and accepted by the owner."
+    },
+    "errors": {
+      "verifiedBy": "owner",
+      "verified": [
+        "internal",
+        "malformedJson",
+        "network",
+        "notFound",
+        "payloadTooLarge",
+        "rateLimited",
+        "routeNotFound",
+        "unexpected",
+        "unsupportedEncoding",
+        "uploadAnimated",
+        "uploadDimensionsTooLarge",
+        "uploadNoFile",
+        "uploadNotAnImage",
+        "uploadStorageUnavailable",
+        "uploadTooLarge",
+        "uploadTooManyFiles",
+        "uploadUnexpectedField",
+        "uploadUnreadable",
+        "uploadUnsupportedFormat",
+        "validation"
+      ],
+      "note": "UI vocabulary. Reviewed and accepted by the owner. The blanket \"*\" was replaced with the explicit key list on 2026-08-13, when the productization pass added new keys: those additions are machine-translated and are NOT covered by this sign-off. They are listed in unverifiedAdditions below.",
+      "unverifiedAdditions": {
+        "verifiedBy": "claude",
+        "keys": [
+          "notFoundBody",
+          "notFoundTitle"
+        ]
+      }
+    },
+    "agri": {
+      "verifiedBy": "owner",
+      "verified": [
+        "*"
+      ],
+      "note": "The terminology layer, drawn from docs/i18n/agricultural-terminology.md. Note that the source table itself marks several entries '?' (laterite, some stage names, several disease terms) as needing confirmation against ICAR/DD-Kisan usage."
+    },
+    "disease": {
+      "verifiedBy": "claude",
+      "verified": [],
+      "note": "408/408 present — translated from the English strings already sourced from TNAU/ICAR, so no agronomic fact, threshold, practice or product appears in the Hindi that is not in the English it renders. No pesticide dose is given in either language. What has NOT happened is a Hindi-literate reviewer reading them. Until `verifiedBy` here reads `owner`, ADR-021's bilingual gate for cotton is mechanically satisfied but not editorially signed off."
+    }
+  }
+}

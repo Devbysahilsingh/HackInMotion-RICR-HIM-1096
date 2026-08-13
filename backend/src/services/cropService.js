@@ -19,9 +19,56 @@ import {
 } from '../models/index.js';
 import { AppError, validationError } from '../utils/errors.js';
 import { destroyImage } from '../integrations/cloudinary.js';
+import { deriveStage } from '../engines/stage/deriveStage.js';
+import { toAcres } from '../utils/locationKey.js';
 import { logger } from '../utils/logger.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Decorates crop documents with their registry facts and derived growth stage.
+ *
+ * **This lives here, in the service, because two routes need it and only one
+ * used to have it.** `GET /farms/:id` returned bare crop rows while
+ * `GET /crops/:id` and the crop-creation response returned decorated ones, so
+ * the farm detail screen — which reads `crop.registry.names` and
+ * `crop.stage.stage` — threw a TypeError on every farm that had a crop. The
+ * wire contract for a crop is one shape (`CropWithStage`), so it is produced in
+ * one place.
+ *
+ * A crop whose code is absent from the registry is decorated as UNSUPPORTED
+ * with a null name rather than left undefined: the client renders a fallback
+ * label for that case, and an absent key would crash it exactly as before.
+ *
+ * Registry lookups are batched — a list of twelve crops costs one query.
+ *
+ * @param {Array<import('mongoose').Document|object>} crops hydrated docs or lean rows
+ * @param {Date} [asOf]
+ */
+export async function withStages(crops, asOf = new Date()) {
+  const codes = [...new Set(crops.map((crop) => crop.cropCode))];
+  const registry = await CropRegistry.find({ cropCode: { $in: codes } })
+    .select('cropCode kcStages supportLevel names')
+    .lean();
+  const byCode = new Map(registry.map((entry) => [entry.cropCode, entry]));
+
+  return crops.map((crop) => {
+    const entry = byCode.get(crop.cropCode);
+    return {
+      // Tolerates both hydrated documents and `.lean()` rows.
+      ...(typeof crop.toJSON === 'function' ? crop.toJSON() : crop),
+      registry: entry
+        ? { supportLevel: entry.supportLevel, names: entry.names }
+        : { supportLevel: 'UNSUPPORTED', names: null },
+      stage: deriveStage({
+        sowingDate: crop.sowingDate,
+        status: crop.status,
+        kcStages: entry?.kcStages ?? [],
+        asOf,
+      }),
+    };
+  });
+}
 
 /**
  * Legal status moves. A crop may go forward through its life and no other way:
@@ -95,6 +142,65 @@ export async function assertFarmHasCapacity(farmId, excludeCropId) {
 }
 
 /**
+ * Acre-equivalent land already committed to crops on a farm.
+ *
+ * Counts `planned` alongside `active` for the same reason the capacity check
+ * does: a planned crop is one PATCH away from occupying ground. `harvested` is
+ * excluded — finished crops free their area. A crop that recorded a value but
+ * no unit (the model allows it) is read as acres, the identity conversion,
+ * rather than being silently skipped — skipping it would let unlabeled rows
+ * hide land from the ceiling.
+ *
+ * @param {string|import('mongoose').Types.ObjectId} farmId
+ * @param {string|import('mongoose').Types.ObjectId} [excludeCropId]
+ * @returns {Promise<number>} acres
+ */
+export async function allocatedCropAcres(farmId, excludeCropId) {
+  const filter = { farmId, status: { $in: ['planned', 'active'] } };
+  if (excludeCropId) filter._id = { $ne: excludeCropId };
+
+  const rows = await Crop.find(filter).select('areaValue areaUnit').lean();
+  return rows.reduce(
+    (sum, row) => sum + (row.areaValue ? toAcres(row.areaValue, row.areaUnit ?? 'acre') : 0),
+    0,
+  );
+}
+
+/**
+ * The land ledger: crops cannot claim more ground than the farm has.
+ *
+ * A 50-acre farm with 30 acres of cotton has 20 acres left, and a 25-acre
+ * onion planting must be refused — on the server, because the same rule
+ * enforced only in a form is one curl away from not existing. Everything is
+ * compared in acre-equivalents so a hectare farm carrying bigha crops is
+ * still one ledger.
+ *
+ * The failing detail carries `availableAcres` so the client can tell the
+ * farmer how much ground is actually left rather than only that the number
+ * was too big. A crop with no recorded area occupies no ledger space — area
+ * is optional — so absence never blocks.
+ *
+ * @param {import('mongoose').Document|object} farm the already-authorized farm
+ * @param {{areaValue?: number, areaUnit?: string, excludeCropId?: unknown}} input
+ */
+export async function assertAreaWithinFarm(farm, { areaValue, areaUnit, excludeCropId } = {}) {
+  if (areaValue == null) return;
+
+  const requested = toAcres(areaValue, areaUnit ?? 'acre');
+  const allocated = await allocatedCropAcres(farm._id, excludeCropId);
+  const farmAcres = toAcres(farm.sizeValue, farm.sizeUnit);
+
+  // Tolerance absorbs float artefacts of the unit conversions, nothing more.
+  if (allocated + requested > farmAcres + 1e-9) {
+    const availableAcres = Math.max(0, Math.round((farmAcres - allocated) * 100) / 100);
+    throw validationError(
+      [{ field: 'areaValue', rule: 'exceeds_farm_area', availableAcres }],
+      'crop.areaExceedsFarm',
+    );
+  }
+}
+
+/**
  * Deletes a crop and everything that hangs off it.
  *
  * ADR-002 rules out transactions, so this is ordered rather than atomic:
@@ -133,7 +239,7 @@ export async function deleteCropCascade(cropId, userId, { destroy = destroyImage
  * remove is a storage-quota problem to be reconciled later; a half-deleted crop
  * is a correctness problem the farmer sees immediately.
  */
-async function destroyImages(publicIds, destroy) {
+export async function destroyImages(publicIds, destroy) {
   const results = await Promise.allSettled(
     publicIds.filter(Boolean).map((publicId) => destroy(publicId)),
   );

@@ -1,6 +1,129 @@
 @import 'tailwindcss';
 
 /*
- * Design tokens land here with the UI primitives TODO (docs/frontend/component-map.md).
- * Kept deliberately empty for now — no speculative styling.
+ * Design tokens (docs/frontend/component-map.md, docs/frontend/accessibility.md).
+ *
+ * Contrast: every foreground/background pair used for text below clears
+ * 4.5:1 against its surface. The priority and freshness families are the
+ * sensitive ones — they carry meaning — and they are never used colour-alone:
+ * `PriorityChip` and `FreshnessDot` always pair the colour with an icon and a
+ * translated label, which is the actual accessibility guarantee. The colour is
+ * a fast second signal, not the signal.
+ *
+ * One light theme, deliberately. The stated field context is bright sunlight
+ * on dusty screens, where a dark theme is the wrong default; no dark palette is
+ * shipped rather than shipping an unreviewed one.
  */
+@theme {
+  --color-brand-50: #f0f9f2;
+  --color-brand-100: #dcf0e1;
+  --color-brand-200: #bbe1c6;
+  --color-brand-300: #8ecaa2;
+  --color-brand-400: #5aab78;
+  --color-brand-500: #388e5c;
+  --color-brand-600: #277249;
+  --color-brand-700: #1f5a3b;
+  --color-brand-800: #1b4831;
+  --color-brand-900: #163b2a;
+
+  --color-earth-50: #faf7f2;
+  --color-earth-100: #f2ebdf;
+  --color-earth-200: #e4d6c0;
+  --color-earth-600: #8a6c43;
+  --color-earth-800: #4b3a24;
+
+  /* Feed priority. Ranked, and each has ≥4.5:1 text contrast on its own tint. */
+  --color-priority-critical: #b3261e;
+  --color-priority-critical-soft: #fdeceb;
+  --color-priority-high: #9a4a06;
+  --color-priority-high-soft: #fdf0e4;
+  --color-priority-medium: #7a5a00;
+  --color-priority-medium-soft: #fbf5e0;
+  --color-priority-info: #1f5a3b;
+  --color-priority-info-soft: #eef6f1;
+
+  /* Freshness. Same four values the API's `freshness.status` can carry. */
+  --color-fresh-live: #277249;
+  --color-fresh-cached: #8a5a00;
+  --color-fresh-historical: #5b5f6b;
+  --color-fresh-pending: #6b7280;
+
+  --color-danger-600: #b3261e;
+  --color-danger-50: #fdeceb;
+
+  --color-ink-900: #16211c;
+  --color-ink-700: #33403a;
+  --color-ink-500: #5a6a62;
+  --color-line: #d8e0da;
+  --color-surface: #ffffff;
+  --color-canvas: #f6f8f6;
+
+  --font-sans:
+    'Noto Sans', 'Noto Sans Devanagari', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+    sans-serif;
+}
+
+@layer base {
+  html {
+    /* 360px is the documented mobile floor; nothing may overflow it. */
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-canvas text-ink-900 font-sans antialiased;
+    margin: 0;
+    min-height: 100dvh;
+  }
+
+  /*
+   * A visible focus ring on every interactive element, always. `:focus-visible`
+   * rather than `:focus` so a mouse click does not leave a ring behind, but a
+   * keyboard walk always shows where it is (accessibility.md: "visible focus
+   * rings", "full tab traversal").
+   */
+  :focus-visible {
+    outline: 3px solid var(--color-brand-600);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-semibold text-ink-900;
+    text-wrap: balance;
+  }
+
+  /* Route-change focus target. Focusable by script, never in the tab order. */
+  [tabindex='-1']:focus {
+    outline: none;
+  }
+}
+
+@layer components {
+  /*
+   * The 44×44px minimum touch target, in one place. Applied by Button and by
+   * every icon-only control, so the rule cannot drift per component
+   * (accessibility.md: "Touch targets ≥44×44px").
+   */
+  .touch-target {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+  }
+}
+
+/*
+ * Motion is a preference, not a decoration. Honoured globally so no component
+ * has to remember (accessibility.md: "prefers-reduced-motion → transitions off").
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
