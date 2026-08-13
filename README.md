@@ -61,7 +61,7 @@ Schema, indexes, lifecycle: `docs/database/`.
 Plan: docs/deployment/. Web: Vercel · API: Render · ML: HF Spaces · DB: Atlas · Android: Expo Go + APK.
 
 ## Screenshots ⏳
-Farm dashboard design references are tracked in `Design-refrences/` for implementation alignment.
+Farm dashboard design references are tracked in `Design-refrences/` for implementation alignment and UI review.
 
 ## Team & contributions
 See `docs/development/team-plan.md` — real ownership per member; commit history reflects genuine work (project policy: no manufactured contributions).
