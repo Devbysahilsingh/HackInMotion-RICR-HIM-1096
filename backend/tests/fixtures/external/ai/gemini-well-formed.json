@@ -1,0 +1,23 @@
+{
+  "_synthetic": "SYNTHETIC — authored to docs/ai/response-schema.md and the published provider envelope shapes. This is NOT captured live traffic: no Gemini or OpenRouter key is provisioned in this repository, so no real call has been recorded. Values are illustrative, not agronomic claims.",
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "{\"imageAssessment\":\"OK\",\"diseaseCode\":\"LATE_BLIGHT\",\"confidenceBand\":\"MEDIUM\",\"visualFindings\":[\"Irregular water-soaked dark brown lesions on lower leaves\",\"Pale yellow-green halo at the lesion margins\"],\"severityVisual\":\"MODERATE\",\"affectedParts\":[\"LEAF\",\"STEM\"]}"
+          }
+        ]
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 412,
+    "candidatesTokenCount": 96,
+    "totalTokenCount": 508
+  },
+  "modelVersion": "gemini-2.5-flash"
+}

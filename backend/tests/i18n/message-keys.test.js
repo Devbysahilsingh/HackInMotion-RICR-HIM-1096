@@ -33,6 +33,8 @@ const NAMESPACES = [
   'market',
   'fertilizer',
   'cropRec',
+  'health',
+  'community',
 ];
 
 /** Matches the quoted dotted keys passed to AppError/messageKey helpers. */

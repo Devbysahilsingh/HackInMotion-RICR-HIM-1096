@@ -1,0 +1,1410 @@
+{
+  "status": "RESEARCH OUTPUT — PART (RICE, TOMATO, POTATO only). NOT seeded. Requires human review, Hindi translation and agronomic sign-off before it reaches cropRegistry.diseases.",
+  "purpose": "Sourced disease knowledge for the 18 ML class codes of RICE, TOMATO and POTATO in datasets/manifest.json, shaped to feed CropRegistry.diseaseSchema (code, names, symptoms[], inspect[], nextSteps[], prevention[], symptomTags[], expertThreshold, sourceRefs[]). CHILLI, COTTON and MAIZE are authored in a separate part and merged by the integrator.",
+  "partOf": "crops.diseases.json",
+  "part": "RTP (RICE + TOMATO + POTATO)",
+  "accessed": "2026-08-13",
+  "hiVerified": false,
+  "companionI18nFile": "i18n.diseases.part-rtp.json",
+  "rules": {
+    "fetchedOnly": "Every symptom description in this file was read from a page or PDF actually fetched during this pass on 2026-08-13. Nothing was written from memory. Each disease carries `publishedSymptoms` holding the source's own wording so the tag mapping can be audited without re-fetching.",
+    "noInventedAgronomy": "No symptom, threshold, weather condition or control practice was authored here. Where a source gives nothing, the array is empty and the failure is recorded in `gaps`.",
+    "noDosages": "docs/ai/ai-safety.md rule 3 — no dosage generation anywhere. No pesticide product name, active ingredient, concentration or rate appears in this file or in its companion i18n file, even where the cited source publishes them. Where the source recommends chemical control, a nextStep key routes the farmer to KVK / Kisan Call Centre 1800-180-1551 instead.",
+    "i18nKeysOnly": "symptoms/inspect/nextSteps/prevention hold i18n KEYS (CLAUDE.md rule 8). Farmer-facing text lives in i18n.diseases.part-rtp.json.",
+    "hindiIsNull": "Every Hindi value in this pass is null. No Hindi-language official source was fetched, and CLAUDE.md rule 8 forbids unsourced agronomic translation. See gap D1.",
+    "closedTagVocabulary": "symptomTags come from the closed list in `tagVocabulary` only. Concepts with no tag are recorded in `gaps`, never invented.",
+    "tagDerivation": "Each disease carries a `tagDerivation` string naming the phrase in `publishedSymptoms` that justifies each tag, so the rule engine's scoring can be traced back to a citation.",
+    "confidenceCodes": "P = primary/official Indian government, ICAR or State Agricultural University source. S = everything else. Three tomato entries rest partly or wholly on S sources; each says so in its sourceRefs and in `gaps`.",
+    "expertThreshold": "Left at the schema default 0.4 for every entry. No source publishes a match-score threshold, so any other value would be invented."
+  },
+  "tagVocabulary": {
+    "part": [
+      "part:LEAF",
+      "part:STEM",
+      "part:FRUIT",
+      "part:FLOWER",
+      "part:ROOT",
+      "part:WHOLE_PLANT"
+    ],
+    "pattern": [
+      "pattern:SPOTS",
+      "pattern:BLOTCHES",
+      "pattern:POWDER",
+      "pattern:CURL",
+      "pattern:WILT",
+      "pattern:HOLES",
+      "pattern:YELLOWING",
+      "pattern:STREAKS",
+      "pattern:LESIONS",
+      "pattern:MOSAIC",
+      "pattern:ROT",
+      "pattern:STUNTING",
+      "pattern:WEBBING",
+      "pattern:RINGS"
+    ],
+    "color": [
+      "color:YELLOW",
+      "color:BROWN",
+      "color:BLACK",
+      "color:WHITE",
+      "color:GREY",
+      "color:RED",
+      "color:ORANGE",
+      "color:PURPLE",
+      "color:TAN"
+    ],
+    "distribution": [
+      "distribution:LOWER_LEAVES",
+      "distribution:UPPER_LEAVES",
+      "distribution:ALL_LEAVES",
+      "distribution:SCATTERED",
+      "distribution:MARGINS",
+      "distribution:VEINS"
+    ],
+    "weather": ["weather:HIGH_HUMIDITY", "weather:RAIN", "weather:HOT_DRY", "weather:COOL_MOIST"],
+    "note": "Consumed by the rule-based symptom engine (docs/ai/fallback-strategy.md), weights pattern 3, part 2, color 2, distribution 1, weather 1."
+  },
+  "sourceDocuments": {
+    "TNAU_RICE_BLAST": {
+      "org": "TNAU (Tamil Nadu Agricultural University)",
+      "title": "TNAU Agritech Portal — Crop Protection :: Rice :: Blast",
+      "url": "https://agritech.tnau.ac.in/crop_protection/rice_diseases/rice_1.html",
+      "accessed": "2026-08-13",
+      "confidence": "P"
+    },
+    "TNAU_RICE_BLAST_ES": {
+      "org": "TNAU (Tamil Nadu Agricultural University)",
+      "title": "TNAU Agritech Portal — Expert System for Paddy :: Crop Protection :: Blast",
+      "url": "https://agritech.tnau.ac.in/expert_system/paddy/cpdisblast.html",
+      "accessed": "2026-08-13",
+      "confidence": "P"
+    },
+    "TNAU_RICE_BROWNSPOT": {
+      "org": "TNAU (Tamil Nadu Agricultural University)",
+      "title": "TNAU Agritech Portal — Crop Protection :: Rice :: Brown Spot / Sesame Leaf Spot",
+      "url": "https://agritech.tnau.ac.in/crop_protection/rice_diseases/rice_2.html",
+      "accessed": "2026-08-13",
+      "confidence": "P"
+    },
+    "TNAU_RICE_BROWNSPOT_ES": {
+      "org": "TNAU (Tamil Nadu Agricultural University)",
+      "title": "TNAU Agritech Portal — Expert System for Paddy :: Crop Protection :: Brown Spot",
+      "url": "https://agritech.tnau.ac.in/expert_system/paddy/cpdisbrownspot.html",
+      "accessed": "2026-08-13",
+      "confidence": "P"
+    },
+    "TNAU_RICE_BLB": {
+      "org": "TNAU (Tamil Nadu Agricultural University)",
+      "title": "TNAU Agritech Portal — Crop Protection :: Rice :: Bacterial Leaf Blight",
+      "url": "https://agritech.tnau.ac.in/crop_protection/rice_diseases/rice_3.html",
+      "accessed": "2026-08-13",
+      "confidence": "P"
+    },
+    "TNAU_RICE_BLB_ES": {
+      "org": "TNAU (Tamil Nadu Agricultural University)",
+      "title": "TNAU Agritech Portal — Expert System for Paddy :: Crop Protection :: Bacterial Leaf Blight",
+      "url": "https://agritech.tnau.ac.in/expert_system/paddy/cpdisblb.html",
+      "accessed": "2026-08-13",
+      "confidence": "P"
+    },
+    "TNAU_RICE_TUNGRO": {
+      "org": "TNAU (Tamil Nadu Agricultural University)",
+      "title": "TNAU Agritech Portal — Crop Protection :: Rice :: Rice Tungro",
+      "url": "https://agritech.tnau.ac.in/crop_protection/rice_diseases/rice_24.html",
+      "accessed": "2026-08-13",
+      "confidence": "P"
+    },
+    "TNAU_RICE_TUNGRO_ES": {
+      "org": "TNAU (Tamil Nadu Agricultural University)",
+      "title": "TNAU Agritech Portal — Expert System for Paddy :: Crop Protection :: Tungro Disease",
+      "url": "https://agritech.tnau.ac.in/expert_system/paddy/cpdistungro.html",
+      "accessed": "2026-08-13",
+      "confidence": "P"
+    },
+    "TNAU_TOMATO_INDEX": {
+      "org": "TNAU (Tamil Nadu Agricultural University)",
+      "title": "TNAU Agritech Portal — Crop Protection :: Crop Diseases :: Vegetables :: Tomato (index, 'Updated on Jun 2023')",
+      "url": "https://agritech.tnau.ac.in/crop_protection/crop_prot_crop%20diseases_veg_tomato.html",
+      "accessed": "2026-08-13",
+      "confidence": "P"
+    },
+    "TNAU_TOMATO_EB": {
+      "org": "TNAU (Tamil Nadu Agricultural University)",
+      "title": "TNAU Agritech Portal — Crop Protection :: Tomato :: Early Blight",
+      "url": "https://agritech.tnau.ac.in/crop_protection/tomato_diseases_2.html",
+      "accessed": "2026-08-13",
+      "confidence": "P"
+    },
+    "TNAU_TOMATO_SEPTORIA": {
+      "org": "TNAU (Tamil Nadu Agricultural University)",
+      "title": "TNAU Agritech Portal — Crop Protection :: Tomato :: Septoria Leaf Spot",
+      "url": "https://agritech.tnau.ac.in/crop_protection/tomato_diseases_4.html",
+      "accessed": "2026-08-13",
+      "confidence": "P"
+    },
+    "TNAU_TOMATO_LEAFCURL": {
+      "org": "TNAU (Tamil Nadu Agricultural University)",
+      "title": "TNAU Agritech Portal — Crop Protection :: Tomato :: Leaf curl (Tomato leaf curl virus)",
+      "url": "https://agritech.tnau.ac.in/crop_protection/tomato_diseases_6.html",
+      "accessed": "2026-08-13",
+      "confidence": "P"
+    },
+    "TNAU_TOMATO_LB": {
+      "org": "TNAU (Tamil Nadu Agricultural University)",
+      "title": "TNAU Agritech Portal — Crop Protection :: Tomato :: Late Blight",
+      "url": "https://agritech.tnau.ac.in/crop_protection/tomato_diseases_8.html",
+      "accessed": "2026-08-13",
+      "confidence": "P"
+    },
+    "TNAU_TOMATO_BLS": {
+      "org": "TNAU (Tamil Nadu Agricultural University)",
+      "title": "TNAU Agritech Portal — Crop Protection :: Tomato :: Bacterial leaf spot",
+      "url": "https://agritech.tnau.ac.in/crop_protection/tomato_diseases_11.html",
+      "accessed": "2026-08-13",
+      "confidence": "P"
+    },
+    "TNAU_TOMATO_MOSAIC": {
+      "org": "TNAU (Tamil Nadu Agricultural University)",
+      "title": "TNAU Agritech Portal — Crop Protection :: Tomato :: Mosaic",
+      "url": "https://agritech.tnau.ac.in/crop_protection/tomato_diseases_12.html",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "This page is internally inconsistent: its heading reads 'Mosaic caused by Cucumber mosaic virus' while the causal-organism line reads 'Tomato Mosaic Virus' and the favourable-conditions line names 'the virulence of the strain of CMV'. See gap D6 — the NIPHM package is used as the primary symptom source for TOMATO_MOSAIC_VIRUS instead."
+    },
+    "TNAU_POTATO_INDEX": {
+      "org": "TNAU (Tamil Nadu Agricultural University)",
+      "title": "TNAU Agritech Portal — Crop Protection :: Crop Diseases :: Vegetables :: Potato (index)",
+      "url": "https://agritech.tnau.ac.in/crop_protection/crop_prot_crop%20diseases_veg_potato.html",
+      "accessed": "2026-08-13",
+      "confidence": "P"
+    },
+    "TNAU_POTATO_LB": {
+      "org": "TNAU (Tamil Nadu Agricultural University)",
+      "title": "TNAU Agritech Portal — Crop Protection :: Potato :: Late blight",
+      "url": "https://agritech.tnau.ac.in/crop_protection/crop_prot_crop%20diseases_veg_potato_1.html",
+      "accessed": "2026-08-13",
+      "confidence": "P"
+    },
+    "TNAU_POTATO_EB": {
+      "org": "TNAU (Tamil Nadu Agricultural University)",
+      "title": "TNAU Agritech Portal — Crop Protection :: Potato :: Early blight",
+      "url": "https://agritech.tnau.ac.in/crop_protection/crop_prot_crop%20diseases_veg_potato_2.html",
+      "accessed": "2026-08-13",
+      "confidence": "P"
+    },
+    "NIPHM_RICE": {
+      "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+      "title": "Integrated Pest Management Package for Rice (AESA based IPM)",
+      "url": "https://niphm.gov.in/IPMPackages/Rice.pdf",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "PDF downloaded and text-extracted with pdftotext -layout; sections quoted are §3.1 ETL table and §3.2 Cultural Practices."
+    },
+    "NIPHM_TOMATO": {
+      "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+      "title": "AESA based IPM Package — Tomato (IPM Package No. 18)",
+      "url": "https://niphm.gov.in/IPMPackages/Tomato.pdf",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "PDF downloaded and text-extracted with pdftotext -layout. Sections 'Principles of AESA based IPM: Grow a healthy crop', 'B. Field scouting', 'VII. Description of insect and mite pests', 'VIII. Description of diseases'. The stage-wise IPM TABLE extracts with scrambled row/column alignment — practices taken from that table are cited with the row heading they appeared under and flagged in gap D9."
+    },
+    "NIPHM_POTATO": {
+      "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+      "title": "AESA based IPM Package — Potato",
+      "url": "https://niphm.gov.in/IPMPackages/Potato.pdf",
+      "accessed": "2026-08-13",
+      "confidence": "P",
+      "note": "PDF downloaded and text-extracted with pdftotext -layout. Sections 'Principles of AESA based IPM: Grow a healthy crop' and the disease descriptions (3) Late blight and (4) Early blight."
+    },
+    "CORNELL_LEAFMOLD": {
+      "org": "Cornell University, Cornell Vegetables",
+      "title": "Disease factsheet — Tomato Leaf Mold",
+      "url": "https://www.vegetables.cornell.edu/pest-management/disease-factsheets/tomato-leaf-mold/",
+      "accessed": "2026-08-13",
+      "confidence": "S",
+      "note": "Non-Indian. Used because no Indian primary source for tomato leaf mould was located (gap D4)."
+    },
+    "INRAE_EPHYTIA_LEAFMOLD": {
+      "org": "INRAE (Institut national de recherche pour l'agriculture, l'alimentation et l'environnement), Ephytia / Tropileg",
+      "title": "Cladosporiosis on tomato (Passalora fulva)",
+      "url": "https://ephytia.inrae.fr/en/C/23073/Tropileg-Cladosporiosis-on-tomato-Passalora-fulva",
+      "accessed": "2026-08-13",
+      "confidence": "S",
+      "note": "Non-Indian government research institute. Used only to corroborate leaf-surface and leaf-age detail (gap D4)."
+    },
+    "UF_IFAS_TARGETSPOT": {
+      "org": "University of Florida IFAS Extension",
+      "title": "PP351 — Target Spot of Tomato in Florida",
+      "url": "https://ask.ifas.ufl.edu/publication/PP351",
+      "accessed": "2026-08-13",
+      "confidence": "S",
+      "note": "Non-Indian. Used because no Indian extension source for tomato target spot was located (gap D5)."
+    }
+  },
+  "diseases": [
+    {
+      "code": "RICE_BLAST",
+      "cropCode": "RICE",
+      "names": { "en": "Rice blast", "hi": null, "hiVerified": false },
+      "publishedSymptoms": "TNAU: \"The fungus attacks the crop at all stages of crop growth from seedling to late tillering and ear heading stage.\" On leaves, \"small bluish green flecks\" enlarge to form \"spindle shaped spots with grey centre and dark brown margin (Leaf blast)\". \"Black lesions appear on nodes girdling them. The affected nodes may break up and all the plant parts above the infected nodes may die (nodal blast).\" \"Lesions on the neck are grayish brown and causes the girdling of the neck and the panicle to fall over\". \"Lesions on the branches of the panicles and on the spikelet pedicels are brown to dark brown\". TNAU expert system adds: \"white to gray-green lesions or spots with brown borders\", \"spindle shaped spots(0.5 to 1.5cm length, 0.3 to 0.5cm width) with ashy center\", \"entire crop give a blasted or burnt appearance\", \"Nodes become black and break up\". Favourable conditions (TNAU expert system): \"cloudy skies, frequent rain, and drizzles\", \"high relative humidity (90% and higher) and wet leaves\", \"temperature from 25-28°C\", \"high nitrogen levels like ammonium sulfate\".",
+      "symptomTags": [
+        "part:LEAF",
+        "part:STEM",
+        "pattern:SPOTS",
+        "pattern:LESIONS",
+        "color:GREY",
+        "color:BROWN",
+        "color:BLACK",
+        "weather:HIGH_HUMIDITY",
+        "weather:RAIN"
+      ],
+      "tagDerivation": "part:LEAF from \"spindle shaped spots ... (Leaf blast)\"; part:STEM from \"Black lesions appear on nodes girdling them\" (the node is on the culm); pattern:SPOTS from \"spindle shaped spots\"; pattern:LESIONS from \"Black lesions appear on nodes\"; color:GREY from \"grey centre\" / \"ashy center\"; color:BROWN from \"dark brown margin\"; color:BLACK from \"Nodes become black\"; weather:HIGH_HUMIDITY from \"high relative humidity (90% and higher) and wet leaves\"; weather:RAIN from \"frequent rain, and drizzles\". No distribution tag: neither page states whether lower or upper leaves are affected first.",
+      "symptoms": [
+        "disease.RICE_BLAST.symptom.1",
+        "disease.RICE_BLAST.symptom.2",
+        "disease.RICE_BLAST.symptom.3",
+        "disease.RICE_BLAST.symptom.4",
+        "disease.RICE_BLAST.symptom.5"
+      ],
+      "inspect": [
+        "disease.RICE_BLAST.inspect.1",
+        "disease.RICE_BLAST.inspect.2",
+        "disease.RICE_BLAST.inspect.3"
+      ],
+      "nextSteps": [
+        "disease.RICE_BLAST.nextStep.1",
+        "disease.RICE_BLAST.nextStep.2",
+        "disease.RICE_BLAST.nextStep.3"
+      ],
+      "prevention": [
+        "disease.RICE_BLAST.prevention.1",
+        "disease.RICE_BLAST.prevention.2",
+        "disease.RICE_BLAST.prevention.3"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU (Tamil Nadu Agricultural University)",
+          "title": "TNAU Agritech Portal — Crop Protection :: Rice :: Blast",
+          "url": "https://agritech.tnau.ac.in/crop_protection/rice_diseases/rice_1.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Symptoms on leaf, node, neck and panicle branches. Causal organism given as Magnaporthe oryzae (Syn: P. grisea, Magnaporthe grisea)."
+        },
+        {
+          "org": "TNAU (Tamil Nadu Agricultural University)",
+          "title": "TNAU Agritech Portal — Expert System for Paddy :: Crop Protection :: Blast",
+          "url": "https://agritech.tnau.ac.in/expert_system/paddy/cpdisblast.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of the favourable conditions, the spot dimensions and the cultural practices used in nextSteps/prevention (\"Planting resistant varieties against the rice blast is the most practical and economical way\", \"Avoid excess N - fertilizer application\", \"Apply nitrogen in three split doses\", \"Remove weed hosts from bunds\"). The page also lists fungicide sprays with rates; none of them is reproduced here."
+        },
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "Integrated Pest Management Package for Rice — ETL table",
+          "url": "https://niphm.gov.in/IPMPackages/Rice.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Economic threshold levels quoted in inspect.3: \"Foliar blast — 3-5 lesions/leaf\" (early to late tillering) and \"Neck blast — 2-5 neck infected plants/m2\" (panicle initiation to booting)."
+        }
+      ]
+    },
+    {
+      "code": "RICE_BROWN_SPOT",
+      "cropCode": "RICE",
+      "names": { "en": "Brown spot of rice (sesame leaf spot)", "hi": null, "hiVerified": false },
+      "publishedSymptoms": "TNAU: \"minute spots on the coleoptile, leaf blade, leaf sheath, and glume\"; the spots are \"cylindrical or oval, dark brown with yellow halo\"; \"the leaf dries up\"; \"seedlings die and affected nurseries can be often recognised from a distance by scorched appearance\"; \"Dark brown or black spots also appear on glumes leading to grain discoloration\"; the disease causes \"failure of seed germination, seedling mortality and reduces the grain quality and weight\". TNAU expert system adds: \"The disease appears first as minute brown dots, later becoming cylindrical or oval to circular\"; \"Spots measures 0.5 to 2.0mm in breadth - coalesce to form large patches\"; \"Infection also occurs on panicle, neck with brown colour appearance\"; \"Seeds also infected (black or brown spots on glumes)\". Favourable conditions: \"Temperature of 25-30°C\", \"Relative humidity above 80 per cent\", \"Excess of nitrogen aggravates the disease incidence\", \"Leaves must be wet for 8-24 hours for infection to occur\".",
+      "symptomTags": [
+        "part:LEAF",
+        "pattern:SPOTS",
+        "color:BROWN",
+        "color:YELLOW",
+        "color:BLACK",
+        "weather:HIGH_HUMIDITY"
+      ],
+      "tagDerivation": "part:LEAF from \"minute spots on the coleoptile, leaf blade, leaf sheath\"; pattern:SPOTS from \"cylindrical or oval\" spots; color:BROWN from \"dark brown with yellow halo\"; color:YELLOW from \"yellow halo\"; color:BLACK from \"Dark brown or black spots also appear on glumes\"; weather:HIGH_HUMIDITY from \"Relative humidity above 80 per cent\" and \"Leaves must be wet for 8-24 hours\". No distribution tag is published. Glume/panicle infection is published but the vocabulary has no part tag for grain, glume or panicle (gap D7).",
+      "symptoms": [
+        "disease.RICE_BROWN_SPOT.symptom.1",
+        "disease.RICE_BROWN_SPOT.symptom.2",
+        "disease.RICE_BROWN_SPOT.symptom.3",
+        "disease.RICE_BROWN_SPOT.symptom.4"
+      ],
+      "inspect": [
+        "disease.RICE_BROWN_SPOT.inspect.1",
+        "disease.RICE_BROWN_SPOT.inspect.2",
+        "disease.RICE_BROWN_SPOT.inspect.3"
+      ],
+      "nextSteps": ["disease.RICE_BROWN_SPOT.nextStep.1", "disease.RICE_BROWN_SPOT.nextStep.2"],
+      "prevention": [
+        "disease.RICE_BROWN_SPOT.prevention.1",
+        "disease.RICE_BROWN_SPOT.prevention.2",
+        "disease.RICE_BROWN_SPOT.prevention.3"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU (Tamil Nadu Agricultural University)",
+          "title": "TNAU Agritech Portal — Crop Protection :: Rice :: Brown Spot / Sesame Leaf Spot",
+          "url": "https://agritech.tnau.ac.in/crop_protection/rice_diseases/rice_2.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Causal organism Helminthosporium oryzae (sexual stage Cochliobolus miyabeanus). Source of the symptom wording."
+        },
+        {
+          "org": "TNAU (Tamil Nadu Agricultural University)",
+          "title": "TNAU Agritech Portal — Expert System for Paddy :: Crop Protection :: Brown Spot",
+          "url": "https://agritech.tnau.ac.in/expert_system/paddy/cpdisbrownspot.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of the favourable conditions, of spot size, and of the cultural practices used here: \"Use disease free seeds\", \"The use of resistant varieties is the most economical means of control\", \"Soils known to be low in plant-available silicon should be amended with calcium silicate slag\". The page also lists fungicide sprays, seed treatments and a hot-water treatment with rates and temperatures; none is reproduced here."
+        },
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "Integrated Pest Management Package for Rice — ETL table",
+          "url": "https://niphm.gov.in/IPMPackages/Rice.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Economic threshold level quoted in inspect.3: \"Brown spot — 2-3 spots/leaf & 2-3 infected plants/ m2\"."
+        }
+      ]
+    },
+    {
+      "code": "RICE_BACTERIAL_LEAF_BLIGHT",
+      "cropCode": "RICE",
+      "names": { "en": "Bacterial leaf blight of rice", "hi": null, "hiVerified": false },
+      "publishedSymptoms": "TNAU: the disease shows as \"Leaf blight, kresek (the seedling blight or wilt phase) and the pale-yellow leaf\"; \"Seedlings in the nursery show circular, yellow spots in the margin, that enlarge, coalesce\"; \"Water soaked, translucent lesions appear near the leaf margin\"; \"Lesions enlarge both in length and width with a wavy margin and turn straw yellow\"; \"Milky or opaque dew drops containing bacterial masses are formed on young lesions\". TNAU expert system adds, for the kresek phase, symptoms \"Observed 1-3 weeks after transplanting\" with a \"green water-soaked layer along the cut portion or leaf tip of leaves\", the seedlings wilting and rolling and turning \"grayish green to yellow\"; and for leaf blight \"Water-soaked to yellowish stripes on leaf blades or starting at leaf tips with a wavy margin\", \"undulated yellowish white or golden yellow marginal necrosis, drying of leaves back from tip and curling, leaving mid rib intact\", and \"bacterial ooze that looks like a milky or opaque dewdrop on young lesions\" seen in the early morning. Favourable conditions: \"Clipping of tip of the seedling at the time of transplanting\", \"Heavy rain, heavy dew, flooding, deep irrigation water\", \"Severe wind and temperature of 25-30°C\", \"Application of excessive nitrogen, especially late top dressing\", and \"presence of weeds\".",
+      "symptomTags": [
+        "part:LEAF",
+        "pattern:LESIONS",
+        "pattern:STREAKS",
+        "pattern:YELLOWING",
+        "pattern:CURL",
+        "color:YELLOW",
+        "distribution:MARGINS",
+        "weather:HIGH_HUMIDITY",
+        "weather:RAIN"
+      ],
+      "tagDerivation": "part:LEAF from \"lesions appear near the leaf margin\"; pattern:LESIONS from \"Water soaked, translucent lesions\"; pattern:STREAKS from \"Water-soaked to yellowish stripes on leaf blades\"; pattern:YELLOWING from \"turn straw yellow\" and \"golden yellow marginal necrosis\"; pattern:CURL from \"drying of leaves back from tip and curling\"; color:YELLOW from \"straw yellow\" / \"yellowish white or golden yellow\"; distribution:MARGINS from \"near the leaf margin\" and \"marginal necrosis\"; weather:HIGH_HUMIDITY from \"high humidity\" and \"heavy dew\"; weather:RAIN from \"Heavy rain\". No color tag for \"straw\" or \"milky/opaque\" — the closest, color:TAN, is not the published word and was not used.",
+      "symptoms": [
+        "disease.RICE_BACTERIAL_LEAF_BLIGHT.symptom.1",
+        "disease.RICE_BACTERIAL_LEAF_BLIGHT.symptom.2",
+        "disease.RICE_BACTERIAL_LEAF_BLIGHT.symptom.3",
+        "disease.RICE_BACTERIAL_LEAF_BLIGHT.symptom.4",
+        "disease.RICE_BACTERIAL_LEAF_BLIGHT.symptom.5"
+      ],
+      "inspect": [
+        "disease.RICE_BACTERIAL_LEAF_BLIGHT.inspect.1",
+        "disease.RICE_BACTERIAL_LEAF_BLIGHT.inspect.2",
+        "disease.RICE_BACTERIAL_LEAF_BLIGHT.inspect.3"
+      ],
+      "nextSteps": [
+        "disease.RICE_BACTERIAL_LEAF_BLIGHT.nextStep.1",
+        "disease.RICE_BACTERIAL_LEAF_BLIGHT.nextStep.2",
+        "disease.RICE_BACTERIAL_LEAF_BLIGHT.nextStep.3",
+        "disease.RICE_BACTERIAL_LEAF_BLIGHT.nextStep.4"
+      ],
+      "prevention": [
+        "disease.RICE_BACTERIAL_LEAF_BLIGHT.prevention.1",
+        "disease.RICE_BACTERIAL_LEAF_BLIGHT.prevention.2",
+        "disease.RICE_BACTERIAL_LEAF_BLIGHT.prevention.3"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU (Tamil Nadu Agricultural University)",
+          "title": "TNAU Agritech Portal — Crop Protection :: Rice :: Bacterial Leaf Blight",
+          "url": "https://agritech.tnau.ac.in/crop_protection/rice_diseases/rice_3.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Causal organism Xanthomonas oryzae pv. oryzae. Source of the lesion wording and of the favourable-conditions list."
+        },
+        {
+          "org": "TNAU (Tamil Nadu Agricultural University)",
+          "title": "TNAU Agritech Portal — Expert System for Paddy :: Crop Protection :: Bacterial Leaf Blight",
+          "url": "https://agritech.tnau.ac.in/expert_system/paddy/cpdisblb.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of the kresek description, the early-morning ooze observation and the cultural practices used here: \"Grow nurseries preferably in isolated upland conditions\", \"Avoid clipping of seedlings during transplanting\", \"Balanced fertilization, avoid excess N - application\", \"Drain the field (except at flowering stage of the crop)\", \"Tolerant varieties\". The page also lists seed treatments, botanical sprays and antibiotic/copper sprays with rates; none is reproduced here."
+        },
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "Integrated Pest Management Package for Rice — ETL table",
+          "url": "https://niphm.gov.in/IPMPackages/Rice.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Economic threshold levels quoted in inspect.3: \"BLB — 2-3 infected leaves/m2\" and \"BLB: Kresek Phase — 2-3 plants/m2\"."
+        }
+      ]
+    },
+    {
+      "code": "RICE_TUNGRO",
+      "cropCode": "RICE",
+      "names": { "en": "Rice tungro disease", "hi": null, "hiVerified": false },
+      "publishedSymptoms": "TNAU: \"Plants affected by tungro exhibit stunting and reduced tillering\"; \"Leaves become yellow or orange-yellow, it may also have rust-colored spots\"; \"Yellowing starts from the tip of the leaf and may extend to the lower part\"; \"Young leaves are often mottled with pale green to whitish interveinal stripes\"; \"Delayed flowering - panicles are small and not completely exerted\"; \"Most panicles are sterile or partially filled grains\". Causal agents: \"Rice tungro bacilliform virus (RTBV) and Rice tungro spherical virus (RTSV)\". Vector: \"Green leafhopper, Nephotettix virescens\". Factors favouring development: \"Presence of the virus sources\", \"Presence of the vector\", \"Age and susceptibility of host plants\", \"Synchronization of the three above factors\", \"All growth stages of rice plant specifically the vegetative stage\".",
+      "symptomTags": [
+        "part:LEAF",
+        "part:WHOLE_PLANT",
+        "pattern:YELLOWING",
+        "pattern:STUNTING",
+        "pattern:STREAKS",
+        "pattern:MOSAIC",
+        "pattern:SPOTS",
+        "color:YELLOW",
+        "color:ORANGE",
+        "color:WHITE",
+        "distribution:VEINS"
+      ],
+      "tagDerivation": "part:LEAF from \"Leaves become yellow or orange-yellow\"; part:WHOLE_PLANT from \"Plants affected by tungro exhibit stunting and reduced tillering\"; pattern:YELLOWING from \"Yellowing starts from the tip of the leaf\"; pattern:STUNTING from \"stunting and reduced tillering\"; pattern:STREAKS from \"whitish interveinal stripes\"; pattern:MOSAIC from \"Young leaves are often mottled\" (mottling is the published word for the mosaic pattern); pattern:SPOTS from \"rust-colored spots\"; color:YELLOW and color:ORANGE from \"yellow or orange-yellow\"; color:WHITE from \"pale green to whitish\"; distribution:VEINS from \"interveinal stripes\". No weather tag: the published favourable-conditions list is entirely about virus source, vector and host age, not weather.",
+      "symptoms": [
+        "disease.RICE_TUNGRO.symptom.1",
+        "disease.RICE_TUNGRO.symptom.2",
+        "disease.RICE_TUNGRO.symptom.3",
+        "disease.RICE_TUNGRO.symptom.4",
+        "disease.RICE_TUNGRO.symptom.5"
+      ],
+      "inspect": [
+        "disease.RICE_TUNGRO.inspect.1",
+        "disease.RICE_TUNGRO.inspect.2",
+        "disease.RICE_TUNGRO.inspect.3"
+      ],
+      "nextSteps": [
+        "disease.RICE_TUNGRO.nextStep.1",
+        "disease.RICE_TUNGRO.nextStep.2",
+        "disease.RICE_TUNGRO.nextStep.3"
+      ],
+      "prevention": [
+        "disease.RICE_TUNGRO.prevention.1",
+        "disease.RICE_TUNGRO.prevention.2",
+        "disease.RICE_TUNGRO.prevention.3",
+        "disease.RICE_TUNGRO.prevention.4"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU (Tamil Nadu Agricultural University)",
+          "title": "TNAU Agritech Portal — Crop Protection :: Rice :: Rice Tungro",
+          "url": "https://agritech.tnau.ac.in/crop_protection/rice_diseases/rice_24.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of the symptom wording, the two-virus aetiology and the vector. The page also describes an iodine leaf test producing \"dark blue streaks\" — a laboratory test, not surfaced to farmers here."
+        },
+        {
+          "org": "TNAU (Tamil Nadu Agricultural University)",
+          "title": "TNAU Agritech Portal — Expert System for Paddy :: Crop Protection :: Tungro Disease",
+          "url": "https://agritech.tnau.ac.in/expert_system/paddy/cpdistungro.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of the non-chemical practices used here: \"Light traps are to be set up to attract and control the leaf hopper vectors as well as to monitor the population\", resistant varieties, adjusting planting dates, fallow periods, field rotation with pulses or oilseeds, applying neem cake, destroying crop residues. The page also names insecticides and a spray schedule; neither the products nor the schedule is reproduced here."
+        },
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "Integrated Pest Management Package for Rice — ETL table",
+          "url": "https://niphm.gov.in/IPMPackages/Rice.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Economic threshold level quoted in inspect.3: \"Tungro — 1 Tungro infected plants/m2 & 2 GLH/hill (in fungus endemic areas)\". The parenthetical \"(in fungus endemic areas)\" is reproduced from the source verbatim even though tungro is viral; see gap D8."
+        }
+      ]
+    },
+    {
+      "code": "RICE_NORMAL",
+      "cropCode": "RICE",
+      "isHealthyClass": true,
+      "names": { "en": "Healthy rice crop", "hi": null, "hiVerified": false },
+      "publishedSymptoms": null,
+      "symptomTags": [],
+      "tagDerivation": "No tags. This is the healthy class; it has no published symptom description to derive tags from, and tagging it would let it compete in the symptom engine's weighted match against real diseases.",
+      "symptoms": [],
+      "inspect": [
+        "disease.RICE_NORMAL.inspect.1",
+        "disease.RICE_NORMAL.inspect.2",
+        "disease.RICE_NORMAL.inspect.3"
+      ],
+      "nextSteps": [],
+      "prevention": [
+        "disease.RICE_NORMAL.prevention.1",
+        "disease.RICE_NORMAL.prevention.2",
+        "disease.RICE_NORMAL.prevention.3",
+        "disease.RICE_NORMAL.prevention.4",
+        "disease.RICE_NORMAL.prevention.5",
+        "disease.RICE_NORMAL.prevention.6"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "Integrated Pest Management Package for Rice — §3.2 Cultural Practices and the AESA do/don't table",
+          "url": "https://niphm.gov.in/IPMPackages/Rice.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Prevention keys transcribe: (b) \"Select suitable resistant or moderately resistant variety\"; (c) \"Use disease and insect free pure seed\"; (e) \"Timely planting/sowing\"; (g) \"Raising of healthy nursery\"; (i) \"Destruction of left over nursery, removal of weeds from field and cleaning of bunds\"; (j) \"Normal spacing with 30-36 hills/ m2 depending on the duration of the variety\"; (l) \"Balanced use of fertilizers and micro-nutrients as per local recommendations\"; (o) \"After harvest, the fields should be thoroughly flooded with water and ploughed\". inspect.1 transcribes the AESA instruction \"Conduct AESA weekly in the morning preferably before 9 a.m.\" Seed-treatment item (d) is NOT reproduced — it names pesticides and rates."
+        },
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "Integrated Pest Management Package for Rice — §3.1 ETL table",
+          "url": "https://niphm.gov.in/IPMPackages/Rice.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "inspect.3 lists the four disease thresholds relevant to the RICE ML classes, verbatim from the ETL table."
+        }
+      ]
+    },
+    {
+      "code": "TOMATO_EARLY_BLIGHT",
+      "cropCode": "TOMATO",
+      "names": { "en": "Early blight of tomato", "hi": null, "hiVerified": false },
+      "publishedSymptoms": "TNAU field diagnostic symptoms: \"Brown spots with concentric rings in a bull's eye pattern with yellow margin\"; \"Fruit gets infected through calyx or stem attachment\"; \"Brown concentric rings on fruits\". Favourable conditions: \"Warm, humid (24-29 degree C), rainy and wet weather\". NIPHM adds: \"Early blight is first observed on the plants as small, black lesions mostly on the older foliage\"; \"Spots enlarge, and by the time they are one-fourth inch in diameter or larger, concentric rings in a bull's eye pattern can be seen in the center of the diseased area\"; \"Tissue surrounding the spots may turn yellow. If high temperature and humidity occur at this time, much of the foliage is killed\"; \"Lesions on the stems are similar to those on leaves, sometimes girdling the plant if they occur near the soil line\"; \"Lesions attain considerable size, usually involving nearly the entire fruit; concentric rings are also present on the fruit\". NIPHM favourable conditions: \"Warm, rainy and wet weather\". NIPHM survival: \"The fungus spends the winter in infected plant debris in or on the soil where it can survive at least one and perhaps several years. It can also be seed borne.\"",
+      "symptomTags": [
+        "part:LEAF",
+        "part:STEM",
+        "part:FRUIT",
+        "pattern:SPOTS",
+        "pattern:RINGS",
+        "color:BROWN",
+        "color:BLACK",
+        "color:YELLOW",
+        "distribution:LOWER_LEAVES",
+        "weather:HIGH_HUMIDITY",
+        "weather:RAIN"
+      ],
+      "tagDerivation": "part:LEAF from \"small, black lesions mostly on the older foliage\"; part:STEM from \"Lesions on the stems are similar to those on leaves\"; part:FRUIT from \"Brown concentric rings on fruits\"; pattern:SPOTS from \"Brown spots\"; pattern:RINGS from \"concentric rings in a bull's eye pattern\"; color:BROWN from \"Brown spots\"; color:BLACK from \"small, black lesions\"; color:YELLOW from \"with yellow margin\" and \"Tissue surrounding the spots may turn yellow\"; distribution:LOWER_LEAVES from \"mostly on the older foliage\"; weather:HIGH_HUMIDITY from \"Warm, humid (24-29 degree C)\"; weather:RAIN from \"rainy and wet weather\".",
+      "symptoms": [
+        "disease.TOMATO_EARLY_BLIGHT.symptom.1",
+        "disease.TOMATO_EARLY_BLIGHT.symptom.2",
+        "disease.TOMATO_EARLY_BLIGHT.symptom.3",
+        "disease.TOMATO_EARLY_BLIGHT.symptom.4",
+        "disease.TOMATO_EARLY_BLIGHT.symptom.5"
+      ],
+      "inspect": [
+        "disease.TOMATO_EARLY_BLIGHT.inspect.1",
+        "disease.TOMATO_EARLY_BLIGHT.inspect.2",
+        "disease.TOMATO_EARLY_BLIGHT.inspect.3"
+      ],
+      "nextSteps": [
+        "disease.TOMATO_EARLY_BLIGHT.nextStep.1",
+        "disease.TOMATO_EARLY_BLIGHT.nextStep.2",
+        "disease.TOMATO_EARLY_BLIGHT.nextStep.3"
+      ],
+      "prevention": [
+        "disease.TOMATO_EARLY_BLIGHT.prevention.1",
+        "disease.TOMATO_EARLY_BLIGHT.prevention.2",
+        "disease.TOMATO_EARLY_BLIGHT.prevention.3",
+        "disease.TOMATO_EARLY_BLIGHT.prevention.4",
+        "disease.TOMATO_EARLY_BLIGHT.prevention.5"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU (Tamil Nadu Agricultural University)",
+          "title": "TNAU Agritech Portal — Crop Protection :: Tomato :: Early Blight",
+          "url": "https://agritech.tnau.ac.in/crop_protection/tomato_diseases_2.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Causal organism Alternaria solani. Source of the bull's-eye and fruit wording and of the 24-29 °C favourable range."
+        },
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "AESA based IPM Package — Tomato, VIII. Description of diseases, 4) Early blight",
+          "url": "https://niphm.gov.in/IPMPackages/Tomato.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of the older-foliage distribution, the stem lesions, the survival-in-debris statement, and the 'Cultural control: Field sanitation / Destruction of alternate hosts / Provide light irrigation' block printed under the stage-wise table row headed 'Alternaria blight and late blight' (see gap D9)."
+        },
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "AESA based IPM Package — Tomato, Principles of AESA based IPM: Grow a healthy crop",
+          "url": "https://niphm.gov.in/IPMPackages/Tomato.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of the generic prevention keys (resistant/tolerant variety, healthy seeds and seedlings, proper spacing, nitrogen caution, crop rotation). The same list's seed-treatment bullet is not reproduced — it refers to pesticides."
+        }
+      ]
+    },
+    {
+      "code": "TOMATO_LATE_BLIGHT",
+      "cropCode": "TOMATO",
+      "names": { "en": "Late blight of tomato", "hi": null, "hiVerified": false },
+      "publishedSymptoms": "TNAU: \"Water-soaked black lesions on leaves and stems\"; the lesions \"expand rapidly and the entire leaf becomes necrotic\"; \"White sporulation (sporangia and sporangiophores) on leaves\"; \"Dark brown lesions on fruit\"; \"Soft rot and disintegration of fruits\". Favourable conditions: \"Cool nights, warm days and extended wet conditions from rain and fog\"; \"Optimum temp for sporulation is 18 - 22oC\".",
+      "symptomTags": [
+        "part:LEAF",
+        "part:STEM",
+        "part:FRUIT",
+        "pattern:LESIONS",
+        "pattern:ROT",
+        "color:BLACK",
+        "color:WHITE",
+        "color:BROWN",
+        "weather:COOL_MOIST",
+        "weather:RAIN"
+      ],
+      "tagDerivation": "part:LEAF and part:STEM from \"Water-soaked black lesions on leaves and stems\"; part:FRUIT from \"Dark brown lesions on fruit\"; pattern:LESIONS from \"black lesions\"; pattern:ROT from \"Soft rot and disintegration of fruits\"; color:BLACK from \"black lesions\"; color:WHITE from \"White sporulation ... on leaves\"; color:BROWN from \"Dark brown lesions on fruit\"; weather:COOL_MOIST from \"Cool nights, warm days and extended wet conditions\"; weather:RAIN from \"from rain and fog\".",
+      "symptoms": [
+        "disease.TOMATO_LATE_BLIGHT.symptom.1",
+        "disease.TOMATO_LATE_BLIGHT.symptom.2",
+        "disease.TOMATO_LATE_BLIGHT.symptom.3",
+        "disease.TOMATO_LATE_BLIGHT.symptom.4"
+      ],
+      "inspect": [
+        "disease.TOMATO_LATE_BLIGHT.inspect.1",
+        "disease.TOMATO_LATE_BLIGHT.inspect.2",
+        "disease.TOMATO_LATE_BLIGHT.inspect.3"
+      ],
+      "nextSteps": [
+        "disease.TOMATO_LATE_BLIGHT.nextStep.1",
+        "disease.TOMATO_LATE_BLIGHT.nextStep.2",
+        "disease.TOMATO_LATE_BLIGHT.nextStep.3"
+      ],
+      "prevention": [
+        "disease.TOMATO_LATE_BLIGHT.prevention.1",
+        "disease.TOMATO_LATE_BLIGHT.prevention.2",
+        "disease.TOMATO_LATE_BLIGHT.prevention.3",
+        "disease.TOMATO_LATE_BLIGHT.prevention.4"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU (Tamil Nadu Agricultural University)",
+          "title": "TNAU Agritech Portal — Crop Protection :: Tomato :: Late Blight",
+          "url": "https://agritech.tnau.ac.in/crop_protection/tomato_diseases_8.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Causal organism Phytophthora infestans (Mont.) de Bary. Source of the symptom and favourable-conditions wording. The page's line \"Sporangia formed when RH is < 90%\" is reproduced here for the record but is NOT surfaced to farmers — it reads as a typographic inversion of the standard >90% and is flagged in gap D10."
+        },
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "AESA based IPM Package — Tomato, stage-wise table row 'Alternaria blight and late blight'; and 'Grow a healthy crop'",
+          "url": "https://niphm.gov.in/IPMPackages/Tomato.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of the cultural-control actions (\"Field sanitation\", \"Destruction of alternate hosts\", \"Provide light irrigation\") and of the generic prevention keys. NIPHM lists late blight in its disease roster (2.4) but prints no separate description section for it in this package — see gap D11."
+        }
+      ]
+    },
+    {
+      "code": "TOMATO_SEPTORIA_LEAF_SPOT",
+      "cropCode": "TOMATO",
+      "names": { "en": "Septoria leaf spot of tomato", "hi": null, "hiVerified": false },
+      "publishedSymptoms": "TNAU: \"Small, round to irregular spots with grey centre and dark margin on leaves\"; \"Spots coalesce and leaves are blighted\"; \"Complete defoliation\"; \"Stems and flowers are affected\". Favourable condition: \"High humidity\". NIPHM adds: \"Less vigorous plant are usually affected\"; \"Spots usually starts on lower leaves and gradually advance upwards\"; \"Complete defoliation of affected leaves\"; \"Stems and flowers are sometimes attacked\"; \"Fruits are rarely attacked\". NIPHM favourable conditions: \"Poor vigour of plants due to nutrient inadequacy or in late season\"; \"High humidity or persistent dew at 25 °C\"; \"Moist weather with intermittent showers\". NIPHM secondary spread: \"Conidia through rain splash or wind and also by slimy conidia sticking on to hands and clothing of tomato pickers\".",
+      "symptomTags": [
+        "part:LEAF",
+        "part:STEM",
+        "part:FLOWER",
+        "pattern:SPOTS",
+        "color:GREY",
+        "distribution:LOWER_LEAVES",
+        "weather:HIGH_HUMIDITY",
+        "weather:RAIN"
+      ],
+      "tagDerivation": "part:LEAF from \"spots ... on leaves\"; part:STEM and part:FLOWER from \"Stems and flowers are affected\"; pattern:SPOTS from \"Small, round to irregular spots\"; color:GREY from \"grey centre\"; distribution:LOWER_LEAVES from \"Spots usually starts on lower leaves and gradually advance upwards\"; weather:HIGH_HUMIDITY from \"High humidity or persistent dew at 25 °C\"; weather:RAIN from \"Moist weather with intermittent showers\". \"dark margin\" is published but the vocabulary has no tag for a dark border of unstated colour, so no color tag was added for it.",
+      "symptoms": [
+        "disease.TOMATO_SEPTORIA_LEAF_SPOT.symptom.1",
+        "disease.TOMATO_SEPTORIA_LEAF_SPOT.symptom.2",
+        "disease.TOMATO_SEPTORIA_LEAF_SPOT.symptom.3",
+        "disease.TOMATO_SEPTORIA_LEAF_SPOT.symptom.4",
+        "disease.TOMATO_SEPTORIA_LEAF_SPOT.symptom.5"
+      ],
+      "inspect": [
+        "disease.TOMATO_SEPTORIA_LEAF_SPOT.inspect.1",
+        "disease.TOMATO_SEPTORIA_LEAF_SPOT.inspect.2",
+        "disease.TOMATO_SEPTORIA_LEAF_SPOT.inspect.3"
+      ],
+      "nextSteps": [
+        "disease.TOMATO_SEPTORIA_LEAF_SPOT.nextStep.1",
+        "disease.TOMATO_SEPTORIA_LEAF_SPOT.nextStep.2",
+        "disease.TOMATO_SEPTORIA_LEAF_SPOT.nextStep.3"
+      ],
+      "prevention": [
+        "disease.TOMATO_SEPTORIA_LEAF_SPOT.prevention.1",
+        "disease.TOMATO_SEPTORIA_LEAF_SPOT.prevention.2",
+        "disease.TOMATO_SEPTORIA_LEAF_SPOT.prevention.3"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU (Tamil Nadu Agricultural University)",
+          "title": "TNAU Agritech Portal — Crop Protection :: Tomato :: Septoria Leaf Spot",
+          "url": "https://agritech.tnau.ac.in/crop_protection/tomato_diseases_4.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Causal organism Septoria lycopersici Speg."
+        },
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "AESA based IPM Package — Tomato, VIII. Description of diseases, 2) Septoria leaf spot",
+          "url": "https://niphm.gov.in/IPMPackages/Tomato.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of the lower-leaves-first distribution, the plant-vigour condition, and the hands-and-clothing transmission route used in nextStep.2. Prevention keys come from the same document's 'Grow a healthy crop' list."
+        }
+      ]
+    },
+    {
+      "code": "TOMATO_BACTERIAL_SPOT",
+      "cropCode": "TOMATO",
+      "names": { "en": "Bacterial leaf spot of tomato", "hi": null, "hiVerified": false },
+      "publishedSymptoms": "TNAU: \"small, brown, water soaked, circular spots with yellow halo on leaves\"; \"defoliation of older leaves\"; \"small, water-soaked spots on green fruit\"; \"centre of spots become irregular, light brown with sunken and scabby surface\". Favourable conditions: \"moist weather and splattering rains\"; \"high humidity or persistent dew\". NIPHM adds: \"On older plants the leaflet infection is mostly on older leaves and may cause serious defoliation\"; \"Ripe fruits are not susceptible to the disease. Surface of the seed becomes contaminated with the bacteria, remaining on the seed surface for some time\"; \"The organism survives in alternate hosts, on volunteer tomato plants and on infected plant debris\". NIPHM survival: \"Bacterial cells survive on infected plant debris and seed (both internally and externally) and also on solanaceous weeds such as Solanum nigrum\".",
+      "symptomTags": [
+        "part:LEAF",
+        "part:FRUIT",
+        "pattern:SPOTS",
+        "color:BROWN",
+        "color:YELLOW",
+        "distribution:LOWER_LEAVES",
+        "weather:HIGH_HUMIDITY",
+        "weather:RAIN"
+      ],
+      "tagDerivation": "part:LEAF from \"circular spots with yellow halo on leaves\"; part:FRUIT from \"small, water-soaked spots on green fruit\"; pattern:SPOTS from \"circular spots\"; color:BROWN from \"small, brown, water soaked ... spots\"; color:YELLOW from \"with yellow halo\"; distribution:LOWER_LEAVES from \"leaflet infection is mostly on older leaves\"; weather:HIGH_HUMIDITY from \"high humidity or persistent dew\"; weather:RAIN from \"moist weather and splattering rains\".",
+      "symptoms": [
+        "disease.TOMATO_BACTERIAL_SPOT.symptom.1",
+        "disease.TOMATO_BACTERIAL_SPOT.symptom.2",
+        "disease.TOMATO_BACTERIAL_SPOT.symptom.3",
+        "disease.TOMATO_BACTERIAL_SPOT.symptom.4"
+      ],
+      "inspect": [
+        "disease.TOMATO_BACTERIAL_SPOT.inspect.1",
+        "disease.TOMATO_BACTERIAL_SPOT.inspect.2",
+        "disease.TOMATO_BACTERIAL_SPOT.inspect.3"
+      ],
+      "nextSteps": [
+        "disease.TOMATO_BACTERIAL_SPOT.nextStep.1",
+        "disease.TOMATO_BACTERIAL_SPOT.nextStep.2",
+        "disease.TOMATO_BACTERIAL_SPOT.nextStep.3"
+      ],
+      "prevention": [
+        "disease.TOMATO_BACTERIAL_SPOT.prevention.1",
+        "disease.TOMATO_BACTERIAL_SPOT.prevention.2",
+        "disease.TOMATO_BACTERIAL_SPOT.prevention.3"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU (Tamil Nadu Agricultural University)",
+          "title": "TNAU Agritech Portal — Crop Protection :: Tomato :: Bacterial leaf spot",
+          "url": "https://agritech.tnau.ac.in/crop_protection/tomato_diseases_11.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Causal organism Xanthomonas axonopodis pv. vesicatoria."
+        },
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "AESA based IPM Package — Tomato, VIII. Description of diseases, 5) Bacterial leaf spot; and 'Grow a healthy crop'",
+          "url": "https://niphm.gov.in/IPMPackages/Tomato.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of the older-leaves distribution, the seed-surface and solanaceous-weed survival routes used in nextSteps/prevention, and the generic healthy-crop practices."
+        }
+      ]
+    },
+    {
+      "code": "TOMATO_YELLOW_LEAF_CURL_VIRUS",
+      "cropCode": "TOMATO",
+      "names": { "en": "Tomato leaf curl virus disease", "hi": null, "hiVerified": false },
+      "classCodeCaveat": "The ML class code is TOMATO_YELLOW_LEAF_CURL_VIRUS (PlantVillage nomenclature, i.e. Tomato yellow leaf curl virus, TYLCV). The Indian sources fetched publish the disease as 'Tomato leaf curl virus (ToLCV)' — an Indian begomovirus complex, whitefly-transmitted like TYLCV but not the same virus. names.en therefore uses the published Indian name, not the ML class label. See gap D2.",
+      "publishedSymptoms": "TNAU field diagnostic symptoms: \"Severe stunting of plants\"; \"Downward rolling and crinkling of the leaves\"; \"Older leaves become leathery and brittle\"; \"Shortening of internodes\"; \"Appearence of more lateral branches - bushy appearance\". Vector: \"Whiteflies–Bemisia tabaci\". Spread: primary \"Whiteflies\", secondary \"Movement of infected plants\". NIPHM adds: \"The newly emerging leaves exhibit slight yellow colouration and later they also show curling symptoms\"; \"The infected plants look pale and produce more lateral branches giving a bushy appearance. The infected plants remain stunted.\" NIPHM favourable conditions: \"whitefly is the vector for transmitting of leaf curl virus\".",
+      "symptomTags": [
+        "part:LEAF",
+        "part:WHOLE_PLANT",
+        "pattern:CURL",
+        "pattern:STUNTING",
+        "pattern:YELLOWING",
+        "color:YELLOW",
+        "distribution:UPPER_LEAVES",
+        "distribution:LOWER_LEAVES"
+      ],
+      "tagDerivation": "part:LEAF from \"Downward rolling and crinkling of the leaves\"; part:WHOLE_PLANT from \"Severe stunting of plants\" and \"bushy appearance\"; pattern:CURL from \"Downward rolling and crinkling of the leaves\"; pattern:STUNTING from \"Severe stunting of plants\"; pattern:YELLOWING and color:YELLOW from \"The newly emerging leaves exhibit slight yellow colouration\"; distribution:UPPER_LEAVES from \"newly emerging leaves\"; distribution:LOWER_LEAVES from \"Older leaves become leathery and brittle\". BOTH distribution tags are present because the sources describe distinct symptoms on both new and old leaves; picking one would have been an unsourced choice, but a reviewer should note this makes the distribution term (weight 1) non-discriminating for this entry. No weather tag: transmission is by whitefly, and no weather condition is published.",
+      "symptoms": [
+        "disease.TOMATO_YELLOW_LEAF_CURL_VIRUS.symptom.1",
+        "disease.TOMATO_YELLOW_LEAF_CURL_VIRUS.symptom.2",
+        "disease.TOMATO_YELLOW_LEAF_CURL_VIRUS.symptom.3",
+        "disease.TOMATO_YELLOW_LEAF_CURL_VIRUS.symptom.4",
+        "disease.TOMATO_YELLOW_LEAF_CURL_VIRUS.symptom.5"
+      ],
+      "inspect": [
+        "disease.TOMATO_YELLOW_LEAF_CURL_VIRUS.inspect.1",
+        "disease.TOMATO_YELLOW_LEAF_CURL_VIRUS.inspect.2",
+        "disease.TOMATO_YELLOW_LEAF_CURL_VIRUS.inspect.3"
+      ],
+      "nextSteps": [
+        "disease.TOMATO_YELLOW_LEAF_CURL_VIRUS.nextStep.1",
+        "disease.TOMATO_YELLOW_LEAF_CURL_VIRUS.nextStep.2",
+        "disease.TOMATO_YELLOW_LEAF_CURL_VIRUS.nextStep.3"
+      ],
+      "prevention": [
+        "disease.TOMATO_YELLOW_LEAF_CURL_VIRUS.prevention.1",
+        "disease.TOMATO_YELLOW_LEAF_CURL_VIRUS.prevention.2",
+        "disease.TOMATO_YELLOW_LEAF_CURL_VIRUS.prevention.3",
+        "disease.TOMATO_YELLOW_LEAF_CURL_VIRUS.prevention.4",
+        "disease.TOMATO_YELLOW_LEAF_CURL_VIRUS.prevention.5"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU (Tamil Nadu Agricultural University)",
+          "title": "TNAU Agritech Portal — Crop Protection :: Tomato :: Leaf curl (Tomato leaf curl virus)",
+          "url": "https://agritech.tnau.ac.in/crop_protection/tomato_diseases_6.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of the symptom list, vector and spread. Its management block lists barrier crops (Sorghum, Maize, Bajra), disease-free seeds, yellow sticky traps, protected nursery raising and removal of alternate weed hosts — all reproduced here — plus four named insecticides at stated concentrations, none of which is reproduced."
+        },
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "AESA based IPM Package — Tomato, VIII. Description of diseases, 7) Leaf curl; and the stage-wise table 'Leaf curl' cultural-control rows",
+          "url": "https://niphm.gov.in/IPMPackages/Tomato.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of the new-leaf yellowing symptom and of the cultural practices: \"Raising nursery in protected condition (with net of sufficient mesh size to prevent the entry of vector, whitefly)\", \"Seeds from disease free healthy plants should be selected for sowing\", \"In the nursery all the infected plants should be removed carefully and destroyed. Seedlings infected with the viral disease should not be used for transplanting\", \"Field sanitation, roguing of affected plants\", \"Raise barrier crops-cereals (maize or sorghum) around the field\", \"Yellow sticky traps or cards @ 10/acre may reduce the whiteflies population\". The trap density is a trap count, not a pesticide dose, and is reproduced. The package's root-dip insecticide instruction is not reproduced."
+        }
+      ]
+    },
+    {
+      "code": "TOMATO_MOSAIC_VIRUS",
+      "cropCode": "TOMATO",
+      "names": { "en": "Tomato mosaic disease", "hi": null, "hiVerified": false },
+      "publishedSymptoms": "NIPHM (listed in its disease roster as \"2.8 Tomato mosaic disease: Tomato Mosaic Virus\"): \"The disease is characterized by light and dark green mottling on the leaves often accompanied by wilting of young leaves in sunny days when plants first become infected\"; \"The leaflets of affected leaves are usually distorted, puckered and smaller than normal. Sometimes the leaflets become indented resulting in 'fern leaf' symptoms\"; \"The affected plant appears stunted, pale green and spindly\". Spread: \"The virus is spread by contact with clothes, hand of working labour, touching of infected plants with healthy ones, plant debris and implements\". TNAU's tomato mosaic page lists the same symptom set plus \"Shoe string symptom\", and recommends \"Disease free seeds\", removal of infected plants and crop rotation.",
+      "symptomTags": [
+        "part:LEAF",
+        "part:WHOLE_PLANT",
+        "pattern:MOSAIC",
+        "pattern:STUNTING",
+        "pattern:WILT",
+        "distribution:UPPER_LEAVES"
+      ],
+      "tagDerivation": "part:LEAF from \"mottling on the leaves\"; part:WHOLE_PLANT from \"The affected plant appears stunted, pale green and spindly\"; pattern:MOSAIC from \"light and dark green mottling on the leaves\"; pattern:STUNTING from \"appears stunted\"; pattern:WILT from \"wilting of young leaves in sunny days\"; distribution:UPPER_LEAVES from \"wilting of young leaves\" (young leaves are the newest, uppermost growth). NO color tag: the published colours are \"light and dark green\" and \"pale green\", and the closed vocabulary has no color:GREEN member (gap D7).",
+      "symptoms": [
+        "disease.TOMATO_MOSAIC_VIRUS.symptom.1",
+        "disease.TOMATO_MOSAIC_VIRUS.symptom.2",
+        "disease.TOMATO_MOSAIC_VIRUS.symptom.3",
+        "disease.TOMATO_MOSAIC_VIRUS.symptom.4"
+      ],
+      "inspect": ["disease.TOMATO_MOSAIC_VIRUS.inspect.1", "disease.TOMATO_MOSAIC_VIRUS.inspect.2"],
+      "nextSteps": [
+        "disease.TOMATO_MOSAIC_VIRUS.nextStep.1",
+        "disease.TOMATO_MOSAIC_VIRUS.nextStep.2"
+      ],
+      "prevention": [
+        "disease.TOMATO_MOSAIC_VIRUS.prevention.1",
+        "disease.TOMATO_MOSAIC_VIRUS.prevention.2",
+        "disease.TOMATO_MOSAIC_VIRUS.prevention.3"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "AESA based IPM Package — Tomato, disease roster 2.8 and VIII. Description of diseases, 8) Mosaic",
+          "url": "https://niphm.gov.in/IPMPackages/Tomato.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Used as the primary symptom source because it names the agent unambiguously as Tomato Mosaic Virus."
+        },
+        {
+          "org": "TNAU (Tamil Nadu Agricultural University)",
+          "title": "TNAU Agritech Portal — Crop Protection :: Tomato :: Mosaic",
+          "url": "https://agritech.tnau.ac.in/crop_protection/tomato_diseases_12.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Corroborates the symptom set and supplies the management actions used here (disease-free seeds, removal of infected plants, crop rotation). The page's own heading attributes the disease to Cucumber mosaic virus while its causal-organism line reads 'Tomato Mosaic Virus' — see gap D6."
+        }
+      ]
+    },
+    {
+      "code": "TOMATO_SPIDER_MITES",
+      "cropCode": "TOMATO",
+      "names": { "en": "Spider mite damage on tomato", "hi": null, "hiVerified": false },
+      "publishedSymptoms": "NIPHM, VII. Description of insect and mite pests, 5) Spider mites (Tetranychus spp., Acarina: Tetranychidae; recorded in Punjab and South India) — Damage symptoms: \"Affected leaves become reddish brown and bronzy\"; \"Severe infestation larvae silken webbing on the leaves\"; \"Leaves wither and dry\"; \"Flower and fruit formation affected\". Adult described as \"Red coloured small size\".",
+      "symptomTags": [
+        "part:LEAF",
+        "part:FLOWER",
+        "part:FRUIT",
+        "pattern:WEBBING",
+        "pattern:WILT",
+        "color:RED",
+        "color:BROWN"
+      ],
+      "tagDerivation": "part:LEAF from \"Affected leaves become reddish brown and bronzy\"; part:FLOWER and part:FRUIT from \"Flower and fruit formation affected\"; pattern:WEBBING from \"silken webbing on the leaves\"; pattern:WILT from \"Leaves wither and dry\" (WILT is the only vocabulary member covering withering); color:RED and color:BROWN from \"reddish brown\". \"bronzy\" has no vocabulary member and was not tagged. NO weather tag: the \"Favourable conditions: Warm weather conditions are favourable for multiplication\" line in this package belongs to the pest section immediately BEFORE spider mites, not to spider mites — see gap D3.",
+      "symptoms": [
+        "disease.TOMATO_SPIDER_MITES.symptom.1",
+        "disease.TOMATO_SPIDER_MITES.symptom.2",
+        "disease.TOMATO_SPIDER_MITES.symptom.3",
+        "disease.TOMATO_SPIDER_MITES.symptom.4"
+      ],
+      "inspect": ["disease.TOMATO_SPIDER_MITES.inspect.1", "disease.TOMATO_SPIDER_MITES.inspect.2"],
+      "nextSteps": [
+        "disease.TOMATO_SPIDER_MITES.nextStep.1",
+        "disease.TOMATO_SPIDER_MITES.nextStep.2"
+      ],
+      "prevention": [
+        "disease.TOMATO_SPIDER_MITES.prevention.1",
+        "disease.TOMATO_SPIDER_MITES.prevention.2",
+        "disease.TOMATO_SPIDER_MITES.prevention.3"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "AESA based IPM Package — Tomato, VII. Description of insect and mite pests, 5) Spider mites",
+          "url": "https://niphm.gov.in/IPMPackages/Tomato.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of the damage symptoms and of the biological-control action in nextStep.1: \"Conserve predators such as predatory mites (Phytoseiulus spp., Amblyseius spp.), staphylinids (Oligota spp.), lady bird beetles, lacewings, predatory thrips, anthocorid bugs (Orius spp.), mirid bugs, predatory flies\". The acaricides printed alongside are not reproduced."
+        },
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "AESA based IPM Package — Tomato, B. Field scouting; and the do/don't table item 16",
+          "url": "https://niphm.gov.in/IPMPackages/Tomato.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "inspect keys transcribe \"For aphids, whitefly and mites: Count and record the number of both nymphs and adults on five randomly selected leaves per plant\" and \"In each of the fields, select five spots randomly. Select five random plants at each spot\", plus the instruction to treat \"the undersurface of the leaves, particularly for mites\" — used here only as 'look at the underside of the leaf', not as a spray instruction."
+        }
+      ]
+    },
+    {
+      "code": "TOMATO_LEAF_MOLD",
+      "cropCode": "TOMATO",
+      "names": { "en": "Leaf mould of tomato", "hi": null, "hiVerified": false },
+      "publishedSymptoms": "Cornell Vegetables factsheet: \"Disease symptoms first appear after seven days as light green spots on leaves\"; the spots then develop \"olive-green asexual conidia\" and eventually become necrotic; symptoms appear first on the lower foliage and progress upward; \"a relative humidity greater than 85% triggers the germination of conidia\". INRAE Ephytia/Tropileg (Passalora fulva): the lower leaf surface carries an olive-coloured velvety fungal growth, the upper leaf surface shows yellow or brown patches over it, and \"Older leaves are more severely affected than younger leaves\".",
+      "symptomTags": [
+        "part:LEAF",
+        "pattern:SPOTS",
+        "color:YELLOW",
+        "color:BROWN",
+        "distribution:LOWER_LEAVES",
+        "weather:HIGH_HUMIDITY"
+      ],
+      "tagDerivation": "part:LEAF from \"light green spots on leaves\"; pattern:SPOTS from \"spots on leaves\"; color:YELLOW and color:BROWN from the upper-surface \"yellow or brown patches\"; distribution:LOWER_LEAVES from \"appear first on the lower foliage\" and \"Older leaves are more severely affected\"; weather:HIGH_HUMIDITY from \"a relative humidity greater than 85% triggers the germination of conidia\". NOT tagged: the olive-green velvety mould growth on the leaf UNDERSIDE — the diagnostic feature of this disease — because the vocabulary has no tag for mould/velvet growth (pattern:POWDER means powdery mildew and was deliberately not reused) and no tag for the leaf underside. See gap D7. This entry is therefore weakly discriminated by the rule engine.",
+      "symptoms": [
+        "disease.TOMATO_LEAF_MOLD.symptom.1",
+        "disease.TOMATO_LEAF_MOLD.symptom.2",
+        "disease.TOMATO_LEAF_MOLD.symptom.3",
+        "disease.TOMATO_LEAF_MOLD.symptom.4"
+      ],
+      "inspect": ["disease.TOMATO_LEAF_MOLD.inspect.1", "disease.TOMATO_LEAF_MOLD.inspect.2"],
+      "nextSteps": ["disease.TOMATO_LEAF_MOLD.nextStep.1"],
+      "prevention": [
+        "disease.TOMATO_LEAF_MOLD.prevention.1",
+        "disease.TOMATO_LEAF_MOLD.prevention.2",
+        "disease.TOMATO_LEAF_MOLD.prevention.3"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "Cornell University, Cornell Vegetables",
+          "title": "Disease factsheet — Tomato Leaf Mold",
+          "url": "https://www.vegetables.cornell.edu/pest-management/disease-factsheets/tomato-leaf-mold/",
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "SECONDARY and non-Indian. No Indian primary source for this disease was found in this pass (gap D4)."
+        },
+        {
+          "org": "INRAE, Ephytia / Tropileg",
+          "title": "Cladosporiosis on tomato (Passalora fulva)",
+          "url": "https://ephytia.inrae.fr/en/C/23073/Tropileg-Cladosporiosis-on-tomato-Passalora-fulva",
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "SECONDARY and non-Indian. Corroborates leaf-surface and leaf-age detail only."
+        },
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "AESA based IPM Package — Tomato, Principles of AESA based IPM: Grow a healthy crop",
+          "url": "https://niphm.gov.in/IPMPackages/Tomato.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "The prevention keys are the package's generic healthy-crop practices, which apply to the tomato crop as a whole. NO disease-specific management for leaf mould is asserted, because none was sourced (gap D4)."
+        }
+      ]
+    },
+    {
+      "code": "TOMATO_TARGET_SPOT",
+      "cropCode": "TOMATO",
+      "names": { "en": "Target spot of tomato", "hi": null, "hiVerified": false },
+      "publishedSymptoms": "UF/IFAS EDIS PP351: \"Leaf lesions are initially dark brown and pinpoint\", developing centres that are \"light brown to gray with dark outer concentric rings\", sometimes surrounded by yellowing; lesions can merge rapidly, causing leaf blighting and early defoliation. On petioles and stems the lesions are \"dark brown and oval-shaped\". On fruit, damage begins as \"small, brown, sunken flecks\" that expand into deeply pitted lesions, often producing an X- or star-shaped cracking pattern on severely affected fruit. Conditions: temperatures of 83–90 °F with elevated humidity; \"continuous leaf wetness is the most important factor for spores to germinate and infect the host\", requiring 16–44 hours of moisture; mature leaves are more susceptible than younger foliage, and the disease spreads easily within dense canopies.",
+      "symptomTags": [
+        "part:LEAF",
+        "part:STEM",
+        "part:FRUIT",
+        "pattern:LESIONS",
+        "pattern:RINGS",
+        "color:BROWN",
+        "color:GREY",
+        "color:YELLOW",
+        "weather:HIGH_HUMIDITY"
+      ],
+      "tagDerivation": "part:LEAF from \"Leaf lesions are initially dark brown and pinpoint\"; part:STEM from lesions on petioles and stems being \"dark brown and oval-shaped\"; part:FRUIT from \"small, brown, sunken flecks\" on fruit; pattern:LESIONS from \"Leaf lesions\"; pattern:RINGS from \"dark outer concentric rings\"; color:BROWN from \"light brown to gray\"; color:GREY from \"light brown to gray\"; color:YELLOW from \"sometimes surrounded by yellowing\"; weather:HIGH_HUMIDITY from \"elevated humidity\" and \"continuous leaf wetness is the most important factor\". NOT tagged distribution:LOWER_LEAVES: the source says \"mature leaves are more susceptible than younger foliage\", which is about leaf age, not position, and equating the two would be an unsourced inference.",
+      "symptoms": [
+        "disease.TOMATO_TARGET_SPOT.symptom.1",
+        "disease.TOMATO_TARGET_SPOT.symptom.2",
+        "disease.TOMATO_TARGET_SPOT.symptom.3",
+        "disease.TOMATO_TARGET_SPOT.symptom.4"
+      ],
+      "inspect": ["disease.TOMATO_TARGET_SPOT.inspect.1", "disease.TOMATO_TARGET_SPOT.inspect.2"],
+      "nextSteps": ["disease.TOMATO_TARGET_SPOT.nextStep.1"],
+      "prevention": [
+        "disease.TOMATO_TARGET_SPOT.prevention.1",
+        "disease.TOMATO_TARGET_SPOT.prevention.2",
+        "disease.TOMATO_TARGET_SPOT.prevention.3"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "University of Florida IFAS Extension",
+          "title": "PP351 — Target Spot of Tomato in Florida",
+          "url": "https://ask.ifas.ufl.edu/publication/PP351",
+          "accessed": "2026-08-13",
+          "confidence": "S",
+          "note": "SECONDARY and non-Indian. No Indian extension source for tomato target spot was found in this pass; the disease is documented in India in the peer-reviewed literature (Gangetic alluvial West Bengal) but that is a journal paper, not extension guidance (gap D5). The published temperature range is in °F and is NOT converted here — a conversion would introduce a number no source printed."
+        },
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "AESA based IPM Package — Tomato, Principles of AESA based IPM: Grow a healthy crop",
+          "url": "https://niphm.gov.in/IPMPackages/Tomato.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "The prevention keys are the package's generic healthy-crop practices. No disease-specific Indian management is asserted (gap D5)."
+        }
+      ]
+    },
+    {
+      "code": "TOMATO_HEALTHY",
+      "cropCode": "TOMATO",
+      "isHealthyClass": true,
+      "names": { "en": "Healthy tomato plant", "hi": null, "hiVerified": false },
+      "publishedSymptoms": null,
+      "symptomTags": [],
+      "tagDerivation": "No tags. Healthy class — no published symptom description exists to derive tags from, and tagging it would let it compete in the symptom engine's weighted match against real diseases.",
+      "symptoms": [],
+      "inspect": [
+        "disease.TOMATO_HEALTHY.inspect.1",
+        "disease.TOMATO_HEALTHY.inspect.2",
+        "disease.TOMATO_HEALTHY.inspect.3"
+      ],
+      "nextSteps": [],
+      "prevention": [
+        "disease.TOMATO_HEALTHY.prevention.1",
+        "disease.TOMATO_HEALTHY.prevention.2",
+        "disease.TOMATO_HEALTHY.prevention.3",
+        "disease.TOMATO_HEALTHY.prevention.4",
+        "disease.TOMATO_HEALTHY.prevention.5",
+        "disease.TOMATO_HEALTHY.prevention.6"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "AESA based IPM Package — Tomato, Principles of AESA based IPM: Grow a healthy crop",
+          "url": "https://niphm.gov.in/IPMPackages/Tomato.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Prevention keys transcribe: \"Select a variety resistant/tolerant to major pests\"; \"Select healthy seeds and seedlings\"; \"Follow proper spacing\"; \"Soil health improvement (mulching and green manuring)\"; the nitrogen passage \"If the dosage of nitrogenous fertilizers is too high the crop becomes too succulent and therefore susceptible to insects and diseases\"; \"Proper irrigation\"; \"Crop rotation\". The seed-treatment bullet is not reproduced — it names pesticides."
+        },
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "AESA based IPM Package — Tomato, 'Observe the field regularly' and B. Field scouting",
+          "url": "https://niphm.gov.in/IPMPackages/Tomato.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "inspect keys transcribe: \"Monitor the field situation at least once a week (soil, water, plants, pests, natural enemies, weather factors etc.)\"; \"Surveillance on pest occurrence at the main field should commence soon after crop establishment after transplanting and at weekly intervals thereafter. In each of the fields, select five spots randomly. Select five random plants at each spot\"; and item 16 of the do/don't table, which names \"the undersurface of the leaves\" as the place mites and whiteflies sit."
+        }
+      ]
+    },
+    {
+      "code": "POTATO_LATE_BLIGHT",
+      "cropCode": "POTATO",
+      "names": { "en": "Late blight of potato", "hi": null, "hiVerified": false },
+      "publishedSymptoms": "TNAU: \"water soaked spots appear on leaves, increase in size, turn purple brown & finally black colour\"; \"white growth develops on under surface of leaves\"; the infection spreads to petioles, rachis and stems and \"frequently develops at nodes\" where \"stem breaks at these points and the plant topples over\"; in tubers purplish brown spots develop and \"the affected tuber show rusty brown necrosis spreading from surface to the center\". Epidemiology: \"RH->90%, Temp.-10-25°C and Night temperature:10°C\" with \"cloudness before rainfall and rainfall at least 0.1mm and subsequent days after rainfall\". Mode of spread: \"The infected tubers and the infected soil may serve as a source of primary infection\"; \"diseased tubers are mainly responsible for persistence of the disease from crop to crop\"; \"air borne infection is caused by the sporangia\". NIPHM adds: \"Affected leaves appear blistered as if scalded by hot water and eventually rot and dry out\"; \"When drying out, leaves turn brown or black in color. When infections are still active, spots appear on the underside of leaves blanketed in what looks like flour\"; \"Affected stems begin to blacken from their tips, and eventually dry out\"; \"Affected tubers display dry brown-colored spots on their skins and flesh. This disease acts very quickly. If it is not controlled, infected plants will die within two or three days.\" NIPHM favourable conditions: \"High humidity\", \"Low temperature and leaf wetness\".",
+      "symptomTags": [
+        "part:LEAF",
+        "part:STEM",
+        "part:ROOT",
+        "pattern:SPOTS",
+        "pattern:ROT",
+        "color:BROWN",
+        "color:BLACK",
+        "color:PURPLE",
+        "color:WHITE",
+        "weather:HIGH_HUMIDITY",
+        "weather:COOL_MOIST",
+        "weather:RAIN"
+      ],
+      "tagDerivation": "part:LEAF from \"water soaked spots appear on leaves\"; part:STEM from \"stem breaks at these points and the plant topples over\"; part:ROOT from the tuber symptoms (\"the affected tuber show rusty brown necrosis\") — the vocabulary has no part:TUBER member and ROOT is the only underground-part tag, which is a MAPPING DECISION, not a source claim (gap D7); pattern:SPOTS from \"water soaked spots\"; pattern:ROT from \"eventually rot and dry out\"; color:BROWN from \"purple brown\" and \"rusty brown necrosis\"; color:BLACK from \"finally black colour\"; color:PURPLE from \"turn purple brown\"; color:WHITE from \"white growth develops on under surface of leaves\"; weather:HIGH_HUMIDITY from \"RH->90%\" / \"High humidity\"; weather:COOL_MOIST from \"Low temperature and leaf wetness\" and \"Night temperature:10°C\"; weather:RAIN from \"rainfall at least 0.1mm\".",
+      "symptoms": [
+        "disease.POTATO_LATE_BLIGHT.symptom.1",
+        "disease.POTATO_LATE_BLIGHT.symptom.2",
+        "disease.POTATO_LATE_BLIGHT.symptom.3",
+        "disease.POTATO_LATE_BLIGHT.symptom.4",
+        "disease.POTATO_LATE_BLIGHT.symptom.5",
+        "disease.POTATO_LATE_BLIGHT.symptom.6"
+      ],
+      "inspect": [
+        "disease.POTATO_LATE_BLIGHT.inspect.1",
+        "disease.POTATO_LATE_BLIGHT.inspect.2",
+        "disease.POTATO_LATE_BLIGHT.inspect.3"
+      ],
+      "nextSteps": [
+        "disease.POTATO_LATE_BLIGHT.nextStep.1",
+        "disease.POTATO_LATE_BLIGHT.nextStep.2",
+        "disease.POTATO_LATE_BLIGHT.nextStep.3"
+      ],
+      "prevention": [
+        "disease.POTATO_LATE_BLIGHT.prevention.1",
+        "disease.POTATO_LATE_BLIGHT.prevention.2",
+        "disease.POTATO_LATE_BLIGHT.prevention.3",
+        "disease.POTATO_LATE_BLIGHT.prevention.4"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU (Tamil Nadu Agricultural University)",
+          "title": "TNAU Agritech Portal — Crop Protection :: Potato :: Late blight",
+          "url": "https://agritech.tnau.ac.in/crop_protection/crop_prot_crop%20diseases_veg_potato_1.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Causal organism Phytophthora infestans. Source of the leaf/stem/tuber symptom wording and of the epidemiology figures."
+        },
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "AESA based IPM Package — Potato, disease description 3) Late blight",
+          "url": "https://niphm.gov.in/IPMPackages/Potato.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of the 'scalded by hot water' blistering description, the flour-like underside sporulation, the speed-of-collapse warning used in inspect/nextSteps, and the survival statement \"The pathogen survives in plant debris in the soil. It spreads through soil and infected seed tubers.\""
+        },
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "AESA based IPM Package — Potato, Principles of AESA based IPM: Grow a healthy crop",
+          "url": "https://niphm.gov.in/IPMPackages/Potato.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of the prevention keys, including \"Select healthy seed/seedling/planting material tubers\" and \"Select a variety resistant/tolerant to major pests\". The package's variety table lists named late-blight-resistant Kufri varieties; no variety name is asserted here because variety availability is regional and was not verified."
+        }
+      ]
+    },
+    {
+      "code": "POTATO_EARLY_BLIGHT",
+      "cropCode": "POTATO",
+      "names": { "en": "Early blight of potato", "hi": null, "hiVerified": false },
+      "publishedSymptoms": "TNAU: \"Brown-black necrotic spot-angular, oval shape characterized by concentric rings\"; \"Several spot coalesce & spread all over the leaf\"; \"Shot holes on fruits\"; the disease occurs in both hills and plains. Favourable conditions: dry warm weather with intermittent rain, temperature range of 25-30°C, poor crop vigour and inadequate manuring. Survival: \"The conidia and the mycelium in the soil or in the debris of the affected plants can remain viable for more than 17 months\"; \"The conidia formed on the spots developed due to primary infection are disseminated by wind to long distances\". NIPHM adds: \"Normally the disease symptoms become apparent during tuber bulking stage and develop leading to the harvest\"; \"The early blight is first observed on the plants as small, black lesions mostly on the older foliage\"; \"Spots enlarge, and by the time they are one-fourth inch in diameter or larger, concentric rings in a bull's eye pattern can be seen in the center of the diseased area\"; \"Tissue surrounding the spots may turn yellow. If high temperature and humidity occur at this time, much of the foliage is killed\"; \"Lesions on the stems are similar to those on leaves, sometimes girdling the plant if they occur near the soil line\". NIPHM favourable conditions: \"Warm, rainy and wet weather\".",
+      "symptomTags": [
+        "part:LEAF",
+        "part:STEM",
+        "pattern:SPOTS",
+        "pattern:RINGS",
+        "color:BROWN",
+        "color:BLACK",
+        "color:YELLOW",
+        "distribution:LOWER_LEAVES",
+        "weather:HIGH_HUMIDITY",
+        "weather:RAIN"
+      ],
+      "tagDerivation": "part:LEAF from \"Several spot coalesce & spread all over the leaf\"; part:STEM from \"Lesions on the stems are similar to those on leaves\"; pattern:SPOTS from \"Brown-black necrotic spot\"; pattern:RINGS from \"characterized by concentric rings\" and \"concentric rings in a bull's eye pattern\"; color:BROWN and color:BLACK from \"Brown-black necrotic spot\"; color:YELLOW from \"Tissue surrounding the spots may turn yellow\"; distribution:LOWER_LEAVES from \"mostly on the older foliage\"; weather:HIGH_HUMIDITY from \"If high temperature and humidity occur\"; weather:RAIN from \"intermittent rain\" / \"Warm, rainy and wet weather\". NOT tagged: pattern:HOLES and part:FRUIT, although TNAU's potato page prints \"Shot holes on fruits\" — potato is not a fruit crop and the line appears to be carried over from a solanaceous fruit-crop page; see gap D12. NOT tagged weather:HOT_DRY, because TNAU's \"dry warm weather with intermittent rain\" and NIPHM's \"Warm, rainy and wet weather\" disagree and no adjudication was possible.",
+      "symptoms": [
+        "disease.POTATO_EARLY_BLIGHT.symptom.1",
+        "disease.POTATO_EARLY_BLIGHT.symptom.2",
+        "disease.POTATO_EARLY_BLIGHT.symptom.3",
+        "disease.POTATO_EARLY_BLIGHT.symptom.4",
+        "disease.POTATO_EARLY_BLIGHT.symptom.5"
+      ],
+      "inspect": [
+        "disease.POTATO_EARLY_BLIGHT.inspect.1",
+        "disease.POTATO_EARLY_BLIGHT.inspect.2",
+        "disease.POTATO_EARLY_BLIGHT.inspect.3"
+      ],
+      "nextSteps": [
+        "disease.POTATO_EARLY_BLIGHT.nextStep.1",
+        "disease.POTATO_EARLY_BLIGHT.nextStep.2"
+      ],
+      "prevention": [
+        "disease.POTATO_EARLY_BLIGHT.prevention.1",
+        "disease.POTATO_EARLY_BLIGHT.prevention.2",
+        "disease.POTATO_EARLY_BLIGHT.prevention.3",
+        "disease.POTATO_EARLY_BLIGHT.prevention.4"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "TNAU (Tamil Nadu Agricultural University)",
+          "title": "TNAU Agritech Portal — Crop Protection :: Potato :: Early blight",
+          "url": "https://agritech.tnau.ac.in/crop_protection/crop_prot_crop%20diseases_veg_potato_2.html",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Causal organism Alternaria solani. Source of the spot description, the 17-month debris survival figure and the 'poor crop vigor and inadequate manuring' condition used in prevention."
+        },
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "AESA based IPM Package — Potato, disease description 4) Early blight; and 'Grow a healthy crop'",
+          "url": "https://niphm.gov.in/IPMPackages/Potato.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Source of the older-foliage distribution, the tuber-bulking timing used in inspect.3, the stem lesions, and the generic healthy-crop prevention practices."
+        }
+      ]
+    },
+    {
+      "code": "POTATO_HEALTHY",
+      "cropCode": "POTATO",
+      "isHealthyClass": true,
+      "names": { "en": "Healthy potato plant", "hi": null, "hiVerified": false },
+      "publishedSymptoms": null,
+      "symptomTags": [],
+      "tagDerivation": "No tags. Healthy class — no published symptom description exists to derive tags from, and tagging it would let it compete in the symptom engine's weighted match against real diseases.",
+      "symptoms": [],
+      "inspect": ["disease.POTATO_HEALTHY.inspect.1", "disease.POTATO_HEALTHY.inspect.2"],
+      "nextSteps": [],
+      "prevention": [
+        "disease.POTATO_HEALTHY.prevention.1",
+        "disease.POTATO_HEALTHY.prevention.2",
+        "disease.POTATO_HEALTHY.prevention.3",
+        "disease.POTATO_HEALTHY.prevention.4",
+        "disease.POTATO_HEALTHY.prevention.5",
+        "disease.POTATO_HEALTHY.prevention.6"
+      ],
+      "expertThreshold": 0.4,
+      "sourceRefs": [
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "AESA based IPM Package — Potato, Principles of AESA based IPM: Grow a healthy crop",
+          "url": "https://niphm.gov.in/IPMPackages/Potato.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "Prevention keys transcribe: \"Select a variety resistant/tolerant to major pests\"; \"Select healthy seed/seedling/planting material tubers\"; \"Follow proper spacing\"; \"Soil health improvement (mulching and green manuring whereeve applicable)\" [sic]; the nitrogen passage; \"Proper irrigation\"; \"Crop rotation\". The seed-treatment bullet is not reproduced — it names pesticides."
+        },
+        {
+          "org": "NIPHM / DPPQS, Ministry of Agriculture & Farmers Welfare, Government of India",
+          "title": "AESA based IPM Package — Potato, 'Observe the field regularly'",
+          "url": "https://niphm.gov.in/IPMPackages/Potato.pdf",
+          "accessed": "2026-08-13",
+          "confidence": "P",
+          "note": "inspect keys transcribe \"Monitor the field situation at least once a week (soil, water, plants, pests, natural enemies, weather factors etc.)\" and \"Make decisions based on the field situation and Pest: Defender ratio (P: D ratio)\"."
+        }
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "id": "D1",
+      "field": "names.hi and every Hindi i18n value, all 18 codes",
+      "problem": "No Hindi-language official source was fetched in this pass. TNAU's crop-protection pages, the NIPHM AESA packages and the two non-Indian factsheets are all English-only.",
+      "checked": "TNAU Agritech Portal (no Hindi mirror of the crop-protection disease pages was located), niphm.gov.in/IPMPackages (the packages fetched are English), and the repo's own docs/i18n/agricultural-terminology.md, which covers the nine crop NAMES only and no disease names.",
+      "impact": "The disease KB cannot be served in Hindi. CLAUDE.md rule 8 requires zero hardcoded user-facing strings and human verification of agronomic Hindi; a machine translation of symptom text would be exactly the unverified agronomic Hindi the rule forbids.",
+      "resolution": "Every `names.hi` is null, every value in the `hi` block of i18n.diseases.part-rtp.json is null, and the file carries hiVerified:false. A Hindi-literate agronomist must author all of it. Note that Hindi disease names are the higher-risk half: symptom prose can be translated by a competent translator, but disease names are terms of art."
+    },
+    {
+      "id": "D2",
+      "field": "TOMATO_YELLOW_LEAF_CURL_VIRUS — the class code does not match the disease the Indian sources describe",
+      "problem": "The ML class code follows PlantVillage and names Tomato yellow leaf curl virus (TYLCV). Every Indian source fetched publishes the Indian disease as 'Tomato leaf curl virus (ToLCV)' — a distinct begomovirus complex. Both are transmitted by Bemisia tabaci and their field symptoms overlap heavily, but they are not the same virus, and the Indian sources' symptom emphasis is DOWNWARD rolling while TYLCV literature emphasises UPWARD curling.",
+      "checked": "TNAU tomato_diseases_6.html ('Leaf curl: Tomato leaf curl virus'); NIPHM Tomato IPM roster item 2.2 ('Tomato leaf curl virus (ToLCV)') and description 7) Leaf curl. Searched for an Indian official page naming TYLCV specifically — none found; the TYLCV-specific results were all US/EU extension or journal literature.",
+      "impact": "A model trained on the PlantVillage TYLCV class will be labelled, in the app, with an Indian disease name and Indian symptom text. That is arguably the RIGHT product decision for Indian farmers, but it is a substitution and must be a conscious one.",
+      "resolution": "names.en records the published Indian name; `classCodeCaveat` on the entry states the substitution explicitly. Needs a human decision before ship. Do NOT quietly rename the ML class."
+    },
+    {
+      "id": "D3",
+      "field": "TOMATO_SPIDER_MITES — no favourable-weather condition",
+      "problem": "The NIPHM tomato package prints 'Favourable conditions: Warm weather conditions are favourable for multiplication' immediately BEFORE the spider-mite section heading, i.e. it belongs to the preceding pest, not to mites. Attaching it to spider mites would have been a misattribution produced by PDF layout, not by the source.",
+      "checked": "pdftotext -layout extraction of niphm.gov.in/IPMPackages/Tomato.pdf, lines around the '5) Spider mites:' heading — the favourable-conditions block sits above the heading and below the previous pest's predator list.",
+      "impact": "TOMATO_SPIDER_MITES carries no weather tag, so it forfeits the weather term (weight 1) of the symptom engine's score. Hot dry weather is the classic driver of mite outbreaks, which would help discriminate mites from the fungal leaf spots, but it is not published in any source fetched here.",
+      "resolution": "No weather tag asserted. A sourced hot/dry condition from an Indian acarology or IPM source would materially improve this entry."
+    },
+    {
+      "id": "D4",
+      "field": "TOMATO_LEAF_MOLD — no Indian source, and no sourced management at all",
+      "problem": "TNAU's tomato disease index (12 diseases, updated Jun 2023) does not list leaf mould. The NIPHM tomato package does not list it either. Leaf mould is largely a protected-cultivation disease, which is probably why Indian field-crop extension omits it.",
+      "checked": "TNAU tomato index page and all 12 sub-pages reachable from it; NIPHM Tomato IPM disease roster (items 2.1-2.8) and 'VIII. Description of diseases' (10 entries); searched for ICAR-IIVR / SAU pages on tomato leaf mould — nothing official found. CABI Compendium was attempted for a datasheet and returned HTTP 403 after a redirect from cabi.org to cabidigitallibrary.org.",
+      "impact": "Symptoms rest entirely on two SECONDARY non-Indian sources (Cornell, INRAE). No treatment or disease-specific prevention is asserted at all — prevention falls back to the generic NIPHM healthy-crop list, and nextSteps is the KVK referral alone.",
+      "resolution": "Entry emitted with S-graded symptoms and no invented management. If the class must ship with Indian provenance, a protected-cultivation source (e.g. an ICAR-IIHR or SAU polyhouse tomato bulletin) has to be found."
+    },
+    {
+      "id": "D5",
+      "field": "TOMATO_TARGET_SPOT — no Indian extension source",
+      "problem": "No Indian extension page for target spot of tomato (Corynespora cassiicola) was located. The disease IS documented in India — a surveillance study across 2010-11 to 2016-17 in the Gangetic alluvial region of West Bengal reports 35-58% severity — but that is peer-reviewed literature, not extension guidance, and the only accessible copy was on ResearchGate.",
+      "checked": "TNAU tomato index (not listed); NIPHM Tomato IPM roster and description section (not listed); searches against ICAR/SAU domains; CABI datasheet 15467 (redirect to cabidigitallibrary.org, and the sibling CABI URL returned 403).",
+      "impact": "Symptoms rest on a SECONDARY non-Indian extension source (UF/IFAS). The published temperature band is in °F and was deliberately not converted, so it is not surfaced to farmers at all.",
+      "resolution": "Entry emitted with S-graded symptoms, generic prevention, KVK referral only. Needs an Indian source, or an explicit product decision to ship US extension symptomology for this class."
+    },
+    {
+      "id": "D6",
+      "field": "TOMATO_MOSAIC_VIRUS — the TNAU page contradicts itself on the causal virus",
+      "problem": "https://agritech.tnau.ac.in/crop_protection/tomato_diseases_12.html heads the entry 'Mosaic caused by Cucumber mosaic virus', gives the causal organism as 'Tomato Mosaic Virus', and then lists favourable conditions ending '...the virulence of the strain of CMV'. CMV and ToMV are different viruses with overlapping mosaic symptoms.",
+      "checked": "The TNAU page itself; NIPHM Tomato IPM roster item 2.8 'Tomato mosaic disease: Tomato Mosaic Virus' and its description section 8) Mosaic, which names no CMV.",
+      "impact": "If the TNAU page had been used alone, this entry could have carried CMV epidemiology under a ToMV class label.",
+      "resolution": "NIPHM is used as the PRIMARY symptom source because it names the agent unambiguously; TNAU is cited only as corroboration and for its management actions, with the contradiction recorded on the citation. Both sources' symptom lists agree, so the farmer-facing text is unaffected — but the contradiction should be reported to TNAU rather than silently carried."
+    },
+    {
+      "id": "D7",
+      "field": "symptomTags vocabulary — concepts published by the sources that have no tag",
+      "problem": "Five published, diagnostically important concepts have no member in the closed vocabulary: (a) MOULD or VELVETY FUNGAL GROWTH on a leaf surface — the single most diagnostic feature of tomato leaf mould, and also how potato/tomato late blight sporulation is described ('white growth', 'looks like flour'); pattern:POWDER was NOT reused for it, because POWDER denotes powdery mildew and reusing it would make leaf mould collide with the powdery-mildew classes another part of this KB will carry. (b) LEAF UNDERSIDE as a distribution — sources repeatedly say 'under surface of leaves', which the vocabulary cannot express. (c) GREEN as a colour — 'light and dark green mottling' (tomato mosaic) and 'bluish green flecks' (rice blast) cannot be coloured at all. (d) A part tag for GRAIN / PANICLE / GLUME — rice brown spot and blast both describe glume and panicle infection. (e) A part tag for TUBER.",
+      "checked": "The closed vocabulary as given in the task brief, against every publishedSymptoms block in this file.",
+      "impact": "TOMATO_LEAF_MOLD in particular loses its strongest discriminator and is left matching on generic 'yellow-brown spots on lower leaves', which collides with early blight and Septoria. TOMATO_MOSAIC_VIRUS carries no colour tag at all, forfeiting the colour term (weight 2). Rice glume/panicle symptoms and potato tuber symptoms are unreachable by the questionnaire.",
+      "resolution": "Nothing invented. Tuber symptoms were mapped to part:ROOT for POTATO_LATE_BLIGHT as the only available underground-part tag, and that mapping is labelled a decision rather than a source claim in that entry's tagDerivation. Recommend the vocabulary gain pattern:MOULD, distribution:LEAF_UNDERSIDE, color:GREEN, part:GRAIN and part:TUBER before this KB is relied on for the no-photo path."
+    },
+    {
+      "id": "D8",
+      "field": "RICE_TUNGRO ETL wording",
+      "problem": "The NIPHM rice ETL table prints the tungro threshold as '1 Tungro infected plants/m2 & 2 GLH/hill (in fungus endemic areas)'. Tungro is viral, not fungal; the parenthetical looks like a copy-paste from an adjacent fungal row.",
+      "checked": "pdftotext -layout of niphm.gov.in/IPMPackages/Rice.pdf, §3.1 ETL table, early-to-late-tillering block.",
+      "impact": "Low. The numeric thresholds are usable; only the parenthetical is suspect.",
+      "resolution": "The numbers are transcribed and the parenthetical is preserved verbatim in the citation note but is NOT surfaced to farmers."
+    },
+    {
+      "id": "D9",
+      "field": "NIPHM tomato package — stage-wise IPM table row attribution",
+      "problem": "The stage-wise practice table in the tomato package extracts from PDF with rows and columns interleaved: a 'Cultural control' bullet list can appear several lines away from the disease name it belongs to, and adjacent rows' text is spliced. Two practice blocks used here were attributed by reading the surrounding page structure rather than by an unambiguous heading.",
+      "checked": "Manual reading of the pdftotext -layout output around each block, cross-checked against the disease name printed nearest above it. The 'Field sanitation / Destruction of alternate hosts / Provide light irrigation' block sits under the row headed 'Alternaria blight and late blight'. The 'Conserve predators such as predatory mites (Phytoseiulus spp., Amblyseius spp.)...' block sits in the spider-mite row and its predator list is mite-specific, which corroborates the attribution.",
+      "impact": "If either attribution is wrong, a cultural practice is shown against the wrong disease. Both are low-harm, non-chemical, generally-good practices, but that is luck rather than design.",
+      "resolution": "Each affected citation names the row heading the block appeared under. A reviewer with the rendered PDF should confirm both. No practice whose row heading could not be read at all was used."
+    },
+    {
+      "id": "D10",
+      "field": "TOMATO_LATE_BLIGHT — TNAU prints 'Sporangia formed when RH is < 90%'",
+      "problem": "The TNAU tomato late-blight page lists as a favourable condition 'Sporangia formed when RH is < 90%'. Every other statement on the same page (and the potato late-blight page's 'RH->90%') points the other way; this reads as an inverted inequality.",
+      "checked": "https://agritech.tnau.ac.in/crop_protection/tomato_diseases_8.html against https://agritech.tnau.ac.in/crop_protection/crop_prot_crop%20diseases_veg_potato_1.html and the NIPHM potato package's 'High humidity'.",
+      "impact": "If surfaced, a farmer could be told sporulation needs LOW humidity, which would invert the weather advice for the fastest-moving disease in this file.",
+      "resolution": "The line is recorded in publishedSymptoms and in the citation note for the record, but is NOT rendered into any farmer-facing i18n string, and weather:HIGH_HUMIDITY was NOT tagged from it (the tags come from 'Cool nights, warm days and extended wet conditions' instead). Needs TNAU verification."
+    },
+    {
+      "id": "D11",
+      "field": "TOMATO_LATE_BLIGHT — no NIPHM description section",
+      "problem": "The NIPHM tomato package lists late blight in its disease roster (2.4) but its 'VIII. Description of diseases' section jumps from bacterial leaf spot to bacterial wilt with no late-blight entry. The symptom description therefore rests on the TNAU page alone, with no Indian second source.",
+      "checked": "Full enumeration of the description section in the pdftotext output: damping off, Septoria leaf spot, bacterial stem and fruit canker, early blight, bacterial leaf spot, bacterial wilt, leaf curl, mosaic, spotted wilt, Fusarium wilt. No late blight.",
+      "impact": "Single-source symptomology for one of the two highest-consequence tomato diseases in the roster.",
+      "resolution": "Recorded. The NIPHM potato late-blight description WAS available and is cited on POTATO_LATE_BLIGHT; the same pathogen's tomato description should be sourced from a second Indian page before ship."
+    },
+    {
+      "id": "D12",
+      "field": "POTATO_EARLY_BLIGHT — TNAU prints 'Shot holes on fruits'",
+      "problem": "The TNAU potato early-blight page lists 'Shot holes on fruits' among the symptoms. Potato is a tuber crop; farmers do not inspect potato fruit. The line appears to be carried over from a solanaceous fruit-crop page.",
+      "checked": "https://agritech.tnau.ac.in/crop_protection/crop_prot_crop%20diseases_veg_potato_2.html; compared against the NIPHM potato early-blight description, which describes leaf, stem and tuber only and never mentions fruit or shot holes.",
+      "impact": "Tagging part:FRUIT and pattern:HOLES from this line would have made POTATO_EARLY_BLIGHT match a farmer answering 'holes in fruit' — a wrong answer produced by a source typo.",
+      "resolution": "The line is preserved verbatim in publishedSymptoms but is NOT tagged and NOT rendered into any farmer-facing string."
+    },
+    {
+      "id": "D13",
+      "field": "nextSteps — every disease whose source recommends chemical control",
+      "problem": "Every TNAU and NIPHM page used here publishes fungicide, bactericide, acaricide or insecticide recommendations, most with product names and rates (e.g. rice blast, rice brown spot, rice BLB, rice tungro, tomato early/late blight, tomato leaf curl, tomato spider mites, potato early/late blight).",
+      "checked": "Each cited page was read in full; the chemical blocks are noted in each sourceRef's `note` so a reviewer can see that they exist and were deliberately dropped.",
+      "impact": "The KB gives a farmer facing an active epidemic no chemical option, which for potato late blight ('infected plants will die within two or three days') is a real limitation of the product, not a data gap.",
+      "resolution": "docs/ai/ai-safety.md rule 3 is absolute: no dosage generation anywhere. Each affected entry carries a nextStep key routing the farmer to KVK / Kisan Call Centre 1800-180-1551. No product name, active ingredient, concentration or rate appears anywhere in this file or its companion. The one number reproduced from a management block is a yellow-sticky-trap density (traps per acre), which is a device count, not a dose."
+    },
+    {
+      "id": "D14",
+      "field": "Healthy classes — 'what healthy looks like' is not published anywhere",
+      "problem": "No source fetched describes a healthy rice, tomato or potato plant. Extension material describes disease, never health. Writing 'a healthy plant has uniformly green leaves with no spots' would have been an invented description built by negating the disease entries.",
+      "checked": "TNAU crop-protection pages (disease-only by construction); all three NIPHM AESA packages — the closest published material is the AESA/scouting methodology and the 'Grow a healthy crop' principle list, both of which describe what the FARMER should DO, not what a healthy plant LOOKS like.",
+      "impact": "The healthy classes cannot tell a farmer 'this is what a healthy leaf looks like'. They can only tell them how to inspect and what to keep doing.",
+      "resolution": "inspect keys for the three healthy classes carry the published observation methodology (weekly monitoring, five random spots and five plants per spot for tomato, leaf undersides, morning AESA before 9 a.m. for rice, ETL thresholds for rice) and prevention carries the published 'Grow a healthy crop' practices. Nothing about leaf appearance is asserted. If a visual healthy-plant description is wanted, it must be authored by an agronomist and marked as such."
+    },
+    {
+      "id": "D15",
+      "field": "expertThreshold — 0.4 for all 18",
+      "problem": "No source publishes anything resembling a symptom-match confidence threshold; 0.4 is the CropRegistry schema default and matches the 'score <0.4 → contact KVK/Kisan Call Centre' rule already written into docs/ai/fallback-strategy.md.",
+      "checked": "docs/ai/fallback-strategy.md §Mechanism item 3; backend/src/models/CropRegistry.js diseaseSchema.",
+      "impact": "None yet. But diseases with weak tag sets (TOMATO_LEAF_MOLD, TOMATO_MOSAIC_VIRUS — see D7) will systematically score lower, so a uniform threshold routes them to a human more often than better-tagged diseases. That is the safe direction of failure, and is noted rather than tuned.",
+      "resolution": "Left at the default for every entry. Any per-disease value would be an invented number."
+    },
+    {
+      "id": "D16",
+      "field": "TLS and availability of agritech.tnau.ac.in",
+      "problem": "The host is intermittently unreliable. Two fetches failed with 'certificate has expired' and succeeded on retry minutes later (rice_1.html, cpdisblast.html, tomato_diseases_10.html). The www. variant fails outright: 'Hostname/IP does not match certificate's altnames: Host: www.agritech.tnau.ac.in is not in the cert's altnames: DNS:agritech.tnau.ac.in'. Separately, cpri.icar.gov.in did not resolve at all ('getaddrinfo ENOTFOUND'), so the ICAR-CPRI potato disease manual could not be fetched and TNAU + NIPHM were used for potato instead.",
+      "checked": "Every fetch in this pass. Also note the TNAU tomato index numbering is unreliable: the index lists tomato_diseases_9.html as 'Leaf Curl', but that URL serves bacterial stem and fruit canker; the real leaf-curl page is tomato_diseases_6.html, which the index labels 'Bacterial Canker'.",
+      "impact": "Any automated re-verification of these citations will see intermittent failures that are not evidence the content changed. The index/URL mismatch means a future researcher following the index alone would cite the wrong page for leaf curl.",
+      "resolution": "Recorded, mirroring gap L8 in crops.limited.proposal.json. Every URL in this file was fetched and its CONTENT verified against the disease it is cited for — the index labels were not trusted. Retry on 'certificate has expired'; never use the www. prefix. ICAR-CPRI should be retried for potato when DNS resolves."
+    }
+  ]
+}

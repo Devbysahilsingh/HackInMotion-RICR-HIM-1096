@@ -1,0 +1,6 @@
+{
+  "bodyOutbreakHigh": "{{reportCount}} farmers in {{district}} have reported this on {{cropCode}} in the past week. Check your crop now.",
+  "bodyOutbreakInfo": "{{reportCount}} farmers in {{district}} have reported this on {{cropCode}} in the past week. Worth checking your crop.",
+  "titleOutbreakHigh": "Widespread reports near you",
+  "titleOutbreakInfo": "Reports near you"
+}

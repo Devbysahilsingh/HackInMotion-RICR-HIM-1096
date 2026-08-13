@@ -17,4 +17,15 @@ description = "Template and detector-source files whose contents are placeholder
 paths = [
   '''\.env\.example$''',
   '''^scripts/scan-staged-secrets\.mjs$''',
+  # Installed third-party dependencies. These are gitignored, so a `gitleaks
+  # detect` over the *committed* history never sees them; a `--no-git` sweep of
+  # the working tree does, and reports test vectors inside numpy, protobuf and
+  # onnxruntime as generic API keys. Excluding them is not a weakening: nothing
+  # under these paths can ever be committed, and scanning vendor code we do not
+  # author tells us nothing about our own secret hygiene.
+  #
+  # Scoped to the dependency directories by name rather than by a broad pattern,
+  # so a file of ours that merely sits near one is still scanned.
+  '''(^|/)node_modules/''',
+  '''(^|/)\.venv/''',
 ]

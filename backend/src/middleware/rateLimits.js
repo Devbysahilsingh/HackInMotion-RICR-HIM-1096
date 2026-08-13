@@ -9,7 +9,13 @@
  */
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 
-import { AUDIT_EVENTS } from '../config/constants.js';
+import {
+  AUDIT_EVENTS,
+  HEALTH_ANALYZE_BURST_LIMIT,
+  HEALTH_ANALYZE_BURST_WINDOW_MS,
+  HEALTH_ANALYZE_DAILY_LIMIT,
+  SYMPTOM_CHECK_DAILY_LIMIT,
+} from '../config/constants.js';
 import { isTest } from '../config/env.js';
 import { auditService } from '../services/auditService.js';
 import { storedUserAgent } from '../utils/clientContext.js';
@@ -116,3 +122,25 @@ export const irrigationLogLimiter = perUserDaily(10);
 
 /** docs/api/intelligence.md: "POST /crop-recommendation | Auth · 20/day". */
 export const cropRecommendationLimiter = perUserDaily(20);
+
+/**
+ * Crop-health analysis: "RL 10/day/user + 3/min burst" (docs/api/crop-health.md).
+ *
+ * Two buckets rather than one, because they defend different things. The daily
+ * cap is a quota guard — 10 analyses sit far below the Gemini free tier's 1,500
+ * requests/day, so no plausible user can exhaust the shared allowance. The
+ * burst cap is an abuse guard: a script uploading as fast as it can would spend
+ * a day's quota in seconds and, more to the point, would tie up the image
+ * pipeline. Both are mounted, in order, on the analyze route.
+ */
+export const healthAnalyzeDailyLimiter = perUserDaily(HEALTH_ANALYZE_DAILY_LIMIT);
+
+export const healthAnalyzeBurstLimiter = rateLimit({
+  ...baseOptions,
+  windowMs: HEALTH_ANALYZE_BURST_WINDOW_MS,
+  limit: HEALTH_ANALYZE_BURST_LIMIT,
+  keyGenerator: (req) => req.auth?.userId ?? ipKeyGenerator(req.ip),
+});
+
+/** docs/api/crop-health.md: "POST /crop-health/symptom-check | Auth · RL 30/day". */
+export const symptomCheckLimiter = perUserDaily(SYMPTOM_CHECK_DAILY_LIMIT);

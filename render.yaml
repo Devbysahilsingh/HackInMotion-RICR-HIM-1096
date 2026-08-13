@@ -44,20 +44,54 @@ services:
       - key: CORS_ORIGINS
         sync: false
 
-      # ── Consumed by subsystems that land in later phases ──────────────
-      # Add these to the dashboard as each phase ships; the env schema only
-      # requires a variable once the code that reads it exists. Every one of
-      # them is a secret, so declare each with `sync: false` when you move it
-      # out of this comment.
-      #   GEMINI_API_KEY, OPENROUTER_API_KEY, GROQ_API_KEY,
-      #   CLOUDINARY_URL, ML_SERVICE_URL
+      # ── Optional even in production ───────────────────────────────────
+      # Everything below is declared so Render prompts for it, but NONE of it
+      # blocks a boot: each subsystem is designed to degrade honestly rather
+      # than fail. Leave a value blank in the dashboard and the feature reports
+      # its own absence (docs/deployment/environment.md).
       #
-      # Phase 2 (shipped) — all three are OPTIONAL even in production, so a
-      # deploy without them boots and degrades honestly rather than failing:
-      # weather runs on the keyless Open-Meteo primary (ADR-007 — there is no
-      # OPENMETEO_* variable by design), and market ingest reports
+      # Phase 2 — weather runs on the keyless Open-Meteo primary (ADR-007:
+      # there is no OPENMETEO_* variable by design), and market ingest reports
       # `skipped: 'not_configured'` and serves seeded history (OD-5).
-      #   OPENWEATHER_API_KEY, DATAGOVIN_API_KEY, DATAGOVIN_RESOURCE_ID
+      - key: OPENWEATHER_API_KEY
+        sync: false
+      - key: DATAGOVIN_API_KEY
+        sync: false
+      - key: DATAGOVIN_RESOURCE_ID
+        sync: false
+
+      # Phase 3 — the crop-health chain terminates in a LOCAL rule engine, so
+      # every tier above it may be absent. CLOUDINARY_URL is the one with no
+      # fallback (an upload has nothing to degrade to); without it an analyze
+      # request answers UPLOAD_ERROR / errors.uploadStorageUnavailable rather
+      # than 500. CLOUDINARY_URL is shape-validated at boot, so a truncated
+      # paste fails here rather than at the first farmer upload.
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: CLOUDINARY_URL
+        sync: false
+      - key: ML_SERVICE_URL
+        sync: false
+
+      # Operator kill switches. Unlike FORCE_FAIL_*, these ARE honoured in
+      # production — that is the point: shed a quota-exhausted or misbehaving
+      # tier without a redeploy. Routing-only; no value of any of them touches
+      # auth, ownership, validation or rate limiting.
+      - key: DISABLE_ML
+        value: 'false'
+      - key: DISABLE_GEMINI
+        value: 'false'
+      - key: DISABLE_OPENROUTER
+        value: 'false'
+
+      # ── Not yet consumed by any code ──────────────────────────────────
+      #   GROQ_API_KEY — P2 voice transcription. Add with `sync: false` when
+      #   the subsystem lands; declaring it now would prompt for a secret that
+      #   nothing reads.
       #
-      # FORCE_FAIL_* / DISABLE_* failure-injection flags belong on a staging
+      # FORCE_FAIL_* / FORCE_SLOW_* failure-injection flags belong on a staging
       # service ONLY and must be absent in production (production checklist).
+      # They are inert in production regardless — `isProd` short-circuits every
+      # read — but the checklist asserts their absence as defence in depth.

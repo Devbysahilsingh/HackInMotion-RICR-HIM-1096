@@ -37,10 +37,34 @@ const kcStageSchema = new Schema(
   { _id: false },
 );
 
+/**
+ * Disease names, deliberately NOT `localizedNameSchema`.
+ *
+ * That schema requires both languages, which is right for a crop name — those
+ * came from a bilingual Government of India document. Disease names did not:
+ * the sourced KB is TNAU/ICAR/NIPHM extension material published in English,
+ * and CLAUDE.md rule 8 forbids translating agronomic terms without human
+ * verification. Requiring `hi` here would leave exactly two options, both bad —
+ * drop the entire disease KB, or invent Hindi disease names.
+ *
+ * So `hi` is nullable and `hiVerified` travels with it. A null is a visible,
+ * queryable gap that the seed prints and `dataGaps` records; a fabricated
+ * translation would be invisible and wrong. ADR-021 already gates cotton's
+ * *ship* on bilingual KB entries, and that gate now has something to read.
+ */
+const diseaseNameSchema = new Schema(
+  {
+    en: { type: String, required: true, trim: true },
+    hi: { type: String, default: null, trim: true },
+    hiVerified: { type: Boolean, default: false },
+  },
+  { _id: false },
+);
+
 const diseaseSchema = new Schema(
   {
     code: { type: String, required: true, uppercase: true, trim: true },
-    names: { type: localizedNameSchema, required: true },
+    names: { type: diseaseNameSchema, required: true },
     /** i18n key arrays — the API never returns display prose. */
     symptoms: { type: [String], default: [] },
     inspect: { type: [String], default: [] },

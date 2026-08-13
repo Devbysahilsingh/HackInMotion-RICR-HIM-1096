@@ -1,0 +1,14 @@
+# Packaging is not the point here — the service ships as a container, not a
+# wheel. This file exists to give pytest a rootdir and an import path.
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+# `importmode=importlib` + rootdir on sys.path lets tests import both `app.*`
+# and `tests.conftest` helpers without an installed package or a stray
+# __init__.py in tests/.
+addopts = "-q --strict-markers --strict-config"
+pythonpath = ["."]
+filterwarnings = [
+    "error::DeprecationWarning:app.*",
+]

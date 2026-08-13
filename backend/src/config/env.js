@@ -75,6 +75,48 @@ const envSchema = z.object({
    * the dataset but publishes no id).
    */
   DATAGOVIN_RESOURCE_ID: z.string().min(1).optional(),
+
+  /**
+   * Phase 3 providers and storage.
+   *
+   * All four stay **optional even in production**, for the same reason the
+   * Phase 2 keys do: the crop-health chain is designed so that every tier can
+   * be absent and the request still answers. Requiring a key would convert a
+   * designed degraded mode into a boot failure, and the terminal rule engine is
+   * local — it needs no key at all.
+   *
+   * The one thing that is NOT optional is honesty: each integration reports its
+   * own absence as a tier-down with a reason, and `/healthz` shows which tiers
+   * are configured, so "no Gemini key" never looks like "Gemini said UNKNOWN".
+   */
+  GEMINI_API_KEY: z.string().min(1).optional(),
+  OPENROUTER_API_KEY: z.string().min(1).optional(),
+  /**
+   * `cloudinary://<key>:<secret>@<cloud>`. Shape-checked rather than merely
+   * non-empty so a truncated paste fails at boot instead of at the first upload
+   * — the SDK would otherwise accept it and fail per-request with a provider
+   * error the farmer sees.
+   */
+  CLOUDINARY_URL: z
+    .string()
+    .refine(
+      (value) => /^cloudinary:\/\/[^:]+:[^@]+@[^/@\s]+$/.test(value),
+      'must look like cloudinary://<key>:<secret>@<cloud-name>',
+    )
+    .optional(),
+  ML_SERVICE_URL: z.string().url().optional(),
+
+  /**
+   * Kill switches (docs/security/ai-security.md).
+   *
+   * Unlike the FORCE_FAIL_* injection flags these ARE honoured in production —
+   * that is the point: they exist so an operator can shed a misbehaving or
+   * quota-exhausted tier without a redeploy. They are still routing-only; no
+   * flag can weaken auth, ownership, validation or rate limiting (rule 2).
+   */
+  DISABLE_ML: z.enum(['true', 'false']).default('false'),
+  DISABLE_GEMINI: z.enum(['true', 'false']).default('false'),
+  DISABLE_OPENROUTER: z.enum(['true', 'false']).default('false'),
 });
 
 /**
@@ -103,6 +145,24 @@ export const corsOrigins = env.CORS_ORIGINS.split(',')
 
 export const isProd = env.NODE_ENV === 'production';
 export const isTest = env.NODE_ENV === 'test';
+
+/**
+ * Which analysis tiers are configured at all.
+ *
+ * Read by `/healthz` and by the conductor, so "not configured" and "tried and
+ * failed" stay distinguishable in both the logs and the operator's view. A
+ * disabled tier reports as unconfigured for routing purposes but is reported
+ * separately here so an operator can tell a missing key from a pulled switch.
+ */
+export const tierConfig = () => ({
+  ml: { configured: Boolean(env.ML_SERVICE_URL), disabled: env.DISABLE_ML === 'true' },
+  gemini: { configured: Boolean(env.GEMINI_API_KEY), disabled: env.DISABLE_GEMINI === 'true' },
+  openrouter: {
+    configured: Boolean(env.OPENROUTER_API_KEY),
+    disabled: env.DISABLE_OPENROUTER === 'true',
+  },
+  storage: { configured: Boolean(env.CLOUDINARY_URL), disabled: false },
+});
 
 /**
  * Secrets are optional in development so local scaffolding is not blocked on

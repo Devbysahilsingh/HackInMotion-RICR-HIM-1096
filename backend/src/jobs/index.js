@@ -21,7 +21,9 @@ import { runWeatherRefresh, WEATHER_JOB_NAME } from './weatherRefresh.js';
 import { runMarketRefresh, MARKET_JOB_NAME } from './marketRefresh.js';
 import { runFeedRefresh, FEED_JOB_NAME } from './feedRefresh.js';
 import { runExpiry, EXPIRY_JOB_NAME } from './expiry.js';
+import { runCommunityAggregate, COMMUNITY_JOB_NAME } from './communityAggregate.js';
 import {
+  COMMUNITY_AGGREGATION_INTERVAL_MS,
   FEED_REFRESH_INTERVAL_MS,
   MARKET_REFRESH_INTERVAL_MS,
   WEATHER_REFRESH_INTERVAL_MS,
@@ -76,6 +78,14 @@ export const JOBS = [
     name: FEED_JOB_NAME,
     everyMs: FEED_REFRESH_INTERVAL_MS,
     handler: ({ now }) => runFeedRefresh({ asOf: now }).then((r) => record(FEED_JOB_NAME, r)),
+  },
+  {
+    // Runs before expiry so a window that closed this tick is aggregated and
+    // then lapsed in the same pass, rather than lingering a full cycle.
+    name: COMMUNITY_JOB_NAME,
+    everyMs: COMMUNITY_AGGREGATION_INTERVAL_MS,
+    handler: ({ now }) =>
+      runCommunityAggregate({ asOf: now }).then((r) => record(COMMUNITY_JOB_NAME, r)),
   },
   {
     name: EXPIRY_JOB_NAME,

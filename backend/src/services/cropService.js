@@ -18,6 +18,8 @@ import {
   Recommendation,
 } from '../models/index.js';
 import { AppError, validationError } from '../utils/errors.js';
+import { destroyImage } from '../integrations/cloudinary.js';
+import { logger } from '../utils/logger.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -100,13 +102,47 @@ export async function assertFarmHasCapacity(farmId, excludeCropId) {
  * unreachable but harmless, whereas deleting the parent first would leave
  * children permanently unattributable.
  */
-export async function deleteCropCascade(cropId, userId) {
+export async function deleteCropCascade(cropId, userId, { destroy = destroyImage } = {}) {
   // `userId` is carried on every filter as defence in depth, matching the farm
   // cascade. The crop was already ownership-checked by loadOwned, but a child
   // collection could one day accept a client-named cropId — at which point a
   // cropId-only filter becomes a cross-user delete.
   await IrrigationLog.deleteMany({ cropId, userId });
+
+  // Health logs own remote assets, so the images are destroyed before the rows
+  // that point at them — otherwise the publicIds are gone and every photograph
+  // is orphaned in the Cloudinary account forever, with nothing left in the
+  // database to find them by. `imagePublicId` is `select: false`, so it has to
+  // be asked for explicitly.
+  const healthLogs = await CropHealthLog.find({ cropId, userId }).select('+imagePublicId').lean();
+  await destroyImages(
+    healthLogs.map((log) => log.imagePublicId),
+    destroy,
+  );
+
   await CropHealthLog.deleteMany({ cropId, userId });
   await Recommendation.deleteMany({ cropId, userId });
   await Crop.deleteOne({ _id: cropId, userId });
+}
+
+/**
+ * Best-effort remote cleanup.
+ *
+ * Deliberately never throws and never blocks the delete: a farmer removing a
+ * crop must succeed even when the image host is down. An asset we could not
+ * remove is a storage-quota problem to be reconciled later; a half-deleted crop
+ * is a correctness problem the farmer sees immediately.
+ */
+async function destroyImages(publicIds, destroy) {
+  const results = await Promise.allSettled(
+    publicIds.filter(Boolean).map((publicId) => destroy(publicId)),
+  );
+
+  const failed = results.filter(
+    (result) => result.status === 'rejected' || result.value?.ok === false,
+  ).length;
+
+  if (failed) {
+    logger.warn({ failed, total: publicIds.length }, 'some crop images could not be removed');
+  }
 }
