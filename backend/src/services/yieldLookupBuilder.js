@@ -31,39 +31,28 @@
  * is the smallest sample for which a median is not simply one of the endpoints.
  */
 
-export const LOOKBACK_YEARS = 5;
-export const MIN_OBSERVATIONS = 3;
-
-/** The fallback ladder, in order. Consumed by the engine and the UI alike. */
-export const TIERS = Object.freeze({
-  DISTRICT_SEASON: 'DISTRICT_SEASON',
-  DISTRICT_ANNUAL: 'DISTRICT_ANNUAL',
-  STATE_SEASON: 'STATE_SEASON',
-  STATE: 'STATE',
-});
-
-/** Which published rows a `DISTRICT_ANNUAL` entry was built from. */
-export const ANNUAL_BASIS = Object.freeze({
-  WHOLE_YEAR: 'WHOLE_YEAR',
-  TOTAL: 'TOTAL',
-});
-
 /**
- * Lookup-key normalization for place names.
- *
- * Uppercased, whitespace collapsed, non-alphanumerics stripped — so "Ananth­
- * apuramu", "ANANTHAPURAMU" and "Ananthapuramu " are one key. **Exact match
- * only.** No fuzzy matching, no edit distance, no phonetic keys: the source
- * carries post-rename district names (Ananthapuramu, Dharashiv, Ahilyanagar)
- * and a farmer may well have typed the older one. A near-match would silently
- * attribute another district's harvest history to their field, which is worse
- * than falling through to the state tier and saying so.
+ * The tier names, key shapes and window policy live in the engine layer
+ * (`engines/yield/lookupSchema.js`), not here, because the pure resolver needs
+ * them and an engine may not import from `services/`. Re-exported so the build
+ * script and the tests keep one import site, and so the writer and the reader
+ * of this artefact can never disagree about what a tier is called.
  */
-export const geoKey = (value) =>
-  String(value ?? '')
-    .trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9]+/g, '');
+export {
+  ANNUAL_BASIS,
+  LOOKBACK_YEARS,
+  MIN_OBSERVATIONS,
+  TIERS,
+  geoKey,
+} from '../engines/yield/lookupSchema.js';
+
+import {
+  ANNUAL_BASIS,
+  LOOKBACK_YEARS,
+  MIN_OBSERVATIONS,
+  TIERS,
+  geoKey,
+} from '../engines/yield/lookupSchema.js';
 
 const median = (values) => {
   const s = [...values].sort((a, b) => a - b);
