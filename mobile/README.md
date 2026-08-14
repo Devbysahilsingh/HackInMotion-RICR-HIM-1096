@@ -162,8 +162,23 @@ Work through these in order.
 `http://<laptop-ip>:4000/healthz` in the phone's browser. JSON means the path
 is clear and Expo will work. The script prints this URL.
 
-**2. Windows Firewall.** If the API answers on `127.0.0.1` but not on the LAN
-address, inbound traffic is blocked. Once, from an **admin** PowerShell:
+**2. Windows Firewall.** `npm run lan` checks this and prints the fix if it is
+missing. The failure mode is worth understanding, because it recurs:
+
+Windows writes its "allow node" rules against the **full path** of the
+`node.exe` that was running when you clicked Allow. Switch node versions - nvm,
+nvm4w, a fresh installer - and the running binary lives at a different path, so
+every one of those rules silently stops applying. Nothing in the project
+changed; the phone just stops reaching the API. A real example from this repo:
+
+```
+rules allowed : C:\program files\nodejs\node.exe
+                C:\users\<you>\appdata\local\nvm\v20.20.2\node.exe
+actually ran  : C:\nvm4w\nodejs\node.exe        <- covered by neither
+```
+
+Fix it once, from an **admin** PowerShell. Use **port** rules, not program
+rules, so they survive the next version switch:
 
 ```powershell
 New-NetFirewallRule -DisplayName "Khetri dev API 4000"  -Direction Inbound -Protocol TCP -LocalPort 4000 -Action Allow -Profile Any

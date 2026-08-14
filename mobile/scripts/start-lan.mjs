@@ -113,6 +113,52 @@ function candidates() {
   return out;
 }
 
+/**
+ * Whether Windows Firewall has any inbound rule that would let a phone in.
+ *
+ * The trap this catches is specific and easy to miss: Windows creates its
+ * "allow node" rules against the **full path** of whichever node.exe was
+ * running when you clicked Allow. Switch node versions — nvm-windows, nvm4w, a
+ * fresh installer — and the running binary lives somewhere else, so every one
+ * of those rules silently stops applying. Nothing changes in the app, the
+ * bundler still works if its bundle is cached, and the API just stops being
+ * reachable.
+ *
+ * Checked by port as well as by program, because a port rule is what survives
+ * the next version switch.
+ *
+ * @returns {Promise<{checked: boolean, allowed: boolean}>}
+ */
+async function firewallAllows(ports) {
+  if (process.platform !== 'win32') return { checked: false, allowed: true };
+
+  const { execFile } = await import('node:child_process');
+  const script = `
+    $exe = '${process.execPath.replace(/\\/g, '\\\\')}'
+    $byProgram = Get-NetFirewallApplicationFilter -ErrorAction SilentlyContinue |
+      Where-Object { $_.Program -ieq $exe } |
+      ForEach-Object { $_ | Get-NetFirewallRule -ErrorAction SilentlyContinue } |
+      Where-Object { $_.Direction -eq 'Inbound' -and $_.Enabled -eq 'True' -and $_.Action -eq 'Allow' }
+    $byPort = Get-NetFirewallPortFilter -ErrorAction SilentlyContinue |
+      Where-Object { $_.LocalPort -in @(${ports.map((p) => `'${p}'`).join(',')}) } |
+      ForEach-Object { $_ | Get-NetFirewallRule -ErrorAction SilentlyContinue } |
+      Where-Object { $_.Direction -eq 'Inbound' -and $_.Enabled -eq 'True' -and $_.Action -eq 'Allow' }
+    if ($byProgram -or $byPort) { 'ALLOWED' } else { 'NONE' }
+  `;
+
+  return new Promise((resolve) => {
+    execFile(
+      'powershell',
+      ['-NoProfile', '-NonInteractive', '-Command', script],
+      { timeout: 12_000, windowsHide: true },
+      (err, stdout) => {
+        if (err) return resolve({ checked: false, allowed: true });
+        resolve({ checked: true, allowed: String(stdout).includes('ALLOWED') });
+      },
+    );
+  });
+}
+
 async function reachable(url, timeoutMs = 2500) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -195,6 +241,34 @@ async function main() {
     );
     process.exitCode = 1;
     return;
+  }
+
+  const firewall = await firewallAllows([API_PORT, METRO_PORT]);
+  if (firewall.checked && !firewall.allowed) {
+    console.error(
+      [
+        '',
+        '  ── Windows Firewall will block the phone ───────────────────────────',
+        '',
+        `  No inbound rule covers this node binary or ports ${API_PORT}/${METRO_PORT}:`,
+        `    ${process.execPath}`,
+        '',
+        '  Windows writes its "allow node" rules against the FULL PATH of the',
+        '  node.exe that was running when you clicked Allow. Switching node',
+        '  versions moves that path, and every one of those rules silently stops',
+        '  applying — which is why this can break without you changing anything.',
+        '',
+        '  Fix it once, in an ADMIN PowerShell. These are port rules, so they',
+        '  survive the next node version switch:',
+        '',
+        `    New-NetFirewallRule -DisplayName "Khetri dev API ${API_PORT}" -Direction Inbound -Protocol TCP -LocalPort ${API_PORT} -Action Allow -Profile Any`,
+        `    New-NetFirewallRule -DisplayName "Khetri dev Metro ${METRO_PORT}" -Direction Inbound -Protocol TCP -LocalPort ${METRO_PORT} -Action Allow -Profile Any`,
+        '',
+        '  -Profile Any matters: Windows classifies most shared networks as',
+        '  Public, and a rule scoped to Private alone will not apply there.',
+        '',
+      ].join('\n'),
+    );
   }
 
   /*
