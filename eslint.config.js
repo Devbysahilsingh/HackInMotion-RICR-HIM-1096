@@ -37,7 +37,15 @@ export default [
 
   // ── Backend: Node, JavaScript ESM (ADR-019) ──────────────────────────────
   {
-    files: ['backend/**/*.js', 'backend/**/*.mjs', 'scripts/**/*.mjs', 'scripts/**/*.js'],
+    files: [
+      'backend/**/*.js',
+      'backend/**/*.mjs',
+      'scripts/**/*.mjs',
+      'scripts/**/*.js',
+      // mobile/scripts holds dev tooling that runs under Node, not React
+      // Native — the mobile block below would give it browser globals.
+      'mobile/scripts/**/*.mjs',
+    ],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'module',
@@ -54,7 +62,12 @@ export default [
 
   // Standalone tooling scripts print to stdout by design.
   {
-    files: ['scripts/**/*.mjs', 'scripts/**/*.js', 'backend/scripts/**/*.mjs'],
+    files: [
+      'scripts/**/*.mjs',
+      'scripts/**/*.js',
+      'backend/scripts/**/*.mjs',
+      'mobile/scripts/**/*.mjs',
+    ],
     rules: { 'no-console': 'off' },
   },
 

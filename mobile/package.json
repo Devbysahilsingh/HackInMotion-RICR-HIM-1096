@@ -7,7 +7,9 @@
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
-    "lan": "expo start --lan",
+    "lan": "node scripts/start-lan.mjs",
+    "lan:check": "node scripts/start-lan.mjs --check",
+    "lan:raw": "expo start --lan",
     "tunnel": "expo start --tunnel",
     "typecheck": "tsc --noEmit",
     "test": "jest",
