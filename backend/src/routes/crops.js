@@ -22,6 +22,8 @@ import { requireAuth } from '../middleware/requireAuth.js';
 import { uploadImage, uploadRejection } from '../middleware/uploadImage.js';
 import { validate } from '../middleware/validate.js';
 import { Crop, CropRegistry, Farm } from '../models/index.js';
+import { runFeedRefresh } from '../jobs/feedRefresh.js';
+import { logger } from '../utils/logger.js';
 import {
   assertAreaWithinFarm,
   assertFarmHasCapacity,
@@ -120,6 +122,29 @@ cropsRouter.post(
 
       const [payload] = await withStages([crop]);
       sendData(res, { crop: payload }, { status: 201 });
+
+      /*
+       * Rebuild this farmer's feed now rather than at the next 30-minute tick.
+       *
+       * The dashboard is the product's headline promise — "what do I act on
+       * today?" — and it reads a feed that a scheduled job writes. A farmer who
+       * has just added their first crop would otherwise meet an empty decision
+       * band for up to `FEED_REFRESH_INTERVAL_MS`, which reads as a broken app
+       * at exactly the moment they are deciding whether to trust it.
+       *
+       * Three things keep this inside the rules:
+       *   - It runs **after** the response is sent, so the create is never
+       *     slowed by it and a failure cannot turn a successful write into an
+       *     error the farmer sees.
+       *   - It is scoped to one `userId`; `runFeedRefresh` already accepts the
+       *     list, so this is one farmer's crops, not an account-wide sweep.
+       *   - It reaches no provider. The composer reads the snapshots and prices
+       *     the ingestion jobs already cached, so CLAUDE.md rule 3 ("request
+       *     paths never call weather/market providers") still holds.
+       */
+      runFeedRefresh({ userIds: [req.auth.userId] }).catch((err) =>
+        logger.warn({ err, userId: String(req.auth.userId) }, 'post-create feed refresh failed'),
+      );
     } catch (err) {
       next(err);
     }
