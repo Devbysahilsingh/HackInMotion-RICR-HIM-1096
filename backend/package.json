@@ -17,6 +17,8 @@
     "seed:registry": "node --env-file=.env scripts/seed-registry.mjs",
     "smoke": "node scripts/smoke.mjs",
     "seed:market": "node --env-file=.env scripts/seed-market.mjs",
+    "yield:build": "node scripts/build-yield-lookup.mjs",
+    "yield:check": "node scripts/build-yield-lookup.mjs --check",
     "jobs": "node --env-file=.env scripts/trigger-jobs.mjs",
     "seed:dev": "node --env-file=.env scripts/seed-dev.mjs"
   },

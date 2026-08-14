@@ -29,6 +29,14 @@
       "confidence": "P",
       "note": "URL as published in the Sources line of docs/crop-recommendation/scoring-model.md."
     },
+    "APY_YIELD": {
+      "org": "Directorate of Economics & Statistics, Department of Agriculture & Farmers Welfare, Government of India",
+      "title": "Area, Production and Yield of crops, district-wise and season-wise (APY), 1997-98 to 2022-23 — via India Data Portal (ISB Bharti Institute)",
+      "url": "ckandev.indiadataportal.com/dataset/area-production-yield-apy",
+      "accessed": "2026-08-14",
+      "confidence": "P",
+      "note": "Justifies every crop's `yield.apyCropName` — the exact string this crop's rows carry in the APY series, which is how the yield lookup finds them. Unlike the rest of this file, these values were read from the dataset itself rather than transcribed from a repo doc; the acquisition record (URL, sha256, row counts, licence) is datasets/yield/metadata/source-manifest.json and the fidelity checks are in docs/yield/dataset-research.md. Two crops carry `apyCropName: null` on purpose — COTTON (source publishes 170 kg bales labelled 'Tonnes') and TOMATO (13 districts, latest 2014-15); both reasons are recorded on the crop and surface as a dataGap."
+    },
     "TNAU_CPG": {
       "org": "TNAU",
       "title": "TNAU Crop Production Guide (CPG) — Rice / Maize",
@@ -169,6 +177,9 @@
         "commodityCode": "RICE",
         "aliases": ["Paddy(Dhan)(Common)", "Rice"]
       },
+      "yield": {
+        "apyCropName": "Rice"
+      },
       "confidence": {
         "grade": "P",
         "published": "P (TNAU CPG, FAO)",
@@ -255,6 +266,9 @@
       "market": {
         "commodityCode": "WHEAT",
         "aliases": ["Wheat"]
+      },
+      "yield": {
+        "apyCropName": "Wheat"
       },
       "confidence": {
         "grade": "MIXED",
@@ -352,6 +366,9 @@
         "commodityCode": "MAIZE",
         "aliases": ["Maize"]
       },
+      "yield": {
+        "apyCropName": "Maize"
+      },
       "confidence": {
         "grade": "P",
         "published": "P (TNAU CPG, FAO)",
@@ -443,6 +460,10 @@
       "market": {
         "commodityCode": "COTTON",
         "aliases": ["Cotton"]
+      },
+      "yield": {
+        "apyCropName": null,
+        "excluded": "DELIBERATE — no yield estimate for cotton in v1. The APY source name would be 'Cotton(Lint)', but it publishes production in 170 kg bales while labelling the column 'Tonnes' (docs/yield/dataset-audit.md D4: read as tonnes, 2022-23 gives an impossible 2,677 kg lint/ha; read as bales, 455 kg/ha against a published 443). The x0.17 conversion is NOT applied without a citable DES or Ministry of Textiles bale definition. The data itself is complete and current — 450 districts, latest year 2022-23 — so this is a citation gate, not a data gate. Setting apyCropName unblocks it with no code change."
       },
       "confidence": {
         "grade": "MIXED",
@@ -546,6 +567,9 @@
         "commodityCode": "SOYBEAN",
         "aliases": ["Soybean"]
       },
+      "yield": {
+        "apyCropName": "Soyabean"
+      },
       "confidence": {
         "grade": "P",
         "published": "P (KVK PoP, FAO)",
@@ -631,6 +655,10 @@
       "market": {
         "commodityCode": "TOMATO",
         "aliases": ["Tomato"]
+      },
+      "yield": {
+        "apyCropName": null,
+        "excluded": "DELIBERATE — no yield estimate for tomato. The APY source has a 'Tomato' series and it is not usable: 13 districts, 5 distinct years, latest 2014-15, 23% of rows reporting zero production, and an annual tier whose most recent observation is 2003. The state tier is 2 groups, also ending 2014-15. There is no honest fallback, so the endpoint answers INSUFFICIENT_EVIDENCE rather than dressing eleven-year-old data from 13 districts in a low-confidence label."
       },
       "confidence": {
         "grade": "MIXED",
@@ -718,6 +746,9 @@
         "commodityCode": "POTATO",
         "aliases": ["Potato"]
       },
+      "yield": {
+        "apyCropName": "Potato"
+      },
       "confidence": {
         "grade": "P",
         "published": "P (NHB, FAO)",
@@ -798,6 +829,9 @@
       "market": {
         "commodityCode": "ONION",
         "aliases": ["Onion"]
+      },
+      "yield": {
+        "apyCropName": "Onion"
       },
       "confidence": {
         "grade": "P",
@@ -887,6 +921,10 @@
       "market": {
         "commodityCode": "CHILLI",
         "aliases": ["Dry Chillies", "Green Chilli"]
+      },
+      "yield": {
+        "apyCropName": "Dry Chillies",
+        "caveat": "DRY weight. The APY series is dry chillies; green-chilli yields are several times higher, so the estimate must be labelled dry wherever it is shown. Stripped by the schema, recorded here."
       },
       "confidence": {
         "grade": "P/S",

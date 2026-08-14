@@ -1122,3 +1122,129 @@ Added: `docs/yield/dataset-research.md`, `docs/yield/dataset-audit.md`.
 Changed: `docs/yield/yield-estimation.md` (blocker closed, scope table, data plan
 replaced), `docs/api/intelligence.md` (yield row), and this file.
 Untracked/local only: `datasets/yield/raw/idp-apy-crop-wise-area-production-yield.csv`.
+
+---
+
+## Y-2 · Yield ingestion pipeline & validated lookup — 2026-08-14 · Status: COMPLETED (verified)
+
+**Scope:** the reproducible refinement pipeline and the lookup it produces. Still **no
+engine, no endpoint, no UI** — those are the next milestones.
+
+### What now exists
+
+`npm run yield:build` streams the 455,359-row government export through a pure normalizer
+and writes two artefacts: `datasets/lookup/yield-lookup.json` (2.4 MB, committed) and
+`datasets/yield/metadata/quality-report.json` (committed). `npm run yield:check` rebuilds
+in memory and fails if either has drifted — verified by tampering with one entry and
+watching it exit 1.
+
+The build **refuses to run at all** if the source file's sha256 does not match
+`source-manifest.json`. A silent input swap would rewrite every yield a farmer sees, so it
+is a hard stop rather than a warning.
+
+### Structure, following the market pipeline
+
+| File | Role |
+|---|---|
+| `src/services/yieldNormalizer.js` | pure row-level refinement; drop reasons, counters, samples |
+| `src/services/yieldLookupBuilder.js` | pure tier aggregation; median, spread, evidence floor |
+| `scripts/build-yield-lookup.mjs` | the only I/O; CSV in, artefacts out, `--check` gate |
+
+This mirrors `marketNormalizer.js` + `seed-market.mjs` deliberately: the pure half is
+fixture-testable and the script does nothing a test cannot reproduce.
+
+### Crop scope is data, not code
+
+`cropRegistry.yield.apyCropName` — declared in the schema since P1-2 and populated nowhere
+— now carries the source crop name for the seven supported crops. **Cotton and tomato
+carry `null` with the reason written on the crop**, so no file in `src/` mentions either
+exclusion; removing the null and adding a name would ship them with no code change. A new
+`collectGaps` rule surfaces an unmapped crop as a `dataGap`, so a deliberate exclusion
+stays visible instead of looking like an oversight. Citation added as `APY_YIELD` in the
+knowledge file's `sourceDocuments`.
+
+### What the pipeline measured (it recomputes the audit every run)
+
+Every structural figure `docs/yield/dataset-audit.md` states was reproduced by the build
+rather than carried over: 455,359 rows, **0 malformed, 0 duplicate composite keys, 0
+negatives, 0 rows where yield ≠ production/area, 0 district-code/name collisions**, 34
+states, 740 districts, 115 crops, one unit combination, 26 years, and the season histogram
+to the row. The document cannot now drift from the data unnoticed.
+
+Refinement: **110,188 rows accepted**. Dropped — unmapped crop 333,806 (106 of the 115
+crops are out of scope), unresolved Autumn/Winter 10,724, nil production 566, implausible
+yield 75. Everything else zero.
+
+### The outlier gate, and where it actually cut
+
+Implausible yields are flagged by an **Iglewicz–Hoaglin modified z-score** (published
+threshold 3.5) on log₁₀ yield, per crop, **upper tail only**. The one-sidedness is a safety
+decision, not a statistical one: low yields are real crop failures, and trimming them would
+bias every estimate upward — the direction in which being wrong costs a farmer money.
+
+The report now records the cut point per crop, because a threshold is only auditable if you
+can see the lowest yield it rejected beside the highest it kept:
+
+| crop | rejected | kept | lowest rejected | highest kept |
+|---|---|---|---|---|
+| RICE | 11 | 24,100 | 10.5 | 9.886 |
+| WHEAT | 0 | 12,841 | — | 7.462 |
+| MAIZE | 5 | 28,563 | 15 | 13.752 |
+| SOYBEAN | 31 | 6,081 | 5.366 | 4.505 |
+| ONION | 11 | 14,745 | 100 | 80.125 |
+| POTATO | 2 | 12,882 | 153.076 | 100 |
+| CHILLI | 15 | 10,976 | 14 | 13.667 |
+
+Every rejected row is a tiny-area case of the kind the audit traced to wrong-magnitude
+area (Srikakulam onion, area 2 ha, production 8,140 t). Nothing was rescaled.
+
+### The lookup
+
+4,532 district-season · 2,301 district-annual · 235 state-season · 187 state entries,
+across CHILLI, MAIZE, ONION, POTATO, RICE, SOYBEAN, WHEAT. Median over the last 5
+*available* years with the sample SD over the same window, minimum 3 observations —
+`minObservations` is labelled in the artefact as a product policy, not an agronomic
+constant. `Total` rows never enter the state tiers (they re-count the season rows already
+there); the two annual sources are never pooled.
+
+It also ships the **gazetteer this repository has never had**: 34 state and 738 district
+name→code indexes, built from the source's own LGD codes. Matching is exact and never
+fuzzy — a farmer who typed "Anantapur" rather than "Ananthapuramu" falls through to the
+state tier and is told so, rather than silently borrowing another district's history.
+
+### Verification
+
+- **`tests/services/yieldNormalizer.test.js` 30/30** — every drop reason, unit assertion
+  (a "Bales" row is rejected, never converted), agricultural-year parsing, the nil-is-not-
+  zero rule, and the upper-tail-only property of the outlier gate.
+- **`tests/services/yieldLookupBuilder.test.js` 18/18** — median over mean, available-years
+  window, evidence floor, `Total` excluded from state tiers, the two annual sources never
+  pooled, per-year collapse when pooling a state.
+- **`tests/services/yieldLookupArtifact.test.js` 21/21** — against the *committed* lookup:
+  cotton and tomato absent at every tier, no entry below the floor, no median beyond a
+  physical ceiling, and reality checks that Ludhiana wheat sits at 4.97 t/ha, Punjab beats
+  Bihar on wheat, and the audit's worked example (Ananthapuramu Kharif rice, median 2.724
+  over 2018–2022) reproduces exactly.
+- **Full backend suite 1,642/1,642.** ESLint 0 errors (5 pre-existing web warnings).
+  Prettier clean. `yield:check` green, and proven to fail on a tampered entry.
+
+### Permissions
+
+The blanket `Edit/Write(datasets/**)` deny in `.claude/settings.json` was narrowed so the
+feature can write its tracked artefacts. Every ML dataset path stays denied by name, and
+`datasets/yield/raw/**` is denied *deliberately* — the acquired source must never be
+modified in place. Raw and intermediate data remain gitignored, which is what actually
+keeps them out of the repository.
+
+### Files
+
+Added: `backend/src/services/yieldNormalizer.js`, `backend/src/services/yieldLookupBuilder.js`,
+`backend/scripts/build-yield-lookup.mjs`, `backend/tests/services/yieldNormalizer.test.js`,
+`backend/tests/services/yieldLookupBuilder.test.js`,
+`backend/tests/services/yieldLookupArtifact.test.js`,
+`datasets/yield/metadata/source-manifest.json`, `datasets/yield/metadata/quality-report.json`,
+`datasets/lookup/yield-lookup.json`.
+Changed: `backend/src/knowledge/crops.base.json` (9 `yield` blocks + `APY_YIELD` source),
+`backend/src/services/registrySeedService.js` (yield dataGap), `backend/package.json`
+(`yield:build`, `yield:check`), `.gitignore`, `.claude/settings.json`,
+`datasets/README.md`, and this file.

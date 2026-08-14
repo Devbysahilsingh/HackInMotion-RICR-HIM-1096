@@ -1,0 +1,165 @@
+{
+  "recordedAt": "2026-08-14",
+  "purpose": "Y_hist — district x season x crop historical yield for the transparent yield estimator (docs/yield/yield-estimation.md).",
+  "registryVersion": 1,
+  "consumedBy": "backend/scripts/build-yield-lookup.mjs",
+  "produces": [
+    "datasets/lookup/yield-lookup.json",
+    "datasets/yield/metadata/quality-report.json"
+  ],
+  "reproduce": [
+    "1. GET the download_url below with a browser User-Agent (a HEAD request returns 403). No API key, no authentication.",
+    "2. Save it to local_path and verify sha256 matches.",
+    "3. cd backend && node scripts/build-yield-lookup.mjs",
+    "The build refuses to run if the sha256 does not match this manifest, so a silent input swap cannot rewrite the yields a farmer sees."
+  ],
+  "sources": [
+    {
+      "id": "idp-apy",
+      "role": "primary",
+      "name": "Area, Production, Yield (APY) — Crop Wise Area Production Yield",
+      "publisher": "India Data Portal, Bharti Institute of Public Policy, Indian School of Business",
+      "originating_authority": "Directorate of Economics & Statistics, Department of Agriculture & Farmers Welfare, Ministry of Agriculture & Farmers Welfare, Government of India",
+      "catalog_url": "https://ckandev.indiadataportal.com/dataset/area-production-yield-apy",
+      "download_url": "https://ckandev.indiadataportal.com/dataset/f2bbc28c-6c7c-462b-9064-ea4c4213d466/resource/f980409d-49a2-42ae-9eb0-182365005c04/download/crop-wise-area-production-yield.csv",
+      "upstream_source_url": "https://data.desagri.gov.in/",
+      "retrieved_at": "2026-08-14",
+      "local_path": "datasets/yield/raw/idp-apy-crop-wise-area-production-yield.csv",
+      "bytes": 56222102,
+      "sha256": "fe10fbf129b3501bbb3d282c7600402a8ed7248c116f2cc9428bc2b573d1d4a9",
+      "http": {
+        "method": "GET",
+        "status": 200,
+        "content_type": "binary/octet-stream",
+        "note": "HEAD returns 403; GET with a browser User-Agent succeeds."
+      },
+      "format": "CSV, UTF-8, LF, comma-separated, unquoted",
+      "rows": 455359,
+      "columns": [
+        "id",
+        "year",
+        "state_name",
+        "state_code",
+        "district_name",
+        "district_code",
+        "crop_name",
+        "crop_code",
+        "crop_type",
+        "season",
+        "area",
+        "area_unit",
+        "production",
+        "production_unit",
+        "yield",
+        "yield_unit"
+      ],
+      "temporal_coverage": {
+        "from": "1997-1998",
+        "to": "2022-2023",
+        "distinct_crop_years": 26,
+        "granularity": "Indian agricultural year"
+      },
+      "geographic_coverage": {
+        "states": 34,
+        "districts": 740,
+        "district_identifier": "district_code (LGD), verified 1:1 with district_name in both directions, 0 collisions"
+      },
+      "crop_coverage": { "distinct_crop_names": 115, "crop_type_groups": 10 },
+      "declared_units": {
+        "area": "Hectare",
+        "production": "Tonnes",
+        "yield": "Tonnes/Hectare",
+        "caveat": "WRONG for Cotton(Lint), which is published in 170 kg bales. See docs/yield/dataset-audit.md D4. Cotton is excluded from the lookup by decision."
+      },
+      "values_are": "observed/official government returns, not modelled estimates",
+      "update_frequency": "annual, on the upstream DES release cycle; this export is a point-in-time snapshot",
+      "api_available": false,
+      "license": {
+        "declared_on_catalog": "Open Data Commons Attribution License (ODC-By)",
+        "declared_on_site": "Creative Commons Attribution 4.0 International",
+        "upstream_license": "Government Open Data License – India (GODL)",
+        "upstream_license_url": "https://www.data.gov.in/government-open-data-license-india",
+        "commercial_use": "permitted under all three readings",
+        "attribution_required": true,
+        "verification_status": "UNRESOLVED — the catalogue field and the site footer name different attribution licences, and the portal's copyright policy page is client-rendered and could not be captured. All three permit commercial use with attribution, so the discrepancy does not change what we may do; the exact text is still owed to datasets/licenses/. Handled the way ADR-012 handles PlantVillage's contested licence: comply with the strictest reading, record the conflict, do not redistribute."
+      },
+      "redistribution": "NOT redistributed. The raw CSV is gitignored and permission-denied for writes so it cannot be modified in place; only this manifest, the quality report and the derived lookup are committed."
+    },
+    {
+      "id": "datagovin-apy",
+      "role": "verification oracle, and the future live-refresh path",
+      "name": "District-wise, season-wise crop production statistics from 1997",
+      "publisher": "Ministry of Agriculture and Farmers Welfare, Department of Agriculture and Farmers Welfare, via data.gov.in (OGD Platform India)",
+      "catalog_url": "https://www.data.gov.in/resource/district-wise-season-wise-crop-production-statistics-1997",
+      "api_base": "https://api.data.gov.in/resource/35be999b-0208-4354-b557-f6ca9a5355de",
+      "catalog_uuid": "f4435c3b-96be-4002-9839-aa3897dc732b",
+      "probed_at": "2026-08-14",
+      "rows": 246091,
+      "columns": [
+        "state_name",
+        "district_name",
+        "crop_year",
+        "season",
+        "crop",
+        "area_",
+        "production_"
+      ],
+      "temporal_coverage": {
+        "from": 1997,
+        "to": 2015,
+        "note": "Live-verified: crop_year 2013 → 13650 rows, 2014 → 10973, 2015 → 562 (partial), 2016 and later → 0. Effective end is 2014-15, eight years short of the primary."
+      },
+      "has_yield_column": false,
+      "has_unit_metadata": false,
+      "api_available": true,
+      "credentials": {
+        "required_env": ["DATAGOVIN_API_KEY", "DATAGOVIN_RESOURCE_ID"],
+        "status": "DATAGOVIN_API_KEY is open decision OD-5 and remains unset in this repository. Nothing in the yield feature depends on it — the primary source needs no key.",
+        "probe_note": "The verification probes used data.gov.in's own published sample key, which the portal prints on every resource page. It is a documented public demo credential, not a secret; it appears nowhere in this repository, and its quota was exhausted partway through the audit, which is precisely why it cannot serve a product."
+      },
+      "license": {
+        "name": "Government Open Data License – India (GODL)",
+        "url": "https://www.data.gov.in/government-open-data-license-india",
+        "commercial_use": "permitted",
+        "attribution_required": true,
+        "attribution_format": "[Provider], [Year], [Dataset Name], [Repository], [Date], [DOI/URL]. Published under [License Name]: [License URL]"
+      }
+    }
+  ],
+  "fidelityChecks": [
+    {
+      "check": "exact row match against the originating authority's own API",
+      "case": "Gujarat / Amreli / Cotton(Lint) / Kharif / 2010-11",
+      "idp": { "area": 269400, "production": 1142600 },
+      "datagovin": { "area": 269400, "production": 1142600 },
+      "result": "IDENTICAL"
+    },
+    {
+      "check": "state yields against published DES state figures (wheat 2022-23)",
+      "computed": { "Punjab": 4.71, "UttarPradesh": 3.735 },
+      "publishedApprox": { "Punjab": 4.66, "UttarPradesh": 3.66 },
+      "result": "MATCH within ~2%"
+    },
+    {
+      "check": "national cotton yield against USDA FAS / PIB (2022-23)",
+      "computedIfBales": "455 kg lint/ha, on 12.891 M ha from 34,511,544 bales",
+      "published": "443 kg/ha, ~35.2 million 170 kg bales, 12.8–13 M ha",
+      "result": "MATCH — and establishes that the 'Tonnes' unit label is wrong for cotton"
+    },
+    {
+      "check": "district sums against published all-India totals",
+      "result": "UNRESOLVED — district sums run ~14–15% above the published all-India wheat and rice figures while every yield matches. Recorded as open rather than rationalised. Cannot affect this feature: the estimator reads per-district yields and never sums them."
+    }
+  ],
+  "transformations": [
+    "Crop scope filtered to registry crops carrying `yield.apyCropName` in backend/src/knowledge/crops.base.json (7 of 9; COTTON and TOMATO excluded by decision, reasons recorded on the crop).",
+    "Season labels mapped exactly: Kharif→KHARIF, Rabi→RABI, Summer→ZAID. Total→ALL_SEASON tier, Whole Year→ANNUAL tier. Autumn and Winter left UNRESOLVED and dropped.",
+    "Unit labels asserted, not converted: a row not declaring Hectare/Tonnes/Tonnes-per-Hectare is dropped.",
+    "Agricultural year '1997-1998' parsed to start year 1997, with the second year required to be the first plus one.",
+    "Rows with area <= 0, production blank or <= 0, or yield <= 0 dropped and counted (a nil return is not a zero yield).",
+    "Published yield re-derived from production/area and required to agree within max(0.005, 2%).",
+    "Implausibly high yields flagged by an Iglewicz-Hoaglin modified z-score (published threshold 3.5) on log10 yield, per crop, UPPER TAIL ONLY — low yields are real crop failures and trimming them would bias every estimate optimistically.",
+    "Surviving rows aggregated to a median over the last 5 available years per key, with the sample standard deviation over the same window, requiring at least 3 observations.",
+    "NOTHING is repaired, rescaled or imputed. Every rejection is counted, and the material ones are listed by district and year in the quality report."
+  ]
+}

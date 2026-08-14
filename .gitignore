@@ -28,6 +28,12 @@ datasets/*
 !datasets/confound-report.json
 !datasets/licenses/
 !datasets/lookup/
+# Yield (APY) source tree. The 56MB raw export and every intermediate stay out
+# of git and are reproducible from the URL + sha256 in the source manifest;
+# only the provenance record and the measured quality report are committed.
+!datasets/yield/
+datasets/yield/*
+!datasets/yield/metadata/
 # datasets/audit/ (contact sheets + hash cache) stays ignored: derived image
 # data, regenerable from the raw sets by scripts/ml/audit-datasets.py.
 *.onnx
