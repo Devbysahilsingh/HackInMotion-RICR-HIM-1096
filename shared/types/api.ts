@@ -894,6 +894,165 @@ export interface FarmRecDetailResponse extends FarmRecommendationsResponse {
   excludedEntry: CropRecExclusion | null;
 }
 
+// ── Yield estimation (docs/yield/yield-estimation.md) ───────────────────────
+
+/**
+ * Which rung of the evidence ladder answered.
+ *
+ * `null` means none did — the estimate was not made, and `reasonKey` says why.
+ */
+export type YieldTier = 'DISTRICT_SEASON' | 'DISTRICT_ANNUAL' | 'STATE_SEASON' | 'STATE';
+
+/**
+ * How closely the evidence matches the farmer's own field.
+ *
+ * A **specificity label, not a confidence score.** It says nothing about how
+ * likely the estimate is to be right — inventing that is what rule 9 forbids.
+ */
+export type YieldSpecificity = 'EXACT' | 'DISTRICT' | 'STATE' | 'BROAD';
+
+export type YieldAttemptOutcome = 'HIT' | 'MISS' | 'SKIPPED';
+
+export interface YieldAttempt {
+  tier: YieldTier;
+  outcome: YieldAttemptOutcome;
+  key: string | null;
+  /** Present on SKIPPED: what the rung needed and did not have. */
+  missing?: string[];
+}
+
+/** The district's published record, before any area is applied. */
+export interface YieldBasis {
+  medianYieldTHa: number;
+  medianYieldQuintalPerAcre: number;
+  /** Null when too few years exist to describe a spread. */
+  lowYieldTHa: number | null;
+  highYieldTHa: number | null;
+  sdYieldTHa: number | null;
+  observations: number;
+  years: number[];
+  latestYear: number;
+  /** DISTRICT_ANNUAL only: which published rows it was built from. */
+  annualBasis: 'WHOLE_YEAR' | 'TOTAL' | null;
+}
+
+export interface YieldProduction {
+  areaHectares: number;
+  midTonnes: number;
+  lowTonnes: number | null;
+  highTonnes: number | null;
+  midQuintals: number;
+  lowQuintals: number | null;
+  highQuintals: number | null;
+  unit: 'quintal';
+}
+
+/**
+ * A factor the estimator weighed.
+ *
+ * Every factor currently reports `applied: false` and that is the honest state,
+ * not a stub — see ADR-026. The citation travels with the refusal so the
+ * reasoning is checkable rather than merely asserted.
+ */
+export interface YieldFactor {
+  factor: 'IRRIGATION' | 'PEST_DISEASE_EVENT';
+  applied: boolean;
+  multiplier: number | null;
+  inputValue: string | number | null;
+  reasonKey: string;
+  sourceRef: SourceRef | null;
+}
+
+export interface YieldLimitation {
+  key: string;
+  data: Record<string, unknown>;
+}
+
+export interface YieldEvidence {
+  resolution: 'RESOLVED' | 'INSUFFICIENT_EVIDENCE';
+  tier: YieldTier | null;
+  specificity: YieldSpecificity | null;
+  basisKey: string | null;
+  reasonKey: string | null;
+  attempts: YieldAttempt[];
+}
+
+export interface YieldEstimateResponse {
+  cropId: string;
+  cropCode: string;
+  names: LocalizedName | null;
+  season: { value: Season; basis: string; basisKey: string };
+  location: {
+    state: string | null;
+    district: string | null;
+    /** The government's own spelling of what matched, or null. */
+    matchedState: string | null;
+    matchedDistrict: string | null;
+    districtMatched: boolean;
+  };
+  area: { value: number | null; unit: LandUnit | null };
+  estimated: boolean;
+  /** Set only when `estimated` is false. */
+  reasonKey: string | null;
+  tier: YieldTier | null;
+  specificity: YieldSpecificity | null;
+  basisKey: string | null;
+  basis: YieldBasis | null;
+  production: YieldProduction | null;
+  /** Why a total was withheld although the basis is sound (no area, or bigha). */
+  productionUnavailableReason: string | null;
+  productionUnavailableReasonKey: string | null;
+  factors: YieldFactor[];
+  limitations: YieldLimitation[];
+  isRange: boolean;
+  rangeMeaningKey: string | null;
+  disclaimerKey: string;
+  disclaimerVersion: string;
+  evidence: YieldEvidence;
+  source: {
+    name: string;
+    publisher: string;
+    via: string;
+    url: string | null;
+    sha256: string;
+    licence: string;
+    attribution: string;
+    coverage: { from: string; to: string; states: number; districts: number };
+  } | null;
+  freshness: Freshness & {
+    latestYear: number | null;
+    dataVintageYears: number | null;
+  };
+  trace: TraceStep[];
+}
+
+export interface YieldSummaryItem {
+  cropId: string;
+  cropCode: string;
+  names: LocalizedName | null;
+  estimated: boolean;
+  tier: YieldTier | null;
+  specificity: YieldSpecificity | null;
+  reasonKey: string | null;
+  medianYieldTHa: number | null;
+  production: YieldProduction | null;
+  latestYear: number | null;
+}
+
+export interface YieldSummaryResponse {
+  items: YieldSummaryItem[];
+  /** Null when no crop could be estimated — never a zero standing in for it. */
+  totals: {
+    crops: number;
+    lowQuintals: number;
+    midQuintals: number;
+    highQuintals: number;
+    unit: 'quintal';
+  } | null;
+  unavailableCount: number;
+  disclaimerKey: string;
+}
+
 // ── Community ───────────────────────────────────────────────────────────────
 
 export interface CommunityAlert {

@@ -9,6 +9,7 @@ import { useActiveFarm } from '@/farm/ActiveFarmContext';
 import { QueryBoundary } from '@/components/QueryBoundary';
 import { CropCardTile } from '@/components/domain/CropCardTile';
 import { DashboardMarketCard } from '@/components/domain/DashboardMarketCard';
+import { DashboardYieldCard } from '@/components/domain/DashboardYieldCard';
 import { DashboardWeatherCard } from '@/components/domain/DashboardWeatherCard';
 import { DecisionBanner } from '@/components/domain/DecisionBanner';
 import { FeedItemCard } from '@/components/domain/FeedItemCard';
@@ -229,6 +230,14 @@ function DashboardContent({ data }: { data: DashboardResponse }) {
             <DashboardWeatherCard farmId={activeFarmId} location={location} crops={farmCropCards} />
             <WaterSummaryCard cards={farmCropCards} />
             <DashboardMarketCard farmId={activeFarmId} cropCodes={[...farmCropCodes]} />
+            {/*
+              Account-wide rather than farm-scoped, unlike its three neighbours:
+              the harvest estimate depends on each crop's own district and area,
+              and a farmer planning a season thinks about the whole holding. It
+              spans the row on wide screens so the range has room to be read at
+              display scale.
+            */}
+            <DashboardYieldCard />
           </div>
 
           <Section

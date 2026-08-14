@@ -100,6 +100,22 @@ jobs:
         run: npm ci && npx vite build
         working-directory: web/frontend
 
+      # The committed yield lookup must still agree with its own provenance.
+      #
+      # The 56MB APY export is gitignored, so a fresh checkout has no raw source
+      # and this CANNOT rebuild-and-compare here — it verifies that the lookup,
+      # the quality report and the source manifest still reference the same
+      # sha256 and the same entry counts, and it says so rather than implying a
+      # rebuild it did not do. A hand-edit to any one of the three breaks it.
+      #
+      # The value-level guarantee is `tests/services/yieldLookupArtifact.test.js`
+      # in the suite below, which asserts the lookup against real published
+      # Indian yields. Run `npm run yield:check` locally, with the source
+      # present, for the full byte comparison.
+      - name: Yield lookup integrity
+        run: npm run yield:check
+        working-directory: backend
+
       # Includes the whole ST-01..70 security battery and the RES matrix.
       - run: npm test
         working-directory: backend

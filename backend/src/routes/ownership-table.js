@@ -223,6 +223,22 @@ export const ROUTE_OWNERSHIP = [
     param: 'id',
   },
 
+  // ── Yield ──────────────────────────────────────────────────────────────────
+  {
+    method: 'GET',
+    path: '/api/v1/crops/:id/yield-estimate',
+    auth: 'required',
+    ownership: 'nested',
+    resource: 'crop',
+    param: 'id',
+  },
+  /**
+   * Scoped, not nested: the summary takes no identifier and every query behind
+   * it is filtered by the caller's own id, so there is nothing for a hostile
+   * caller to substitute (AU-4).
+   */
+  { method: 'GET', path: '/api/v1/yield/summary', auth: 'required', ownership: 'scoped' },
+
   // ── Dashboard & feed ───────────────────────────────────────────────────────
   { method: 'GET', path: '/api/v1/dashboard', auth: 'required', ownership: 'scoped' },
   { method: 'GET', path: '/api/v1/recommendations', auth: 'required', ownership: 'scoped' },

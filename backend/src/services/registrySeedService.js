@@ -216,6 +216,17 @@ function collectGaps(document) {
     );
   }
 
+  // Yield estimation finds a crop's rows in the APY lookup through
+  // `yield.apyCropName`, so an unmapped crop simply has no yield estimate. Two
+  // crops are unmapped on purpose — cotton (the source publishes lint in 170 kg
+  // bales while labelling the column "Tonnes"; docs/yield/dataset-audit.md D4)
+  // and tomato (13 districts, latest 2014-15) — and recording it as a gap is
+  // what keeps a deliberate exclusion visible rather than looking like an
+  // oversight in the seed.
+  if (!document.yield?.apyCropName) {
+    gaps.push('yield source crop name (apyCropName) not mapped — no yield estimate for this crop');
+  }
+
   return gaps;
 }
 

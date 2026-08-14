@@ -1149,14 +1149,22 @@ describe('ST-40 · injection', () => {
 
     it('keeps filesystem reads to a closed allowlist of modules', () => {
       /**
-       * Neither module is reachable from a request with a caller-supplied path:
-       * `routes/health.js` reads its own package.json once at import time, and
+       * No module here is reachable from a request with a caller-supplied path:
+       * `routes/health.js` reads its own package.json once at import time,
        * `services/registrySeedService.js` runs at startup over `new URL(…,
-       * import.meta.url)` constants. The allowlist is asserted rather than the
-       * absence of reads, so a *third* module that starts touching the disk
-       * fails here and gets looked at.
+       * import.meta.url)` constants, and `services/yieldService.js` reads the
+       * committed yield lookup exactly once per process from a module-level
+       * constant built the same way — that file contains no `req` reference at
+       * all, and the read takes the constant directly rather than any
+       * expression. The allowlist is asserted rather than the absence of reads,
+       * so a *fourth* module that starts touching the disk fails here and gets
+       * looked at.
        */
-      const ALLOWED = ['routes/health.js', 'services/registrySeedService.js'];
+      const ALLOWED = [
+        'routes/health.js',
+        'services/registrySeedService.js',
+        'services/yieldService.js',
+      ];
 
       const readers = walk(sourceRoot)
         .filter((file) =>

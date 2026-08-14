@@ -20,6 +20,7 @@ import enLanding from '@shared/i18n/en/landing.json';
 import enMarket from '@shared/i18n/en/market.json';
 import enVoice from '@shared/i18n/en/voice.json';
 import enWeather from '@shared/i18n/en/weather.json';
+import enYield from '@shared/i18n/en/yield.json';
 
 import hiAgri from '@shared/i18n/hi/agri.json';
 import hiAuth from '@shared/i18n/hi/auth.json';
@@ -37,6 +38,7 @@ import hiLanding from '@shared/i18n/hi/landing.json';
 import hiMarket from '@shared/i18n/hi/market.json';
 import hiVoice from '@shared/i18n/hi/voice.json';
 import hiWeather from '@shared/i18n/hi/weather.json';
+import hiYield from '@shared/i18n/hi/yield.json';
 
 /** docs/i18n/architecture.md — the closed namespace list. */
 export const NAMESPACES = [
@@ -56,6 +58,7 @@ export const NAMESPACES = [
   'errors',
   'agri',
   'disease',
+  'yield',
 ] as const;
 
 export type Namespace = (typeof NAMESPACES)[number];
@@ -80,6 +83,7 @@ export const resources = {
     errors: enErrors,
     agri: enAgri,
     disease: enDisease,
+    yield: enYield,
   },
   hi: {
     common: hiCommon,
@@ -105,5 +109,13 @@ export const resources = {
      * labels that fallback rather than hiding it (`agri:nameHindiMissing`).
      */
     disease: hiDisease,
+    /**
+     * Machine-translated with the feature, NOT yet read by a Hindi-literate
+     * reviewer (`_verification.json`: yield `verifiedBy: "claude"`). Two of
+     * its strings explain why an adjustment factor was deliberately NOT
+     * applied, and a loose translation there would read as though the factor
+     * had been forgotten rather than reasoned about.
+     */
+    yield: hiYield,
   },
 } as const;

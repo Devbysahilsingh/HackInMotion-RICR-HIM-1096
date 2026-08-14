@@ -30,6 +30,7 @@ const WeatherIndexPage = lazy(() => import('@/pages/WeatherIndexPage'));
 const MarketPage = lazy(() => import('@/pages/MarketPage'));
 const MandiDetailPage = lazy(() => import('@/pages/MandiDetailPage'));
 const IrrigationPlanPage = lazy(() => import('@/pages/IrrigationPlanPage'));
+const YieldPage = lazy(() => import('@/pages/YieldPage'));
 const DiseaseDetailPage = lazy(() => import('@/pages/health/DiseaseDetailPage'));
 const CropRecDetailPage = lazy(() => import('@/pages/CropRecDetailPage'));
 const LanguagePage = lazy(() => import('@/pages/LanguagePage'));
@@ -138,6 +139,14 @@ export default function App() {
               view the design gives its own screen.
             */}
             <Route path="/irrigation" element={<IrrigationPlanPage />} />
+
+            {/*
+              Harvest estimates for every crop the farmer owns. Account-wide
+              rather than farm-scoped: the estimate depends on the crop's own
+              district and area, and a farmer planning a season wants the whole
+              holding in one place.
+            */}
+            <Route path="/yield" element={<YieldPage />} />
 
             {/* The knowledge base behind a diagnosis, reachable without a scan. */}
             <Route path="/health/disease/:code" element={<DiseaseDetailPage />} />

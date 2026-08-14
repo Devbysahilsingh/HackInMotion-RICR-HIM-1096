@@ -1,30 +1,44 @@
-# Yield Estimation (FR-Y1 — **NOT IMPLEMENTED · BLOCKED ON DATA**)
+# Yield Estimation (FR-Y1 — **IMPLEMENTED**)
 
-> **Status, verified 2026-08-14.** Spec complete; **nothing is built**. There is
-> no endpoint (`GET /crops/:id/yield-estimate` returns **404**, not 501), no
-> estimator, and no yield model. The `yieldEstimates` schema exists and is
-> unwritten.
+> **Status, updated 2026-08-15.** Built end to end and green. `GET /crops/:id/yield-estimate`
+> and `GET /yield/summary` are mounted; the engines are pure and fixture-tested; the
+> web client has a dashboard card and a dedicated screen; `yieldEstimates` is written
+> on every successful estimate. **The formula that shipped differs from the one below
+> in one respect — neither multiplier is applied, because neither citation supports
+> multiplying a district median. The reasoning is ADR-026 and it is the single most
+> important thing to read before changing this feature.**
 >
-> **The blocker is one input, and it is data, not code.** Of the four terms in
-> the formula below, three are already available in the codebase — area
+> **What changed: the data blocker is closed.** The missing term was `Y_hist`,
+> the district×season×crop historical yield, and it is now sourced, acquired and
+> audited — 455,359 rows of Government of India district returns covering
+> **1997-98 → 2022-23**, 740 districts, with fidelity verified three ways
+> against the originating authority's own API and against published national and
+> state figures. Provenance and licensing: `docs/yield/dataset-research.md`.
+> Quality, defects and coverage: `docs/yield/dataset-audit.md`.
+>
+> The other three terms were already available in the codebase — area
 > (`Crop.areaValue`), irrigation method (`Farm.irrigationMethod`, incl.
-> `rainfed`) and pest/disease events (`CropHealthLog`) — and both multipliers
-> are sourced and cited. The missing term is **`Y_hist`**, the district×season×crop
-> historical yield. `datasets/lookup/`, named in `datasets/README.md` as its
-> home, **does not exist**; `datasets/` holds crop-disease imagery only.
+> `rainfed`) and pest/disease events (`CropHealthLog`).
 >
-> `Y_hist` cannot be derived, defaulted or estimated — every other factor is a
-> *multiplier on it*, and multiplying an unknown by 0.8 is still unknown.
-> Populating it with plausible numbers would fabricate the single input that
-> decides whether a farmer plants a crop their rainfall cannot support
-> (CLAUDE.md rule 7). So it stays empty and the feature stays unbuilt.
+> **Scope the data supports, decided on the audit:**
+>
+> | | crops | why |
+> |---|---|---|
+> | ✅ supported | RICE · WHEAT · MAIZE · SOYBEAN · ONION · POTATO · CHILLI | 293–1,268 district-season combinations each with ≥3 recent observations; latest year 2022-23 |
+> | ⛔ excluded v1 | COTTON | source publishes lint in **170 kg bales while labelling the column "Tonnes"** (audit D4). The ×0.17 conversion is *not* applied without a citable DES/Ministry of Textiles bale definition. Data is complete; this is a citation gate. Future scope. |
+> | ⛔ unsupported | TOMATO | 13 districts, 5 years, latest **2014-15**, 23% zero-production, annual tier frozen at 2003. Returns `INSUFFICIENT_EVIDENCE`; there is no honest fallback. |
+>
+> `Y_hist` still cannot be derived, defaulted or estimated — every other factor
+> is a *multiplier on it*, and multiplying an unknown by 0.8 is still unknown.
+> Where the lookup has no row, the answer is `INSUFFICIENT_EVIDENCE`, never a
+> plausible number (CLAUDE.md rule 7).
 
 Research basis: subagent report 2026-08-12 with **live-verified** API probes (record counts and the 2015 cutoff below were confirmed against the running data.gov.in API, not assumed).
 
 ## Why NOT a 72h ML model (integrity position, citable)
 India's operational forecaster (FASAL/MNCFC+ISRO+IMD) needs satellite multispectral+microwave data, agromet models, and 15+ years of refinement for 11 crops. Peer-reviewed yield-ML requires multi-temporal NDVI, daily weather, soil and management variables with ground truth. A 72h model on district APY data would memorize district means with noise — an opaque, falsely-precise version of the transparent estimator. We say this in the pitch as a deliberate choice.
 
-## Transparent estimator (the plan)
+## Transparent estimator — the plan, and what shipped
 ```
 Estimated production = Y_hist × A × F_irrigation × F_event
 Y_hist = median of last 5 available years, district×season×crop yield (t/ha)
@@ -34,22 +48,61 @@ F_irrigation ∈ [0.75, 1.15]  — rainfed vs assured irrigation  (basis: Zaveri
 F_event ∈ [0.70, 1.0]        — major logged pest/disease event  (basis: Dhaliwal 2015: 15–25% average pest losses; DES loss assessment)
 Range shown = Y_hist ± 1 SD of district's own last 5–10 yrs ("typical year-to-year range" — NOT a confidence interval)
 ```
-Max 3 factors — compounding many small factors manufactures false precision. Every factor cited on-screen; full math shown ("2.1 t/ha district avg × 1.6 ha × 0.8 rainfed").
+Max 3 factors — compounding many small factors manufactures false precision. Every factor cited on-screen; full math shown.
 
-## Data plan
-| Source | Use | Caveat |
+**What shipped instead (ADR-026):**
+
+```
+Estimated production = Y_hist × A
+Range                = (Y_hist ± 1 SD) × A
+```
+
+Both multipliers are reported as **considered and not applied**, each with its
+citation and a farmer-readable reason. Neither citation supports multiplying a
+district *median*: `Y_hist` already blends irrigated and rainfed fields, so
+F_irrigation needs a district irrigated-area share we do not hold; and Dhaliwal's
+~15.7% is an *average annual* loss that the observed yields already contain, so
+F_event would subtract the same loss twice. The qualitative facts are surfaced as
+caveats instead — "your field is rainfed and this average includes irrigated
+fields" — which tells a farmer which way the number is likely to be wrong without
+inventing by how much. Sourcing a district irrigated-area share is all that stands
+between here and an applied F_irrigation.
+
+## Data plan (executed — see `docs/yield/dataset-research.md`)
+| Source | Use | Verified caveat |
 |---|---|---|
-| data.gov.in district APY API (GODL license, works with public key) | fallback/API path | **ends at crop_year 2015** — vintage disclosed per district |
-| UPAg / DES portal CSVs (1997→2024-25) | primary: pre-downloaded static lookup shipped in `datasets/` | no public API — bulk download before clock; license terms to verify |
-| Coverage (live-verified) | rice/wheat/maize/potato/onion/chilli/cotton/soybean solid | **tomato: 368 district records only** → state-tier fallback + low-confidence label |
+| **India Data Portal APY** (ISB, mirroring DES) — 455,359 rows, 1997-98→2022-23, 740 districts, ODC-By/CC-BY, no key | **PRIMARY** — static lookup built into `datasets/lookup/` | mirror licence declared two ways (both permit commercial use + attribution); exact text still owed to `datasets/licenses/` |
+| data.gov.in district APY API, resource `35be999b-…` (GODL) | verification oracle; future live refresh | **live-verified to end at crop_year 2014-15**; no yield column, no unit metadata |
+| DES `data.desagri.gov.in` (→2023-24) | future refresh path | client-rendered report portal, no bulk API found |
+| ~~UPAg~~ | rejected | login-gated, not reproducibly fetchable |
 
-Risks handled: district renames post-2015 (name normalization + parent fallback), absurd computed yields (sanity-clip vs state medians), units (quintals/acre shown beside t/ha).
+Earlier assumptions this replaces: the 2015 cutoff applied to the *API*, not to the data
+— the primary source reaches 2022-23. And tomato's "368 records → state-tier fallback"
+turned out to be optimistic; the state tier is 2 groups also ending in 2014-15, so tomato
+is unsupported rather than low-confidence.
+
+Risks handled: district identity via the source's own LGD `district_code`, verified
+bijective with district names (740 codes, 0 collisions) rather than by name normalization;
+absurd computed yields dropped and counted, never rescaled (audit D5 — Maharashtra 1997-98
+records area at the wrong magnitude); units (quintals/acre shown beside t/ha); and the
+cotton bale/tonne mislabel that excludes cotton from v1 (audit D4).
 
 ## MUST-NOT claims
 Never "AI/ML yield prediction/forecast"; never a single big number (range always); never imply loan/insurance suitability; disclose data vintage; label: "Estimate based on {district} government yield statistics ({years}). A planning aid, not a prediction."
 
-## Artifacts reserved now
-`yieldEstimates` schema (docs/database/schema.md) · `GET /crops/:id/yield-estimate` contract returning 501 until built (docs/api/intelligence.md) · lookup-table format `{state, district, cropCode, season, year, yieldTHa}` in `datasets/README.md`.
+## What exists (2026-08-15)
+
+| Piece | Where |
+|---|---|
+| Evidence ladder (pure) | `backend/src/engines/yield/resolveEvidence.js` |
+| Estimator (pure) | `backend/src/engines/yield/estimateYield.js` |
+| Shared tier vocabulary | `backend/src/engines/yield/lookupSchema.js` |
+| Service + persistence | `backend/src/services/yieldService.js` |
+| Endpoints | `GET /crops/:id/yield-estimate` · `GET /yield/summary` |
+| Lookup | `datasets/lookup/yield-lookup.json` (built, drift-gated in CI) |
+| Web | `pages/YieldPage.tsx` · `components/domain/YieldEstimateView.tsx` · `DashboardYieldCard.tsx` |
+| i18n | `shared/i18n/{en,hi}/yield.json` (56 keys; Hindi machine-authored, awaiting review) |
+| Decisions | ADR-026 |
 
 ## Sources
 data.gov.in APY catalog + api.data.gov.in/resource/35be999b… (live-verified) · upag.gov.in · data.desagri.gov.in APY query · ICRISAT DLD · ncfc.gov.in FASAL · Nature Comms s41467-019-12183-9 · ICRISAT oar 2335 · Dhaliwal 2015 · DES loss assessment PDF.

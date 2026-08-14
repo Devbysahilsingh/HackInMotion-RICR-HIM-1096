@@ -1022,3 +1022,331 @@ Changed: `README.md`, `CLAUDE.md` (OD-4 closed), `docs/development/MASTER-TODO.m
 `mobile/README.md`, `mobile/app.config.ts`, `mobile/src/security.test.ts`,
 `web/frontend/index.html`, `docs/product/product-spec.md`, `docs/mobile/navigation.md`,
 `docs/mobile/deployment.md`, `docs/security/phase-7-scorecard.md`, and this file.
+
+---
+
+## Y-1 · Yield dataset provenance & audit — 2026-08-14 · Status: COMPLETED (documentation only)
+
+**Scope:** dataset discovery, acquisition, provenance verification and quality audit for
+`Y_hist`. **No feature code, no pipeline, no endpoint, no UI** — those are Milestones 2–6
+and each needs its own approval.
+
+### What this closes
+
+`docs/yield/yield-estimation.md` had stated since P3 that yield estimation was blocked on
+one input: `Y_hist`, the district × season × crop historical yield, with `datasets/lookup/`
+named as its home and not existing. That blocker is now closed on evidence.
+
+### What was acquired
+
+India Data Portal's *Crop Wise Area Production Yield* export (ISB Bharti Institute,
+mirroring DES): **455,359 rows, 1997-98 → 2022-23, 34 states, 740 districts, 115 crops**,
+56,222,102 bytes, sha256 `fe10fbf1…`. No API key required. The raw file sits gitignored at
+`datasets/yield/raw/`; it is **not** committed and **not** redistributed.
+
+This beat the data.gov.in APY API (the source the original plan assumed) on three
+live-verified counts: the API **ends at crop_year 2014-15** (2015 returns 562 rows, 2016+
+returns 0), has **no yield column**, and has **no unit metadata**. It beat ICRISAT's DLD
+because DLD apportions to **1966 district boundaries**, which cannot be matched to a
+farmer's present-day `Farm.location.district`.
+
+### Fidelity verified three ways, one check left open
+
+1. **Exact row match** against data.gov.in's own API — Gujarat/Amreli/Cotton(Lint)/Kharif/
+   2010-11 returns `area=269400, production=1142600` from both sources. Identical.
+2. **State yields** vs published DES figures — Punjab wheat 2022-23 computed 4.71 t/ha
+   (published ≈4.66), UP 3.735 (≈3.66).
+3. **National cotton yield** vs USDA FAS / PIB — see the defect below.
+
+**Open:** district sums run ~14–15% above published all-India wheat/rice totals while
+every yield matches. Recorded as unexplained rather than rationalised. It cannot affect
+this feature — the estimator reads per-district yields and never sums — and closing it
+needs a registered `DATAGOVIN_API_KEY` (OD-5, still open).
+
+### Audit findings
+
+Structurally the file is clean: **0 malformed rows, 0 duplicate
+(state,district,crop,season,year) keys, 0 negatives**, `yield == production ÷ area` exact
+in **455,359 of 455,359** rows, and `district_code ↔ district_name` a **perfect bijection**
+over 740 codes — which finally gives this repository a canonical district key, something
+`shared/constants/geo` has been holding a space for since P1-5.
+
+Six defects, each with a named rule and a counter rather than a silent drop:
+
+- **D1** `season = "Total"` is an aggregate, verified equal to the sum of its season rows
+  in 15,493 cases with 0 disagreements → becomes the *district all-season* tier.
+- **D2** `season = "Whole Year"` is the **primary** tier for horticulture (potato 537
+  annual districts vs 369 seasonal; onion 504 vs 393; chilli 527 vs 321).
+- **D3** `Autumn`/`Winter` (17,650 rows) are the eastern *aus*/*boro* rice seasons with no
+  enum member. **Left unresolved** by decision — mapping them by resemblance would
+  misassign whole states' rice.
+- **D4 🔴** Cotton production is in **170 kg bales mislabeled "Tonnes"**. Read as tonnes,
+  2022-23 gives 2,677 kg lint/ha (impossible); read as bales, 455 kg/ha against a
+  published 443. **Cotton excluded from v1 by owner decision** — the ×0.17 conversion is
+  not applied without a citable DES/Textiles bale definition. A citation gate, not a data
+  gate.
+- **D5** 118 impossible yields, all traced to tiny-area rows; Maharashtra 1997-98 records
+  area at the wrong magnitude (Kolhapur rice reads 223.7 t/ha; at area in hundreds of
+  hectares it is 2.24). Dropped and counted, **never rescaled** — rescaling would assert a
+  correction to a government return.
+- **D6** 569 zero-production rows in the target crops are "reported nil", not zero yield.
+
+### Sufficiency verdict
+
+**Seven crops supported** — RICE, WHEAT, MAIZE, SOYBEAN, ONION, POTATO, CHILLI — with
+293–1,268 district-season combinations each holding ≥3 observations in their last five
+available years, latest observation 2022-23 for the large majority. 81,315 rows survive
+refinement.
+
+**Tomato is unsupportable and returns `INSUFFICIENT_EVIDENCE`:** 13 districts, 5 distinct
+years, latest **2014-15**, 23% zero-production, and an annual tier whose most recent
+observation is **2003**. The original spec's hope of a "state-tier fallback with a
+low-confidence label" does not survive counting — the state tier is 2 groups, also ending
+2014-15.
+
+**`CropRegistry.yield.apyCropName`** — declared in the schema since P1-2 and populated
+nowhere — is the slot the source crop names belong in. Not yet written; that is Milestone 3.
+
+### Deviations from the brief, stated
+
+- Docs landed in `docs/yield/` (mirroring `docs/ml/dataset-research.md` +
+  `dataset-audit.md`) rather than a new `docs/data/`, following the repo's
+  domain-folder convention.
+- The machine-readable `quality-report.json` is deliberately **not** hand-written here.
+  It is emitted by the Milestone-2 pipeline so the numbers are re-derivable rather than
+  asserted; this document says so, and yields precedence to the pipeline.
+
+### Files
+
+Added: `docs/yield/dataset-research.md`, `docs/yield/dataset-audit.md`.
+Changed: `docs/yield/yield-estimation.md` (blocker closed, scope table, data plan
+replaced), `docs/api/intelligence.md` (yield row), and this file.
+Untracked/local only: `datasets/yield/raw/idp-apy-crop-wise-area-production-yield.csv`.
+
+---
+
+## Y-2 · Yield ingestion pipeline & validated lookup — 2026-08-14 · Status: COMPLETED (verified)
+
+**Scope:** the reproducible refinement pipeline and the lookup it produces. Still **no
+engine, no endpoint, no UI** — those are the next milestones.
+
+### What now exists
+
+`npm run yield:build` streams the 455,359-row government export through a pure normalizer
+and writes two artefacts: `datasets/lookup/yield-lookup.json` (2.4 MB, committed) and
+`datasets/yield/metadata/quality-report.json` (committed). `npm run yield:check` rebuilds
+in memory and fails if either has drifted — verified by tampering with one entry and
+watching it exit 1.
+
+The build **refuses to run at all** if the source file's sha256 does not match
+`source-manifest.json`. A silent input swap would rewrite every yield a farmer sees, so it
+is a hard stop rather than a warning.
+
+### Structure, following the market pipeline
+
+| File | Role |
+|---|---|
+| `src/services/yieldNormalizer.js` | pure row-level refinement; drop reasons, counters, samples |
+| `src/services/yieldLookupBuilder.js` | pure tier aggregation; median, spread, evidence floor |
+| `scripts/build-yield-lookup.mjs` | the only I/O; CSV in, artefacts out, `--check` gate |
+
+This mirrors `marketNormalizer.js` + `seed-market.mjs` deliberately: the pure half is
+fixture-testable and the script does nothing a test cannot reproduce.
+
+### Crop scope is data, not code
+
+`cropRegistry.yield.apyCropName` — declared in the schema since P1-2 and populated nowhere
+— now carries the source crop name for the seven supported crops. **Cotton and tomato
+carry `null` with the reason written on the crop**, so no file in `src/` mentions either
+exclusion; removing the null and adding a name would ship them with no code change. A new
+`collectGaps` rule surfaces an unmapped crop as a `dataGap`, so a deliberate exclusion
+stays visible instead of looking like an oversight. Citation added as `APY_YIELD` in the
+knowledge file's `sourceDocuments`.
+
+### What the pipeline measured (it recomputes the audit every run)
+
+Every structural figure `docs/yield/dataset-audit.md` states was reproduced by the build
+rather than carried over: 455,359 rows, **0 malformed, 0 duplicate composite keys, 0
+negatives, 0 rows where yield ≠ production/area, 0 district-code/name collisions**, 34
+states, 740 districts, 115 crops, one unit combination, 26 years, and the season histogram
+to the row. The document cannot now drift from the data unnoticed.
+
+Refinement: **110,188 rows accepted**. Dropped — unmapped crop 333,806 (106 of the 115
+crops are out of scope), unresolved Autumn/Winter 10,724, nil production 566, implausible
+yield 75. Everything else zero.
+
+### The outlier gate, and where it actually cut
+
+Implausible yields are flagged by an **Iglewicz–Hoaglin modified z-score** (published
+threshold 3.5) on log₁₀ yield, per crop, **upper tail only**. The one-sidedness is a safety
+decision, not a statistical one: low yields are real crop failures, and trimming them would
+bias every estimate upward — the direction in which being wrong costs a farmer money.
+
+The report now records the cut point per crop, because a threshold is only auditable if you
+can see the lowest yield it rejected beside the highest it kept:
+
+| crop | rejected | kept | lowest rejected | highest kept |
+|---|---|---|---|---|
+| RICE | 11 | 24,100 | 10.5 | 9.886 |
+| WHEAT | 0 | 12,841 | — | 7.462 |
+| MAIZE | 5 | 28,563 | 15 | 13.752 |
+| SOYBEAN | 31 | 6,081 | 5.366 | 4.505 |
+| ONION | 11 | 14,745 | 100 | 80.125 |
+| POTATO | 2 | 12,882 | 153.076 | 100 |
+| CHILLI | 15 | 10,976 | 14 | 13.667 |
+
+Every rejected row is a tiny-area case of the kind the audit traced to wrong-magnitude
+area (Srikakulam onion, area 2 ha, production 8,140 t). Nothing was rescaled.
+
+### The lookup
+
+4,532 district-season · 2,301 district-annual · 235 state-season · 187 state entries,
+across CHILLI, MAIZE, ONION, POTATO, RICE, SOYBEAN, WHEAT. Median over the last 5
+*available* years with the sample SD over the same window, minimum 3 observations —
+`minObservations` is labelled in the artefact as a product policy, not an agronomic
+constant. `Total` rows never enter the state tiers (they re-count the season rows already
+there); the two annual sources are never pooled.
+
+It also ships the **gazetteer this repository has never had**: 34 state and 738 district
+name→code indexes, built from the source's own LGD codes. Matching is exact and never
+fuzzy — a farmer who typed "Anantapur" rather than "Ananthapuramu" falls through to the
+state tier and is told so, rather than silently borrowing another district's history.
+
+### Verification
+
+- **`tests/services/yieldNormalizer.test.js` 30/30** — every drop reason, unit assertion
+  (a "Bales" row is rejected, never converted), agricultural-year parsing, the nil-is-not-
+  zero rule, and the upper-tail-only property of the outlier gate.
+- **`tests/services/yieldLookupBuilder.test.js` 18/18** — median over mean, available-years
+  window, evidence floor, `Total` excluded from state tiers, the two annual sources never
+  pooled, per-year collapse when pooling a state.
+- **`tests/services/yieldLookupArtifact.test.js` 21/21** — against the *committed* lookup:
+  cotton and tomato absent at every tier, no entry below the floor, no median beyond a
+  physical ceiling, and reality checks that Ludhiana wheat sits at 4.97 t/ha, Punjab beats
+  Bihar on wheat, and the audit's worked example (Ananthapuramu Kharif rice, median 2.724
+  over 2018–2022) reproduces exactly.
+- **Full backend suite 1,642/1,642.** ESLint 0 errors (5 pre-existing web warnings).
+  Prettier clean. `yield:check` green, and proven to fail on a tampered entry.
+
+### Permissions
+
+The blanket `Edit/Write(datasets/**)` deny in `.claude/settings.json` was narrowed so the
+feature can write its tracked artefacts. Every ML dataset path stays denied by name, and
+`datasets/yield/raw/**` is denied *deliberately* — the acquired source must never be
+modified in place. Raw and intermediate data remain gitignored, which is what actually
+keeps them out of the repository.
+
+### Files
+
+Added: `backend/src/services/yieldNormalizer.js`, `backend/src/services/yieldLookupBuilder.js`,
+`backend/scripts/build-yield-lookup.mjs`, `backend/tests/services/yieldNormalizer.test.js`,
+`backend/tests/services/yieldLookupBuilder.test.js`,
+`backend/tests/services/yieldLookupArtifact.test.js`,
+`datasets/yield/metadata/source-manifest.json`, `datasets/yield/metadata/quality-report.json`,
+`datasets/lookup/yield-lookup.json`.
+Changed: `backend/src/knowledge/crops.base.json` (9 `yield` blocks + `APY_YIELD` source),
+`backend/src/services/registrySeedService.js` (yield dataGap), `backend/package.json`
+(`yield:build`, `yield:check`), `.gitignore`, `.claude/settings.json`,
+`datasets/README.md`, and this file.
+
+---
+
+## Y-3 · Yield estimation, end to end — 2026-08-15 · Status: COMPLETED (verified)
+
+**Scope:** the evidence ladder, the estimator, the API, and the farmer-facing UI. The
+feature is now reachable from the dashboard and has its own screen.
+
+### The decision that shaped it
+
+The spec's formula is `Y_hist × A × F_irrigation × F_event`, citing Zaveri & Lobell
+(2019) and Dhaliwal (2015). Both citations are real. **Neither supports multiplying a
+district median**, and applying them anyway would have produced a number that looks
+sourced and is not:
+
+- `Y_hist` is the median of every field in the district, irrigated and rainfed together.
+  Where one field sits in that blend depends on the district's irrigated-area share,
+  which this repository does not hold. Zaveri & Lobell measure a different quantity.
+- Dhaliwal's ~15.7% is an *average annual* pest loss. The years behind `Y_hist` were real
+  years with real pests, so it is already inside the observed yields; multiplying again
+  subtracts the same loss twice.
+
+So both are reported as **considered and not applied**, each carrying its citation and a
+reason, and the qualitative facts are surfaced as caveats instead — "your field is
+rainfed and this average includes irrigated fields". That tells a farmer which way the
+number is likely to be wrong without inventing by how much. Recorded as **ADR-026**,
+which also records the ladder, exact-match geography, the bigha refusal and why
+specificity is not confidence.
+
+What shipped: `Estimated production = Y_hist × A`, range `(Y_hist ± 1 SD) × A`.
+
+### Structure
+
+| File | Role |
+|---|---|
+| `engines/yield/lookupSchema.js` | tier names, key builders, window policy — the bottom of the stack, so the builder (a service) and the resolver (an engine) cannot drift |
+| `engines/yield/resolveEvidence.js` | the four-rung ladder, pure |
+| `engines/yield/estimateYield.js` | the estimator, pure |
+| `services/yieldService.js` | lookup load (once per process), season resolution, persistence |
+| `routes/crops.js` · `routes/yield.js` | `GET /crops/:id/yield-estimate` (nested ownership) · `GET /yield/summary` (scoped) |
+
+`yieldLookupBuilder.js` now imports its vocabulary from the engine rather than defining
+it — engines may not import from `services/`, and the resolver needed those names.
+
+### Behaviour worth recording
+
+- **A miss is an answer.** No evidence returns **200 with `estimated: false`** and a
+  reason key. A 4xx would be indistinguishable from the crop not existing.
+- **Exact geography, never fuzzy.** A farmer who typed "Anantapur" where the government
+  writes "Ananthapuramu" misses the district rungs, lands on the state tier, **and the
+  screen says so**. Verified live: that case resolves to `STATE_SEASON` with both district
+  rungs recorded as `SKIPPED`.
+- **Bigha produces no total.** `utils/locationKey.js` already forbids a converted bigha in
+  any recommendation; a quintal figure a farmer sells against is exactly where that rule
+  matters. The per-hectare basis is still served and only the total is withheld, with a
+  reason.
+- **`totals` is null, never 0.** A zero would read as a prediction of total crop failure.
+- **Season** comes from the sowing month, except where the registry lists exactly one
+  season for the crop — a mistyped date on a wheat crop would otherwise cost the farmer
+  their district figure. Added `seasonForSowingDate` to `seasonResolver.js`.
+- **ST-40's filesystem allowlist** gained `services/yieldService.js`, after confirming the
+  path is a module constant from `import.meta.url` and the file contains no `req`
+  reference at all.
+
+### Real numbers, end to end
+
+Ludhiana wheat, 2 acres, verified through the running API: basis **4.97 t/ha = 20.11
+quintal/acre** over 2018–2022, giving **37.2 – 43.2 quintal** on 0.8094 ha. Punjab wheat
+is about 5 t/ha, so this is the government's own figure arriving intact at the farmer.
+
+### UI
+
+`DashboardYieldCard` (home) and `YieldPage` (`/yield`, sidebar). The page shows the farm
+total, a crop selector in which **unestimable crops remain selectable** — selecting one is
+how a farmer learns *why* there is no number — and then the selected crop in full: range,
+basis, evidence tier, limitations, the not-applied factors with citations, the attribution
+and the why-trace. 56 i18n keys in en+hi; Hindi is machine-authored and recorded as such in
+the ledger.
+
+### Verification
+
+- Backend **1720/1720** (was 1642; +78 yield tests: ladder 18, estimator 27, API 27, plus
+  the artefact suite).
+- Web **146/146** (was 131; +15 covering the estimated, degraded, insufficient and Hindi
+  states).
+- ESLint 0 errors · Prettier clean · web `tsc --noEmit` clean · `check:ui-strings` 0
+  hardcoded · `check:i18n` 1549 keys / 0 missing in hi · `yield:check` green.
+
+### Files
+
+Added: `backend/src/engines/yield/{lookupSchema,resolveEvidence,estimateYield}.js`,
+`backend/src/services/yieldService.js`, `backend/src/routes/yield.js`,
+`backend/tests/engines/yield{Evidence,Estimator}.test.js`, `backend/tests/api/yield.test.js`,
+`shared/i18n/{en,hi}/yield.json`, `web/frontend/src/pages/YieldPage.tsx`,
+`web/frontend/src/components/domain/{YieldEstimateView,YieldEstimateView.test,DashboardYieldCard}.tsx`,
+`docs/decisions/ADR-026-yield-estimation-decisions.md`.
+Changed: `backend/src/app.js`, `routes/crops.js`, `routes/ownership-table.js`,
+`services/{yieldLookupBuilder,recommendation/seasonResolver}.js`,
+`tests/security/st-40-injection.test.js`, `shared/types/api.ts`,
+`shared/client/queryKeys.ts`, `shared/i18n/hi/_verification.json`,
+`web/frontend/src/{App.tsx,api/endpoints.ts,i18n/resources.ts,components/layout/AppLayout.tsx,pages/DashboardPage.tsx}`,
+`docs/api/intelligence.md`, `docs/yield/yield-estimation.md`, and this file.

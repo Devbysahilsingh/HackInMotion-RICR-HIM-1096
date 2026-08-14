@@ -1,0 +1,1026 @@
+{
+  "generatedAt": "2026-08-14T17:54:44.158Z",
+  "generator": "backend/scripts/build-yield-lookup.mjs",
+  "source": {
+    "file": "datasets/yield/raw/idp-apy-crop-wise-area-production-yield.csv",
+    "sha256": "fe10fbf129b3501bbb3d282c7600402a8ed7248c116f2cc9428bc2b573d1d4a9"
+  },
+  "sourceProfile": {
+    "rows": 455359,
+    "duplicateCompositeKeys": 0,
+    "negativeValues": 0,
+    "yieldNotEqualProductionOverArea": 0,
+    "districtCodeNameCollisions": 0,
+    "blankCounts": {
+      "production": 5009,
+      "crop_code": 21
+    },
+    "distinctStates": 34,
+    "distinctDistricts": 740,
+    "distinctCropNames": 115,
+    "unitCombinations": [
+      {
+        "combo": "Hectare|Tonnes|Tonnes/Hectare",
+        "count": 455359
+      }
+    ],
+    "temporalCoverage": {
+      "from": "1997-1998",
+      "to": "2022-2023",
+      "distinctYears": 26,
+      "rowsPerYear": {
+        "1997-1998": 10445,
+        "1998-1999": 13670,
+        "1999-2000": 14329,
+        "2000-2001": 14813,
+        "2001-2002": 14406,
+        "2002-2003": 17795,
+        "2003-2004": 18436,
+        "2004-2005": 15350,
+        "2005-2006": 15239,
+        "2006-2007": 16073,
+        "2007-2008": 16094,
+        "2008-2009": 16641,
+        "2009-2010": 16975,
+        "2010-2011": 16531,
+        "2011-2012": 18128,
+        "2012-2013": 17227,
+        "2013-2014": 18618,
+        "2014-2015": 18022,
+        "2015-2016": 18473,
+        "2016-2017": 19801,
+        "2017-2018": 20556,
+        "2018-2019": 20744,
+        "2019-2020": 22186,
+        "2020-2021": 21608,
+        "2021-2022": 21350,
+        "2022-2023": 21849
+      }
+    },
+    "seasonLabels": {
+      "Kharif": 161402,
+      "Rabi": 120049,
+      "Whole Year": 81403,
+      "Total": 48044,
+      "Summer": 26811,
+      "Winter": 9616,
+      "Autumn": 8034
+    },
+    "malformedRows": 0,
+    "header": [
+      "id",
+      "year",
+      "state_name",
+      "state_code",
+      "district_name",
+      "district_code",
+      "crop_name",
+      "crop_code",
+      "crop_type",
+      "season",
+      "area",
+      "area_unit",
+      "production",
+      "production_unit",
+      "yield",
+      "yield_unit"
+    ]
+  },
+  "refinement": {
+    "cropsInScope": [
+      {
+        "cropCode": "RICE",
+        "apyCropName": "Rice"
+      },
+      {
+        "cropCode": "WHEAT",
+        "apyCropName": "Wheat"
+      },
+      {
+        "cropCode": "MAIZE",
+        "apyCropName": "Maize"
+      },
+      {
+        "cropCode": "SOYBEAN",
+        "apyCropName": "Soyabean"
+      },
+      {
+        "cropCode": "POTATO",
+        "apyCropName": "Potato"
+      },
+      {
+        "cropCode": "ONION",
+        "apyCropName": "Onion"
+      },
+      {
+        "cropCode": "CHILLI",
+        "apyCropName": "Dry Chillies"
+      }
+    ],
+    "cropsExcluded": [
+      {
+        "cropCode": "COTTON",
+        "reason": "DELIBERATE — no yield estimate for cotton in v1. The APY source name would be 'Cotton(Lint)', but it publishes production in 170 kg bales while labelling the column 'Tonnes' (docs/yield/dataset-audit.md D4: read as tonnes, 2022-23 gives an impossible 2,677 kg lint/ha; read as bales, 455 kg/ha against a published 443). The x0.17 conversion is NOT applied without a citable DES or Ministry of Textiles bale definition. The data itself is complete and current — 450 districts, latest year 2022-23 — so this is a citation gate, not a data gate. Setting apyCropName unblocks it with no code change."
+      },
+      {
+        "cropCode": "TOMATO",
+        "reason": "DELIBERATE — no yield estimate for tomato. The APY source has a 'Tomato' series and it is not usable: 13 districts, 5 distinct years, latest 2014-15, 23% of rows reporting zero production, and an annual tier whose most recent observation is 2003. The state tier is 2 groups, also ending 2014-15. There is no honest fallback, so the endpoint answers INSUFFICIENT_EVIDENCE rather than dressing eleven-year-old data from 13 districts in a low-confidence label."
+      }
+    ],
+    "fetched": 455359,
+    "accepted": 110188,
+    "dropped": {
+      "unmappedCrop": 333806,
+      "unresolvedSeason": 10724,
+      "unknownSeason": 0,
+      "badUnit": 0,
+      "badYear": 0,
+      "badGeo": 0,
+      "badArea": 0,
+      "badProduction": 566,
+      "badYield": 0,
+      "inconsistentYield": 0,
+      "implausibleYield": 75
+    },
+    "droppedTotal": 345171,
+    "dropRate": 0.758,
+    "samples": {
+      "unresolvedSeason": [
+        "Autumn",
+        "Winter"
+      ]
+    },
+    "unmappedCropNames": [
+      {
+        "name": "Moong(Green Gram)",
+        "count": 23419
+      },
+      {
+        "name": "Urad",
+        "count": 22104
+      },
+      {
+        "name": "Groundnut",
+        "count": 18623
+      },
+      {
+        "name": "Sesamum",
+        "count": 17307
+      },
+      {
+        "name": "Jowar",
+        "count": 13841
+      },
+      {
+        "name": "Arhar/Tur",
+        "count": 13230
+      },
+      {
+        "name": "Rapeseed &Mustard",
+        "count": 12661
+      },
+      {
+        "name": "Sugarcane",
+        "count": 12483
+      },
+      {
+        "name": "Gram",
+        "count": 12119
+      },
+      {
+        "name": "Bajra",
+        "count": 10376
+      },
+      {
+        "name": "Sunflower",
+        "count": 9763
+      },
+      {
+        "name": "Peas & Beans (Pulses)",
+        "count": 9094
+      },
+      {
+        "name": "Small Millets",
+        "count": 8674
+      },
+      {
+        "name": "Cotton(Lint)",
+        "count": 8204
+      },
+      {
+        "name": "Ragi",
+        "count": 8035
+      },
+      {
+        "name": "Horse-Gram",
+        "count": 7854
+      },
+      {
+        "name": "Masoor",
+        "count": 7460
+      },
+      {
+        "name": "Turmeric",
+        "count": 6776
+      },
+      {
+        "name": "Linseed",
+        "count": 6732
+      },
+      {
+        "name": "Sweet Potato",
+        "count": 6721
+      },
+      {
+        "name": "Barley",
+        "count": 6713
+      },
+      {
+        "name": "Other Kharif Pulses",
+        "count": 6623
+      },
+      {
+        "name": "Coriander",
+        "count": 5776
+      },
+      {
+        "name": "Other Rabi Pulses",
+        "count": 5712
+      },
+      {
+        "name": "Garlic",
+        "count": 5702
+      },
+      {
+        "name": "Castor Seed",
+        "count": 5618
+      },
+      {
+        "name": "Ginger",
+        "count": 5428
+      },
+      {
+        "name": "Banana",
+        "count": 5203
+      },
+      {
+        "name": "Tobacco",
+        "count": 4527
+      },
+      {
+        "name": "Niger Seed",
+        "count": 3386
+      },
+      {
+        "name": "Cowpea(Lobia)",
+        "count": 3365
+      },
+      {
+        "name": "Sannhamp",
+        "count": 3315
+      },
+      {
+        "name": "Coconut",
+        "count": 3303
+      },
+      {
+        "name": "Tapioca",
+        "count": 2762
+      },
+      {
+        "name": "Mesta",
+        "count": 2724
+      },
+      {
+        "name": "Arecanut",
+        "count": 2532
+      },
+      {
+        "name": "Guar Seed",
+        "count": 2483
+      },
+      {
+        "name": "Other Cereals",
+        "count": 2400
+      },
+      {
+        "name": "Jute",
+        "count": 2177
+      },
+      {
+        "name": "Safflower",
+        "count": 2096
+      },
+      {
+        "name": "Khesari",
+        "count": 2011
+      },
+      {
+        "name": "Other Oilseeds",
+        "count": 1932
+      },
+      {
+        "name": "Cashewnut",
+        "count": 1872
+      },
+      {
+        "name": "Black Pepper",
+        "count": 1728
+      },
+      {
+        "name": "Moth",
+        "count": 1628
+      },
+      {
+        "name": "Cardamom",
+        "count": 691
+      },
+      {
+        "name": "Papaya",
+        "count": 487
+      },
+      {
+        "name": "Mango",
+        "count": 451
+      },
+      {
+        "name": "Brinjal",
+        "count": 432
+      },
+      {
+        "name": "Other Fresh Fruits",
+        "count": 420
+      },
+      {
+        "name": "Tomato",
+        "count": 407
+      },
+      {
+        "name": "Other Vegetables",
+        "count": 391
+      },
+      {
+        "name": "Citrus Fruit",
+        "count": 301
+      },
+      {
+        "name": "Pome Fruit",
+        "count": 297
+      },
+      {
+        "name": "Orange",
+        "count": 271
+      },
+      {
+        "name": "Pineapple",
+        "count": 257
+      },
+      {
+        "name": "Bhindi",
+        "count": 236
+      },
+      {
+        "name": "Cabbage",
+        "count": 233
+      },
+      {
+        "name": "Korra",
+        "count": 135
+      },
+      {
+        "name": "Grapes",
+        "count": 129
+      },
+      {
+        "name": "Other Summer Pulses",
+        "count": 126
+      },
+      {
+        "name": "Cauliflower",
+        "count": 122
+      },
+      {
+        "name": "Drum Stick",
+        "count": 112
+      },
+      {
+        "name": "Jack Fruit",
+        "count": 112
+      },
+      {
+        "name": "Arcanut (Processed)",
+        "count": 99
+      },
+      {
+        "name": "Samai",
+        "count": 93
+      },
+      {
+        "name": "Cucumber",
+        "count": 93
+      },
+      {
+        "name": "Dry Ginger",
+        "count": 93
+      },
+      {
+        "name": "Bitter Gourd",
+        "count": 92
+      },
+      {
+        "name": "Water Melon",
+        "count": 85
+      },
+      {
+        "name": "Bottle Gourd",
+        "count": 84
+      },
+      {
+        "name": "Snak Guard",
+        "count": 82
+      },
+      {
+        "name": "Other Misc. Pulses",
+        "count": 80
+      },
+      {
+        "name": "Other Citrus Fruit",
+        "count": 69
+      },
+      {
+        "name": "Pome Granet",
+        "count": 66
+      },
+      {
+        "name": "Tea",
+        "count": 62
+      },
+      {
+        "name": "Redish",
+        "count": 61
+      },
+      {
+        "name": "Varagu",
+        "count": 59
+      },
+      {
+        "name": "Lab-Lab",
+        "count": 48
+      },
+      {
+        "name": "Ash Gourd",
+        "count": 44
+      },
+      {
+        "name": "Lemon",
+        "count": 39
+      },
+      {
+        "name": "Sapota",
+        "count": 39
+      },
+      {
+        "name": "Ribed Guard",
+        "count": 38
+      },
+      {
+        "name": "Yam",
+        "count": 36
+      },
+      {
+        "name": "Cashewnut Raw",
+        "count": 35
+      },
+      {
+        "name": "Cond-Spcs Other",
+        "count": 32
+      },
+      {
+        "name": "Rubber",
+        "count": 29
+      },
+      {
+        "name": "Carrot",
+        "count": 28
+      },
+      {
+        "name": "Rajmash Kholar",
+        "count": 27
+      },
+      {
+        "name": "Cashewnut Processed",
+        "count": 21
+      },
+      {
+        "name": "Jute & Mesta",
+        "count": 20
+      },
+      {
+        "name": "Atcanut (Raw)",
+        "count": 20
+      },
+      {
+        "name": "Beet Root",
+        "count": 16
+      },
+      {
+        "name": "Kapas",
+        "count": 12
+      },
+      {
+        "name": "Peas (Vegetable)",
+        "count": 11
+      },
+      {
+        "name": "Ber",
+        "count": 11
+      },
+      {
+        "name": "Colocosia",
+        "count": 11
+      },
+      {
+        "name": "Ricebean (Nagadal)",
+        "count": 10
+      },
+      {
+        "name": "Jobster",
+        "count": 9
+      },
+      {
+        "name": "Perilla",
+        "count": 9
+      },
+      {
+        "name": "Turnip",
+        "count": 8
+      },
+      {
+        "name": "Coffee",
+        "count": 6
+      },
+      {
+        "name": "Pear",
+        "count": 6
+      },
+      {
+        "name": "Plums",
+        "count": 6
+      },
+      {
+        "name": "Litchi",
+        "count": 6
+      },
+      {
+        "name": "Apple",
+        "count": 4
+      },
+      {
+        "name": "Peach",
+        "count": 4
+      },
+      {
+        "name": "Other Dry Fruit",
+        "count": 1
+      }
+    ],
+    "outlierGateByCrop": {
+      "CHILLI": {
+        "rejected": 15,
+        "kept": 10976,
+        "lowestRejectedYieldTHa": 14,
+        "highestKeptYieldTHa": 13.667
+      },
+      "MAIZE": {
+        "rejected": 5,
+        "kept": 28563,
+        "lowestRejectedYieldTHa": 15,
+        "highestKeptYieldTHa": 13.752
+      },
+      "ONION": {
+        "rejected": 11,
+        "kept": 14745,
+        "lowestRejectedYieldTHa": 100,
+        "highestKeptYieldTHa": 80.125
+      },
+      "POTATO": {
+        "rejected": 2,
+        "kept": 12882,
+        "lowestRejectedYieldTHa": 153.076,
+        "highestKeptYieldTHa": 100
+      },
+      "RICE": {
+        "rejected": 11,
+        "kept": 24100,
+        "lowestRejectedYieldTHa": 10.5,
+        "highestKeptYieldTHa": 9.886
+      },
+      "SOYBEAN": {
+        "rejected": 31,
+        "kept": 6081,
+        "lowestRejectedYieldTHa": 5.366,
+        "highestKeptYieldTHa": 4.505
+      },
+      "WHEAT": {
+        "rejected": 0,
+        "kept": 12841,
+        "lowestRejectedYieldTHa": null,
+        "highestKeptYieldTHa": 7.462
+      }
+    },
+    "implausibleSamples": [
+      {
+        "cropCode": "ONION",
+        "state": "Andhra Pradesh",
+        "district": "Srikakulam",
+        "season": "KHARIF",
+        "year": "2017-2018",
+        "areaHa": 2,
+        "productionT": 8140,
+        "yieldTHa": 4070,
+        "outlierScore": 9.65
+      },
+      {
+        "cropCode": "ONION",
+        "state": "Andhra Pradesh",
+        "district": "Srikakulam",
+        "season": "KHARIF",
+        "year": "2018-2019",
+        "areaHa": 3,
+        "productionT": 7832,
+        "yieldTHa": 2610.667,
+        "outlierScore": 8.92
+      },
+      {
+        "cropCode": "ONION",
+        "state": "Haryana",
+        "district": "Karnal",
+        "season": "ANNUAL",
+        "year": "2008-2009",
+        "areaHa": 2,
+        "productionT": 4300,
+        "yieldTHa": 2150,
+        "outlierScore": 8.6
+      },
+      {
+        "cropCode": "ONION",
+        "state": "Jharkhand",
+        "district": "Dhanbad",
+        "season": "RABI",
+        "year": "2013-2014",
+        "areaHa": 13,
+        "productionT": 4706,
+        "yieldTHa": 362,
+        "outlierScore": 5.66
+      },
+      {
+        "cropCode": "RICE",
+        "state": "Maharashtra",
+        "district": "Kolhapur",
+        "season": "KHARIF",
+        "year": "1997-1998",
+        "areaHa": 1100,
+        "productionT": 246100,
+        "yieldTHa": 223.727,
+        "outlierScore": 10.9
+      },
+      {
+        "cropCode": "RICE",
+        "state": "Maharashtra",
+        "district": "Kolhapur",
+        "season": "ALL_SEASON",
+        "year": "1997-1998",
+        "areaHa": 1103,
+        "productionT": 246108,
+        "yieldTHa": 223.126,
+        "outlierScore": 10.9
+      },
+      {
+        "cropCode": "POTATO",
+        "state": "Haryana",
+        "district": "Panipat",
+        "season": "ANNUAL",
+        "year": "2002-2003",
+        "areaHa": 195,
+        "productionT": 41700,
+        "yieldTHa": 213.846,
+        "outlierScore": 4.18
+      },
+      {
+        "cropCode": "ONION",
+        "state": "Tamil Nadu",
+        "district": "Karur",
+        "season": "ANNUAL",
+        "year": "1997-1998",
+        "areaHa": 228,
+        "productionT": 46530,
+        "yieldTHa": 204.079,
+        "outlierScore": 4.71
+      },
+      {
+        "cropCode": "ONION",
+        "state": "Andhra Pradesh",
+        "district": "East Godavari",
+        "season": "RABI",
+        "year": "2018-2019",
+        "areaHa": 11,
+        "productionT": 2156,
+        "yieldTHa": 196,
+        "outlierScore": 4.65
+      },
+      {
+        "cropCode": "POTATO",
+        "state": "Jammu And Kashmir",
+        "district": "Doda",
+        "season": "RABI",
+        "year": "2020-2021",
+        "areaHa": 7,
+        "productionT": 1071.534,
+        "yieldTHa": 153.076,
+        "outlierScore": 3.72
+      },
+      {
+        "cropCode": "ONION",
+        "state": "Andhra Pradesh",
+        "district": "Prakasam",
+        "season": "RABI",
+        "year": "2018-2019",
+        "areaHa": 11,
+        "productionT": 1540,
+        "yieldTHa": 140,
+        "outlierScore": 4.09
+      },
+      {
+        "cropCode": "ONION",
+        "state": "Andhra Pradesh",
+        "district": "Guntur",
+        "season": "RABI",
+        "year": "2018-2019",
+        "areaHa": 33,
+        "productionT": 4532,
+        "yieldTHa": 137.333,
+        "outlierScore": 4.06
+      },
+      {
+        "cropCode": "ONION",
+        "state": "Andhra Pradesh",
+        "district": "Ananthapuramu",
+        "season": "RABI",
+        "year": "2018-2019",
+        "areaHa": 410,
+        "productionT": 53064,
+        "yieldTHa": 129.424,
+        "outlierScore": 3.96
+      },
+      {
+        "cropCode": "ONION",
+        "state": "Andhra Pradesh",
+        "district": "Ananthapuramu",
+        "season": "RABI",
+        "year": "2017-2018",
+        "areaHa": 545,
+        "productionT": 64992,
+        "yieldTHa": 119.251,
+        "outlierScore": 3.82
+      },
+      {
+        "cropCode": "ONION",
+        "state": "Andhra Pradesh",
+        "district": "East Godavari",
+        "season": "RABI",
+        "year": "2017-2018",
+        "areaHa": 2,
+        "productionT": 200,
+        "yieldTHa": 100,
+        "outlierScore": 3.53
+      },
+      {
+        "cropCode": "RICE",
+        "state": "Goa",
+        "district": "North Goa",
+        "season": "KHARIF",
+        "year": "2022-2023",
+        "areaHa": 1056,
+        "productionT": 47325,
+        "yieldTHa": 44.815,
+        "outlierScore": 7.08
+      },
+      {
+        "cropCode": "CHILLI",
+        "state": "Rajasthan",
+        "district": "Ganganagar",
+        "season": "ANNUAL",
+        "year": "2015-2016",
+        "areaHa": 9,
+        "productionT": 360,
+        "yieldTHa": 40,
+        "outlierScore": 4.94
+      },
+      {
+        "cropCode": "RICE",
+        "state": "Goa",
+        "district": "South Goa",
+        "season": "KHARIF",
+        "year": "2022-2023",
+        "areaHa": 1201,
+        "productionT": 47105,
+        "yieldTHa": 39.221,
+        "outlierScore": 6.77
+      },
+      {
+        "cropCode": "MAIZE",
+        "state": "Tamil Nadu",
+        "district": "Coimbatore",
+        "season": "ANNUAL",
+        "year": "2008-2009",
+        "areaHa": 5692,
+        "productionT": 146154,
+        "yieldTHa": 25.677,
+        "outlierScore": 4.56
+      },
+      {
+        "cropCode": "CHILLI",
+        "state": "Haryana",
+        "district": "Panipat",
+        "season": "ANNUAL",
+        "year": "2007-2008",
+        "areaHa": 141,
+        "productionT": 3500,
+        "yieldTHa": 24.823,
+        "outlierScore": 4.3
+      },
+      {
+        "cropCode": "CHILLI",
+        "state": "Andaman And Nicobar Islands",
+        "district": "South Andamans",
+        "season": "RABI",
+        "year": "2017-2018",
+        "areaHa": 39.3,
+        "productionT": 853.2,
+        "yieldTHa": 21.71,
+        "outlierScore": 4.12
+      },
+      {
+        "cropCode": "CHILLI",
+        "state": "Andaman And Nicobar Islands",
+        "district": "North And Middle Andaman",
+        "season": "RABI",
+        "year": "2022-2023",
+        "areaHa": 7.78,
+        "productionT": 165.14,
+        "yieldTHa": 21.226,
+        "outlierScore": 4.09
+      },
+      {
+        "cropCode": "CHILLI",
+        "state": "Andaman And Nicobar Islands",
+        "district": "South Andamans",
+        "season": "RABI",
+        "year": "2016-2017",
+        "areaHa": 40.07,
+        "productionT": 840.03,
+        "yieldTHa": 20.964,
+        "outlierScore": 4.07
+      },
+      {
+        "cropCode": "CHILLI",
+        "state": "Manipur",
+        "district": "Tamenglong",
+        "season": "ANNUAL",
+        "year": "2018-2019",
+        "areaHa": 14,
+        "productionT": 260,
+        "yieldTHa": 18.571,
+        "outlierScore": 3.91
+      },
+      {
+        "cropCode": "MAIZE",
+        "state": "Chhattisgarh",
+        "district": "Khairagarh-Chhuikhadan-Gandai",
+        "season": "KHARIF",
+        "year": "2022-2023",
+        "areaHa": 188,
+        "productionT": 3373,
+        "yieldTHa": 17.941,
+        "outlierScore": 3.91
+      }
+    ]
+  },
+  "lookup": {
+    "policy": {
+      "lookbackYears": 5,
+      "minObservations": 3,
+      "aggregation": "median",
+      "spread": "sample standard deviation over the same window",
+      "stateTierAggregation": "district-year yields collapsed to one median per year, then a median over years — this estimates a typical district in the state, which is the quantity a fallback needs, not the state aggregate DES publishes",
+      "note": "minObservations is a product policy, not an agronomic constant."
+    },
+    "crops": [
+      "CHILLI",
+      "MAIZE",
+      "ONION",
+      "POTATO",
+      "RICE",
+      "SOYBEAN",
+      "WHEAT"
+    ],
+    "entriesPerTier": {
+      "DISTRICT_SEASON": 4532,
+      "DISTRICT_ANNUAL": 2301,
+      "STATE_SEASON": 235,
+      "STATE": 187
+    },
+    "entriesPerCropPerTier": {
+      "CHILLI": {
+        "DISTRICT_SEASON": 293,
+        "DISTRICT_ANNUAL": 493,
+        "STATE_SEASON": 16,
+        "STATE": 21
+      },
+      "MAIZE": {
+        "DISTRICT_SEASON": 1268,
+        "DISTRICT_ANNUAL": 432,
+        "STATE_SEASON": 54,
+        "STATE": 31
+      },
+      "RICE": {
+        "DISTRICT_SEASON": 986,
+        "DISTRICT_ANNUAL": 390,
+        "STATE_SEASON": 55,
+        "STATE": 33
+      },
+      "WHEAT": {
+        "DISTRICT_SEASON": 619,
+        "DISTRICT_ANNUAL": 1,
+        "STATE_SEASON": 32,
+        "STATE": 30
+      },
+      "SOYBEAN": {
+        "DISTRICT_SEASON": 392,
+        "DISTRICT_ANNUAL": 12,
+        "STATE_SEASON": 24,
+        "STATE": 22
+      },
+      "ONION": {
+        "DISTRICT_SEASON": 535,
+        "DISTRICT_ANNUAL": 464,
+        "STATE_SEASON": 24,
+        "STATE": 23
+      },
+      "POTATO": {
+        "DISTRICT_SEASON": 439,
+        "DISTRICT_ANNUAL": 509,
+        "STATE_SEASON": 30,
+        "STATE": 27
+      }
+    },
+    "geo": {
+      "states": 34,
+      "districts": 738
+    }
+  },
+  "knownIssues": [
+    {
+      "id": "D3",
+      "severity": "accepted",
+      "title": "Autumn and Winter seasons are unresolved",
+      "detail": "The eastern rice seasons (aus / boro) have no member in the KHARIF|RABI|ZAID enum. Their rows are dropped and counted rather than mapped by resemblance, which would misassign the rice of the states that grow the most of it."
+    },
+    {
+      "id": "D4",
+      "severity": "blocking-for-cotton",
+      "title": "Cotton production is published in 170 kg bales, labelled \"Tonnes\"",
+      "detail": "Read as tonnes, 2022-23 gives 2,677 kg lint/ha, which is physically impossible; read as 170 kg bales it gives 455 kg/ha against a published 443. COTTON is therefore excluded from the lookup and the x0.17 conversion is NOT applied without a citable DES or Ministry of Textiles bale definition. Data is complete and current — this is a citation gate."
+    },
+    {
+      "id": "D5",
+      "severity": "handled",
+      "title": "Some rows record area at the wrong magnitude",
+      "detail": "Concentrated in Maharashtra 1997-98. Detected by an Iglewicz-Hoaglin modified z-score (published threshold 3.5) on log yield, upper tail only, per crop. Dropped and listed under refinement.implausibleSamples — never rescaled, because rescaling would assert a correction to a government return."
+    },
+    {
+      "id": "D7",
+      "severity": "label-required",
+      "title": "CHILLI is DRY chillies",
+      "detail": "The APY series is dry weight. Green-chilli yields are several times higher, so any surface showing a chilli estimate must say dry."
+    },
+    {
+      "id": "D8",
+      "severity": "blocking-for-tomato",
+      "title": "Tomato evidence is insufficient at every tier",
+      "detail": "The source has a Tomato series: 13 districts, 5 distinct years, latest 2014-15, 23% zero-production rows, annual tier last observed 2003. TOMATO is excluded and the API answers INSUFFICIENT_EVIDENCE."
+    },
+    {
+      "id": "D9",
+      "severity": "open",
+      "title": "District sums exceed published all-India totals by ~14-15%",
+      "detail": "Every yield matches published national, state and district figures, but summing district area/production overshoots the all-India wheat and rice totals. Indian district returns are not required to reconcile to DES state estimates, which derive from crop-cutting experiments — that is the likely explanation and it is not proven here. It cannot affect this feature: the estimator reads per-district yields and never sums them."
+    },
+    {
+      "id": "D10",
+      "severity": "known-limitation",
+      "title": "District names are matched exactly, never fuzzily",
+      "detail": "The source carries post-rename district names (Ananthapuramu, Dharashiv, Ahilyanagar). A farmer who typed an older name will not match and falls through to the state tier, which is stated in the response. A near-match would silently attribute another district history to their field."
+    }
+  ]
+}

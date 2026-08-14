@@ -107,6 +107,7 @@ function Sidebar() {
     },
     { to: '/weather', labelKey: 'weather:pageTitle', Icon: IconCloud },
     { to: '/irrigation', labelKey: 'irrigation:pageTitle', Icon: IconDroplet },
+    { to: '/yield', labelKey: 'yield:pageTitle', Icon: IconChart },
     { to: '/market', labelKey: 'market:pageTitle', Icon: IconTrendUp },
     { to: '/scan', labelKey: 'common:nav.cropHealth', Icon: IconScan },
     { to: '/crop-recommendation', labelKey: 'common:nav.whatToPlant', Icon: IconLeaf },
