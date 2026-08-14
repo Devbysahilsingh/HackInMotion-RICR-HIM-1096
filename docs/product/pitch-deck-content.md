@@ -242,7 +242,7 @@ A full adversarial audit, run against a **live instance** with real HTTP.
 → **MongoDB Atlas** — 14 collections, every owned document carries `userId`
 → **FastAPI + ONNX** ml-service — internal only, `X-Service-Key`
 
-**38 REST routes**, documented in `api-documentation.md` and transcribed from an
+**41 REST routes**, documented in `api-documentation.md` and transcribed from an
 ownership table that a test asserts against the live router — so the docs cannot
 drift from the code without the build failing.
 

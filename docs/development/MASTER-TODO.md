@@ -183,7 +183,7 @@ and is not something code can close._
   `architecture-diagram.png` rendered (2400px, mermaid-cli) from a committed
   `architecture-diagram.mmd` — the source is kept alongside the binary so the diagram is
   reviewable in a diff rather than drifting silently from the system it depicts.
-  `api-documentation.md` written at the repo root: all **38 routes** transcribed from
+  `api-documentation.md` written at the repo root: all **41 routes** (38 when written) transcribed from
   `routes/ownership-table.js` (which a test asserts against the live Express router, so
   this file cannot drift undetected), plus the envelope, the closed error-code set, the
   auth/ownership model, the four decision engines, the honesty contract, rate limits and

@@ -1,7 +1,7 @@
 # 🌾 Khetri — Smart Farm Decision Support System
 
 > *HackInMotion 2026 · Team HIM-1096.*
-> **STATUS: FEATURE-COMPLETE ACROSS WEB + ANDROID. NOT DEPLOYED.** Every must-have and all six challenge capabilities are built and tested on both clients. **Phase 8 (deploy & seed) is deliberately left open until the qualifier result is announced** — provisioning Render/Vercel/Atlas/HF-Spaces accounts and burning their free-tier windows before we know we have qualified is waste, not progress. Everything Phase 8 needs is committed and locally verified: `render.yaml` with every secret `sync: false`, the environment checklist, and a smoke suite that passes 18/18 against a local `NODE_ENV=production` server on a real database.
+> **STATUS: ALL 9 MUST-HAVES COMPLETE ON WEB + ANDROID. NOT DEPLOYED.** All nine must-have requirements are built and tested on both clients. Of the six *challenge* capabilities, **4 are complete, 1 is partial and 1 is not built** — mobile voice **input** is deliberately absent (`RECORD_AUDIO` would forfeit the Expo Go demo route) and **yield prediction is not built at all**, because the district yield lookup it needs does not exist and we will not ship invented coefficients. The per-item breakdown is in [`docs/development/submission-audit.md`](docs/development/submission-audit.md) §2. *(This line previously read "all six challenge capabilities are built and tested", which was wrong — corrected 2026-08-14.)* **Phase 8 (deploy & seed) is deliberately left open until the qualifier result is announced** — provisioning Render/Vercel/Atlas/HF-Spaces accounts and burning their free-tier windows before we know we have qualified is waste, not progress. Everything Phase 8 needs is committed and locally verified: `render.yaml` with every secret `sync: false`, the environment checklist, and a smoke suite that passes 18/18 against a local `NODE_ENV=production` server on a real database.
 >
 > **Verified 2026-08-14, from real runs:**
 >
@@ -203,7 +203,7 @@ npm run verify                     # lint · format · i18n parity · UI strings
 ```
 
 ## API documentation
-**[`api-documentation.md`](api-documentation.md)** — single-page reference for all 38 routes: envelope, error codes, auth/ownership model, the four decision engines, the honesty contract, rate limits and the upload pipeline. Per-resource field detail stays in `docs/api/`.
+**[`api-documentation.md`](api-documentation.md)** — single-page reference for all 41 routes: envelope, error codes, auth/ownership model, the four decision engines, the honesty contract, rate limits and the upload pipeline. Per-resource field detail stays in `docs/api/`.
 
 ## Database
 Schema, indexes, lifecycle: `docs/database/`.

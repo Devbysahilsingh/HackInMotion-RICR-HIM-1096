@@ -14,7 +14,7 @@
 India-focused farmer decision-support platform (web + Android). Farmer → Farm → Crop → decisions: irrigate? weather risk? crop sick? fertilize? sell? plant what? Every recommendation personalized (≥3 profile factors), explainable (why-trace), localized (hi/en), resilient (cache-first), and honest (freshness/confidence labels). Full problem statement: FINAL-PLAN-SPEC §2; traceability: docs/requirements-traceability.md.
 
 ## Architecture (fixed — do not re-architect)
-React+Vite web (Vercel) & React Native+Expo Android — one REST contract → Node20/Express (Render) with pure engines + cron jobs → MongoDB Atlas M0 → FastAPI+ONNX ml-service (internal, X-Service-Key). External: Open-Meteo→OWM, data.gov.in→seed, Gemini→OpenRouter→rules, Cloudinary, Groq(P2). Details: docs/architecture/, docs/backend/, docs/frontend/, docs/mobile/.
+React+Vite web (Vercel) & React Native+Expo Android — one REST contract → Node20/Express (Render) with pure engines + cron jobs → MongoDB Atlas M0 → FastAPI+ONNX ml-service (internal, X-Service-Key). External: Open-Meteo→OWM, data.gov.in→seed, Gemini→OpenRouter→rules, Cloudinary. (~~Groq(P2)~~ — **never integrated**: web speech-to-text uses the browser's Web Speech API and mobile ships TTS only, so the planned `/voice/transcribe` proxy has no consumer and is not mounted.) Details: docs/architecture/, docs/backend/, docs/frontend/, docs/mobile/.
 
 ## Non-negotiable rules
 1. **One approved TODO at a time.** No feature work beyond the approved TODO's scope; no autonomous chaining; no final ML training or deployment without its own approval.

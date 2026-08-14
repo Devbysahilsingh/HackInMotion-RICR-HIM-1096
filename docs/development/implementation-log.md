@@ -967,7 +967,7 @@ services that do the I/O, the scheduled ingestion jobs, and the external provide
 their fallback pairs.
 
 **`api-documentation.md`** at the repo root — the single-page reference the submission
-asks for. All **38 routes**, transcribed from `backend/src/routes/ownership-table.js`
+asks for. All **41 routes** (38 at the time of writing; recounted 2026-08-14), transcribed from `backend/src/routes/ownership-table.js`
 rather than from prose. That matters: a test asserts that table against the live Express
 router, so this document cannot drift from the mounted routes without the suite failing.
 It also carries the envelope, the closed error-code set, the four ownership shapes, the
