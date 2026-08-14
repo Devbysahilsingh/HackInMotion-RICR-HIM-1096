@@ -16,7 +16,7 @@ import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { CheckboxField, SelectField, TextAreaField } from '@/components/ui/Field';
 import { SkeletonCard } from '@/components/ui/Skeleton';
-import { EmptyState, Notice } from '@/components/ui/states';
+import { EmptyState, ErrorState, Notice } from '@/components/ui/states';
 import { IconCamera, IconPlus, IconUpload } from '@/components/ui/icons';
 import { useApiErrorMessage } from '@/hooks/useApiError';
 import { usePageHeading } from '@/hooks/usePageHeading';
@@ -352,7 +352,20 @@ export default function ScanPage() {
               {activeFarm && <span className="text-sm text-ink-500">{activeFarm.name}</span>}
             </div>
 
-            {crops.length === 0 ? (
+            {/*
+              Error before empty, and the order matters. `crops` falls back to
+              `[]` when the field could not be loaded, so testing emptiness
+              first would tell a farmer their field has no crops because the
+              request failed — and then invite them to add one they already
+              have. A failed load and an empty field are different facts and
+              lead to different actions.
+            */}
+            {farmQuery.isError ? (
+              <ErrorState
+                message={toMessage(farmQuery.error)}
+                onRetry={() => void farmQuery.refetch()}
+              />
+            ) : crops.length === 0 ? (
               <EmptyState
                 title={t('health:scanNoCrops')}
                 action={

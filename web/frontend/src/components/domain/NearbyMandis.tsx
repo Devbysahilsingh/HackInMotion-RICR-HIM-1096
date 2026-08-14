@@ -11,8 +11,9 @@ import { ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { FreshnessDot } from '@/components/ui/FreshnessDot';
 import { SkeletonCard } from '@/components/ui/Skeleton';
-import { EmptyState } from '@/components/ui/states';
+import { EmptyState, ErrorState } from '@/components/ui/states';
 import { IconChevronRight, IconTrendUp } from '@/components/ui/icons';
+import { useApiErrorMessage } from '@/hooks/useApiError';
 import { useCropNames } from '@/hooks/useCropNames';
 import { useActiveFarm } from '@/farm/ActiveFarmContext';
 import { useLanguage } from '@/i18n/LanguageContext';
@@ -64,6 +65,7 @@ export function NearbyMandis({ days }: { days: number }) {
 
   const [filter, setFilter] = useState<string>('ALL');
   const { activeFarmId, activeFarm } = useActiveFarm();
+  const toMessage = useApiErrorMessage();
 
   /** The farm's own crops, for the "My crops" filter and the highlight. */
   const farmQuery = useQuery({
@@ -100,8 +102,23 @@ export function NearbyMandis({ days }: { days: number }) {
   if (!activeFarmId) return <SkeletonCard />;
   if (nearbyQuery.isPending) return <SkeletonCard />;
 
+  /*
+   * "The request failed" and "this district publishes no prices" are different
+   * facts and deserve different answers. Collapsing them into one card told a
+   * farmer their mandis were silent whenever the API was, and offered no way
+   * to try again — so an outage read as market news.
+   */
+  if (nearbyQuery.isError) {
+    return (
+      <ErrorState
+        message={toMessage(nearbyQuery.error)}
+        onRetry={() => void nearbyQuery.refetch()}
+      />
+    );
+  }
+
   const data = nearbyQuery.data;
-  if (nearbyQuery.isError || !data || data.mandis.length === 0) {
+  if (!data || data.mandis.length === 0) {
     return <MarketUnavailable />;
   }
 

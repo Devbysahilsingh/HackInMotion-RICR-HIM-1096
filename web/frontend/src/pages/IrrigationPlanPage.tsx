@@ -4,8 +4,14 @@ import { Link } from 'react-router-dom';
 
 import { cropsApi, dashboardApi } from '@/api/endpoints';
 import { queryKeys, STALE_TIME } from '@/api/queryKeys';
-import type { CropCard, IrrigationAdvice, IrrigationLogEntry } from '@/api/types';
+import type {
+  CropCard,
+  DashboardResponse,
+  IrrigationAdvice,
+  IrrigationLogEntry,
+} from '@/api/types';
 import { useActiveFarm } from '@/farm/ActiveFarmContext';
+import { QueryBoundary } from '@/components/QueryBoundary';
 import { IrrigationWorking } from '@/components/domain/IrrigationWorking';
 import { PageHeader } from '@/components/layout/AppLayout';
 import { Badge } from '@/components/ui/Badge';
@@ -57,68 +63,92 @@ export default function IrrigationPlanPage() {
     staleTime: STALE_TIME.dashboard,
   });
 
-  if (query.isPending || farmsLoading) {
-    return (
-      <>
-        <PageHeader title={t('irrigation:planTitle')} kicker={t('irrigation:planScope')} />
-        <SkeletonList count={3} />
-      </>
-    );
-  }
-
   /*
    * Farm-scoped, like every other farm-dependent screen: a verdict for farm A's
    * soybean must never appear while the sidebar names farm B. `/dashboard`
    * itself stays account-wide (rule 3) — the split happens here, over the
    * `farmId` every crop card already carries.
    */
-  const cards = byUrgency(
-    (query.data?.cropCards ?? []).filter((card) => card.farmId === activeFarmId),
+  const scopedCards = (data: DashboardResponse) =>
+    byUrgency((data.cropCards ?? []).filter((card) => card.farmId === activeFarmId));
+
+  const header = (
+    <PageHeader
+      title={t('irrigation:planTitle')}
+      kicker={t('irrigation:planScope')}
+      description={
+        activeFarm
+          ? [activeFarm.name, activeFarm.location.district].filter(Boolean).join(' · ')
+          : undefined
+      }
+    />
   );
-  const lead = cards[0];
+
+  if (farmsLoading) {
+    return (
+      <>
+        {header}
+        <SkeletonList count={3} />
+      </>
+    );
+  }
 
   return (
     <>
-      <PageHeader
-        title={t('irrigation:planTitle')}
-        kicker={t('irrigation:planScope')}
-        description={
-          activeFarm
-            ? [activeFarm.name, activeFarm.location.district].filter(Boolean).join(' · ')
-            : undefined
-        }
-      />
+      {header}
 
-      {!lead ? (
-        <EmptyState title={t('irrigation:noCrops')} />
-      ) : (
-        <div className="space-y-5">
-          <LeadVerdict card={lead} farmName={activeFarm?.name ?? ''} cropCount={cards.length} />
+      {/*
+        The five states are QueryBoundary's, not this page's. Reading the crop
+        list as `data?.cropCards ?? []` was the tempting shortcut and the wrong
+        one: it turns a failed request into an empty array, so an outage renders
+        "no crops on this field" — telling the farmer something false about
+        their own farm rather than that we could not load it. The boundary also
+        keeps the last good plan on screen behind a stale banner when a
+        background refetch fails, which is the more useful answer on a bad
+        connection than an error page.
+      */}
+      <QueryBoundary
+        query={query}
+        loading={<SkeletonList count={3} />}
+        loadingLabel={t('irrigation:planTitle')}
+        isEmpty={(data) => scopedCards(data).length === 0}
+        empty={<EmptyState title={t('irrigation:noCrops')} />}
+      >
+        {(data) => {
+          const cards = scopedCards(data);
+          // Non-empty by construction: `isEmpty` above already returned false.
+          const lead = cards[0]!;
 
-          {/*
-            Gauges and insight tiles share one grid.
+          return (
+            <div className="space-y-5">
+              <LeadVerdict card={lead} farmName={activeFarm?.name ?? ''} cropCount={cards.length} />
 
-            A field with a single crop used to draw one card into a
-            three-column row and leave two thirds of the page blank. The
-            insights are not filler for that hole — they are figures a farmer
-            asked for anyway (how much rain is coming, when to look again, how
-            much water this field has had) — but putting them in the *same*
-            grid is what guarantees the row is always complete, at any crop
-            count, without a per-count layout rule.
-          */}
-          <div className="grid items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {cards.map((card) => (
-              <CropGauge key={card.cropId} card={card} />
-            ))}
-            <FieldInsights cards={cards} leadCropId={lead.cropId} />
-          </div>
+              {/*
+                Gauges and insight tiles share one grid.
 
-          <div className="grid items-stretch gap-5 xl:grid-cols-[1.5fr_1fr]">
-            <LeadWorking cropId={lead.cropId} />
-            <RecentWater cards={cards} />
-          </div>
-        </div>
-      )}
+                A field with a single crop used to draw one card into a
+                three-column row and leave two thirds of the page blank. The
+                insights are not filler for that hole — they are figures a
+                farmer asked for anyway (how much rain is coming, when to look
+                again, how much water this field has had) — but putting them in
+                the *same* grid is what guarantees the row is always complete,
+                at any crop count, without a per-count layout rule.
+              */}
+              <div className="grid items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {cards.map((card) => (
+                  <CropGauge key={card.cropId} card={card} />
+                ))}
+                <FieldInsights cards={cards} leadCropId={lead.cropId} />
+              </div>
+
+              <div className="grid items-stretch gap-5 xl:grid-cols-[1.5fr_1fr]">
+                <LeadWorking cropId={lead.cropId} />
+                <RecentWater cards={cards} />
+              </div>
+            </div>
+          );
+        }}
+      </QueryBoundary>
     </>
   );
 }
