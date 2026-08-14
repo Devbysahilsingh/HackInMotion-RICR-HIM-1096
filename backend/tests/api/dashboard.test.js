@@ -373,7 +373,9 @@ describe('Dashboard, recommendations and the feed jobs', () => {
 
       // An older SEVERE scan, then a newer MILD one — the card must report
       // the newer one, not the more severe one and not the first one found.
-      await CropHealthLog.create(scan({ analysis: { source: 'rules', severityAssessment: 'SEVERE' } }));
+      await CropHealthLog.create(
+        scan({ analysis: { source: 'rules', severityAssessment: 'SEVERE' } }),
+      );
       await new Promise((resolve) => setTimeout(resolve, 5));
       await CropHealthLog.create(scan());
 

@@ -98,7 +98,10 @@ export function CropCardTile({ card }: { card: CropCard }) {
             {card.marketSignal && <MarketBadge signal={card.marketSignal} />}
 
             {card.healthFlag && SEVERITY_KEY[card.healthFlag] && (
-              <Badge tone={SEVERITY_TONE[card.healthFlag] ?? 'warning'} data-testid="crop-card-health">
+              <Badge
+                tone={SEVERITY_TONE[card.healthFlag] ?? 'warning'}
+                data-testid="crop-card-health"
+              >
                 {t(`health:${SEVERITY_KEY[card.healthFlag]}`)}
               </Badge>
             )}

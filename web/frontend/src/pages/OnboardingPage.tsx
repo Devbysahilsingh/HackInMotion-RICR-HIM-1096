@@ -44,13 +44,7 @@ const GPS_ERROR_KEY: Record<GeolocationErrorKind, string> = {
 };
 
 /** One colour per allocation-bar segment, cycling for a farm with many crops. */
-const BAR_TONES = [
-  'bg-brand-600',
-  'bg-harvest-500',
-  'bg-leaf-500',
-  'bg-earth-600',
-  'bg-sky-700',
-];
+const BAR_TONES = ['bg-brand-600', 'bg-harvest-500', 'bg-leaf-500', 'bg-earth-600', 'bg-sky-700'];
 
 /**
  * Post-registration farm setup — four steps, matching the reference: where the
@@ -275,12 +269,7 @@ export default function OnboardingPage() {
             title={t('farm:wizardLocationTitle')}
             body={t('farm:locationWhy')}
             visual={
-              <PhotoPanel
-                t={t}
-                file={photoFile}
-                onSelect={setPhotoFile}
-                existingUrl={null}
-              />
+              <PhotoPanel t={t} file={photoFile} onSelect={setPhotoFile} existingUrl={null} />
             }
           >
             {farmError && <Notice tone="danger">{farmError}</Notice>}
@@ -295,9 +284,7 @@ export default function OnboardingPage() {
               >
                 {gps.isLocating ? t('farm:gpsLocating') : t('farm:useGps')}
               </Button>
-              {gps.error && (
-                <Notice tone="warning">{t(`farm:${GPS_ERROR_KEY[gps.error]}`)}</Notice>
-              )}
+              {gps.error && <Notice tone="warning">{t(`farm:${GPS_ERROR_KEY[gps.error]}`)}</Notice>}
               {gps.coordinates && !gps.error && <Notice tone="info">{t('farm:gpsSuccess')}</Notice>}
             </div>
 
@@ -431,7 +418,11 @@ export default function OnboardingPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <Button variant="secondary" onClick={() => setStepIndex(0)} data-testid="onboarding-back">
+              <Button
+                variant="secondary"
+                onClick={() => setStepIndex(0)}
+                data-testid="onboarding-back"
+              >
                 {t('common:action.back')}
               </Button>
               <Button
@@ -530,7 +521,9 @@ export default function OnboardingPage() {
                 </p>
                 <div className="mt-2.5 flex h-2 overflow-hidden rounded-full bg-white/60">
                   {crops.map((crop, index) => {
-                    const acres = crop.areaValue ? toAcres(crop.areaValue, crop.areaUnit ?? 'acre') : 0;
+                    const acres = crop.areaValue
+                      ? toAcres(crop.areaValue, crop.areaUnit ?? 'acre')
+                      : 0;
                     const pct = totalAcres > 0 ? Math.min(100, (acres / totalAcres) * 100) : 0;
                     return (
                       <span
@@ -592,7 +585,11 @@ export default function OnboardingPage() {
             )}
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
-              <Button variant="secondary" onClick={() => setStepIndex(1)} data-testid="onboarding-back">
+              <Button
+                variant="secondary"
+                onClick={() => setStepIndex(1)}
+                data-testid="onboarding-back"
+              >
                 {t('common:action.back')}
               </Button>
               <Button onClick={handleCropsContinue} data-testid="onboarding-next">
@@ -778,7 +775,11 @@ function PhotoPanel({
   if (existingUrl) {
     return (
       <div className="overflow-hidden rounded-card border border-dashed border-line-strong">
-        <img src={existingUrl} alt={t('farm:wizardPhotoAlt')} className="h-[420px] w-full object-cover" />
+        <img
+          src={existingUrl}
+          alt={t('farm:wizardPhotoAlt')}
+          className="h-[420px] w-full object-cover"
+        />
       </div>
     );
   }
@@ -840,15 +841,7 @@ function PillGroup<T extends string>({
   );
 }
 
-function SummaryTile({
-  label,
-  value,
-  hint,
-}: {
-  label: string;
-  value: ReactNode;
-  hint?: string;
-}) {
+function SummaryTile({ label, value, hint }: { label: string; value: ReactNode; hint?: string }) {
   return (
     <div className="rounded-card border border-line bg-surface p-4 shadow-card">
       <p className="kicker">{label}</p>

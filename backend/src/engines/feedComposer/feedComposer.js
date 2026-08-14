@@ -248,8 +248,7 @@ export function marketCandidate({ userId, cropCode, signal, previousTrend, distr
       // same class of bug as the weather-risk fix above. `pct` is a
       // magnitude (never negative; the template itself carries "up"/"down"),
       // rounded to one decimal so the sentence reads as a price, not a float.
-      pct:
-        signal.changePct7d == null ? null : Math.round(Math.abs(signal.changePct7d) * 10) / 10,
+      pct: signal.changePct7d == null ? null : Math.round(Math.abs(signal.changePct7d) * 10) / 10,
       district: district ?? null,
       trace: signal.trace ?? null,
     },

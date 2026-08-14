@@ -100,7 +100,11 @@ function Sidebar() {
 
   const items = [
     { to: '/dashboard', labelKey: 'common:nav.today', Icon: IconHome },
-    { to: activeFarmId ? `/farms/${activeFarmId}` : '/farms', labelKey: 'common:nav.myFarm', Icon: IconField },
+    {
+      to: activeFarmId ? `/farms/${activeFarmId}` : '/farms',
+      labelKey: 'common:nav.myFarm',
+      Icon: IconField,
+    },
     { to: '/weather', labelKey: 'weather:pageTitle', Icon: IconCloud },
     { to: '/irrigation', labelKey: 'irrigation:pageTitle', Icon: IconDroplet },
     { to: '/market', labelKey: 'market:pageTitle', Icon: IconTrendUp },

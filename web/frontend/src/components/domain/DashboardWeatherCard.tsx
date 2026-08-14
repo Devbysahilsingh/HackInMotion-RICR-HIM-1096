@@ -64,12 +64,7 @@ export function DashboardWeatherCard({
           <IconCloud size={18} className="text-sky-700" />
         </div>
         <p className="mt-3 text-sm text-ink-700">{t('weather:unavailableTitle')}</p>
-        <Button
-          variant="secondary"
-          size="md"
-          className="mt-3"
-          onClick={() => void query.refetch()}
-        >
+        <Button variant="secondary" size="md" className="mt-3" onClick={() => void query.refetch()}>
           {t('common:action.refresh')}
         </Button>
       </Card>
@@ -91,12 +86,7 @@ export function DashboardWeatherCard({
             ? t('weather:pendingNoCoordinates')
             : t('weather:pendingBody')}
         </p>
-        <Button
-          variant="secondary"
-          size="md"
-          className="mt-3"
-          onClick={() => void query.refetch()}
-        >
+        <Button variant="secondary" size="md" className="mt-3" onClick={() => void query.refetch()}>
           {t('common:action.refresh')}
         </Button>
       </Card>

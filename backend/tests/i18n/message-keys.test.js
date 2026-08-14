@@ -174,7 +174,9 @@ describe('i18n · interpolation params match what the feed composer actually sup
 
       for (const placeholder of placeholdersIn(template)) {
         assert.ok(
-          data && Object.prototype.hasOwnProperty.call(data, placeholder) && data[placeholder] != null,
+          data &&
+            Object.prototype.hasOwnProperty.call(data, placeholder) &&
+            data[placeholder] != null,
           `${language}/${namespace}.${key} needs {{${placeholder}}}, but the composed ` +
             `feed item's data has no usable value for it — this is exactly how a farmer ` +
             `ends up seeing raw "{{${placeholder}}}" text`,
@@ -183,7 +185,7 @@ describe('i18n · interpolation params match what the feed composer actually sup
     }
   }
 
-  it('weatherRiskCandidate supplies every param each risk type\'s title/body needs', () => {
+  it("weatherRiskCandidate supplies every param each risk type's title/body needs", () => {
     // One fixture per risk type, shaped like the real engine's own output
     // (weatherRisk.js), so this exercises the composer's actual mapping —
     // not a shape invented for the test.
@@ -216,7 +218,14 @@ describe('i18n · interpolation params match what the feed composer actually sup
         daysAhead: 1,
         date: '2026-08-14',
         thresholdSource: 'REGISTRY',
-        data: { tMinC: 1, thresholdC: 4, degreesUnder: 3, degreesPerBand: 2, baseBand: 1, stage: 'MID' },
+        data: {
+          tMinC: 1,
+          thresholdC: 4,
+          degreesUnder: 3,
+          degreesPerBand: 2,
+          baseBand: 1,
+          stage: 'MID',
+        },
       },
       {
         type: 'HEAT',
