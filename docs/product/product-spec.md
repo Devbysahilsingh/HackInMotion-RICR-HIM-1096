@@ -37,7 +37,7 @@ The **decision loop** every feature serves: Farmer → Farm → Crop → Current
 | Fertilizer guidance | Stage-based nutrient guidance per crop | P1 |
 | Crop recommendation | "What should I plant next season?" wizard + scored results | P1 |
 | Community alerts | District-level outbreak advisories | P2 |
-| Yield estimate | Transparent estimator with uncertainty | P3 (API+schema planned) |
+| Yield estimate | Transparent estimator with uncertainty | **NOT IMPLEMENTED — blocked on data.** Schema (`yieldEstimates`) and design (`docs/yield/yield-estimation.md`) exist; the endpoint does **not** (`GET /crops/:id/yield-estimate` returns 404, not 501). Needs a district×season×crop yield lookup that is not in the repository. |
 | Settings | Language, profile, logout | P0 |
 
 Every screen defines loading / empty / error / offline states (see ux-flows.md). No blank screens ever.

@@ -79,10 +79,19 @@ verdict, and the UI shows them **on the page** rather than behind a disclosure
 nobody opens.
 → `web/frontend/src/components/domain/IrrigationWorking.tsx`
 
-**7 · Crop-health fallback chain.** local ONNX → Gemini → OpenRouter → symptom
-rules. Every tier that declines is recorded in `escalationPath` **with its reason**
-and shown to the farmer. The terminal tier is local, so the chain always answers.
-→ `backend/src/services/cropHealthService.js`
+**7 · Crop-health fallback chain — all four tiers verified live.** local ONNX →
+Gemini → OpenRouter → symptom rules. Every tier that declines is recorded in
+`escalationPath` **with its reason** and shown to the farmer. The terminal tier
+is local, so the chain always answers.
+
+On 2026-08-14 one real field photograph was pushed through the live chain and
+**our own model got it wrong** — target spot at 0.813 confidence, while the
+correct early blight ranked second at 0.087. Force the model offline and Gemini
+answers correctly; force Gemini offline too and OpenRouter does; force all three
+offline and the app returns **`UNKNOWN`** with a null confidence rather than a
+guess. That is the whole argument for the architecture, reproducible on demand
+via the routing-only `FORCE_FAIL_*` flags.
+→ `backend/src/services/cropHealthService.js` · evidence: `docs/development/submission-audit.md` §3c
 
 **8 · The model never writes advice.** It returns a disease code and a confidence.
 Farmer-facing text comes from a sourced TNAU/ICAR knowledge base by i18n key.

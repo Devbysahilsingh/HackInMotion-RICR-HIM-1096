@@ -9,7 +9,7 @@ Rule: nothing from the problem statement is deleted. Features that don't fit the
 | Farm & crop management | Full CRUD, registry-driven, support badges | Web+Mobile |
 | Weather intelligence | Open-Meteo pipeline + fallback + cache + risk engine | Web+Mobile |
 | Irrigation engine | Full FAO-56 water balance + why-trace + degraded mode | Web+Mobile |
-| Crop health AI | Full 3-tier chain (custom ML on specialized crops, Gemini, rules) | Web+Mobile (camera-first) |
+| Crop health AI | Full **4-tier** chain (custom ONNX on specialized crops, Gemini, OpenRouter, guided symptom rules) | Web+Mobile (camera-first) |
 | Market intelligence | data.gov.in pipeline + trends + signal + fallback | Web+Mobile |
 | Unified dashboard | Prioritized action feed + crop cards | Web+Mobile |
 | i18n Hindi/English | Full parity | Web+Mobile |

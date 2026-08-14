@@ -1,4 +1,23 @@
-# Yield Estimation (FR-Y1 · P3 — spec complete, implementation deferred)
+# Yield Estimation (FR-Y1 — **NOT IMPLEMENTED · BLOCKED ON DATA**)
+
+> **Status, verified 2026-08-14.** Spec complete; **nothing is built**. There is
+> no endpoint (`GET /crops/:id/yield-estimate` returns **404**, not 501), no
+> estimator, and no yield model. The `yieldEstimates` schema exists and is
+> unwritten.
+>
+> **The blocker is one input, and it is data, not code.** Of the four terms in
+> the formula below, three are already available in the codebase — area
+> (`Crop.areaValue`), irrigation method (`Farm.irrigationMethod`, incl.
+> `rainfed`) and pest/disease events (`CropHealthLog`) — and both multipliers
+> are sourced and cited. The missing term is **`Y_hist`**, the district×season×crop
+> historical yield. `datasets/lookup/`, named in `datasets/README.md` as its
+> home, **does not exist**; `datasets/` holds crop-disease imagery only.
+>
+> `Y_hist` cannot be derived, defaulted or estimated — every other factor is a
+> *multiplier on it*, and multiplying an unknown by 0.8 is still unknown.
+> Populating it with plausible numbers would fabricate the single input that
+> decides whether a farmer plants a crop their rainfall cannot support
+> (CLAUDE.md rule 7). So it stays empty and the feature stays unbuilt.
 
 Research basis: subagent report 2026-08-12 with **live-verified** API probes (record counts and the 2015 cutoff below were confirmed against the running data.gov.in API, not assumed).
 

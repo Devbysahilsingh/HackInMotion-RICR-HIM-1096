@@ -3,16 +3,27 @@
 Internal disease-classification inference service. FastAPI + onnxruntime (CPU),
 Python 3.12, Docker. Contract: [`docs/ml/inference-architecture.md`](../docs/ml/inference-architecture.md).
 
-> ## There is no trained model.
+> ## The trained model ships. Read its accuracy honestly.
 >
-> This is the **P3-2 service skeleton**. No training has been run and none may
-> be run without its own approval (CLAUDE.md rule 1). The service currently
-> answers from a `StubPredictor` whose "logits" are a deterministic hash of the
-> preprocessed tensor. **Its outputs carry no visual meaning at all.** Every
-> such answer is stamped `modelVersion: "stub-0.0.0-untrained"`, the boot log
-> prints `provisional_model_configuration`, and the thresholds it applies are
-> marked `"calibrated": false` in `model/model-manifest.json`. Nothing here may
-> be presented as classification performance.
+> **Corrected 2026-08-14.** This banner previously read *"There is no trained
+> model"* — written during P3-2, when the service was a skeleton. Training has
+> since been run and exported: **`model/model-v1.0.onnx`** is committed, and
+> `model/model-manifest.json` records `trained: true`, `calibrated: true`,
+> `provisional: false` — 35 classes, temperature 0.586277, τ 0.7 / τ_healthy 0.8.
+> It has been **executed live** on a real field photograph (78 ms inference; see
+> `docs/development/submission-audit.md` §3c).
+>
+> **The `StubPredictor` still exists and still matters.** It is what you get when
+> `MODEL_PATH` is unset — see "Running it" below, because that is an easy mistake
+> to make locally. A stub answer is stamped `modelVersion: "stub-0.0.0-untrained"`
+> and the boot log prints `provisional_model_configuration`, so a stub can never
+> be mistaken for the real model in a log or a response.
+>
+> **What must still never be claimed:** in-domain test accuracy is 0.9632, but
+> **field-domain (PlantDoc) accuracy is 0.1257**. On the one real field photo
+> pushed through the live chain, this model was *confidently wrong* and the
+> Gemini tier corrected it. Never present this model as accurate on
+> farmer-taken photographs.
 
 ---
 

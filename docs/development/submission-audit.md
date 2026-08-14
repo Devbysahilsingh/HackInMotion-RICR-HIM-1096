@@ -15,6 +15,40 @@ Re-verified **2026-08-14** by running the gates, not by re-reading this document
 Everything in this section was measured on the date shown; anything not measured
 is marked as such rather than assumed.
 
+> **Earlier "Round Zero" audit reports and the 79/100 score are historical.**
+> They described the repository before the web client, the Android client, the
+> trained model, the live provider verification and the offline write-sync
+> existed. They are not in this repository and do **not** describe the state
+> below. Where an older document conflicts with this one, the code wins — every
+> claim here names the command or file that proves it.
+
+**Status vocabulary used throughout this document**
+
+| Term | Means |
+|---|---|
+| **DONE** | Implemented, and verified by a run recorded here |
+| **PARTIAL** | Implemented on one platform or for one path; the gap is named |
+| **NOT IMPLEMENTED** | No code exists. Not started, or deliberately declined |
+| **BLOCKED** | Designed and specified, but cannot be built without data/decisions we do not have |
+| **NOT DEVICE VERIFIED** | Code is tested; no physical phone has run it |
+| **NOT DEPLOYED** | Runs locally; no hosted URL exists |
+
+**Where to find each thing**
+
+| # | Topic | Section |
+|---|---|---|
+| 1 | Current status | §0 (this section) |
+| 2 | Must-have matrix | §0 requirement matrix · §1 |
+| 3 | Challenge capability matrix | §2 |
+| 4 | Live / API verification | §3b (17 endpoints) · §3c (crop-health chain) · §3d (offline sync) |
+| 5 | Frontend verification | §3e (degraded-state audit) |
+| 6 | Security verification | §0 gate table (ST-10, ST-11, Gitleaks) · §4 |
+| 7 | Code quality | §0 gate table |
+| 8 | Evaluator-visible strengths | §0 |
+| 9 | Known limitations | §0 · §5 |
+| 10 | Submission deliverables | §3 |
+| 11 | Remaining work | §6 |
+
 | Gate | Command | Result |
 |---|---|---|
 | ESLint | `npm run lint` | **0 errors**, 5 warnings (all `react-refresh/only-export-components`) |
@@ -24,11 +58,20 @@ is marked as such rather than assumed.
 | i18n parity | `node scripts/check-i18n.mjs` | **1493 keys · 0 missing in hi** |
 | Hardcoded UI strings | `node scripts/check-ui-strings.mjs` | **0 found** |
 | Web unit tests | `cd web/frontend && npx vitest run` | **131 / 131** |
+| Android unit tests | `cd mobile && npx jest` | **110 / 110** (12 suites) |
 | Authorization sweep (ST-10) | `node --import ./tests/env.mjs --test tests/security/st-10-authorization.test.js` | **138 / 138** |
 | IDOR sweep (ST-11) | `…/st-11-idor.test.js` | **42 / 42** |
 | Offline sync idempotency | `…/tests/api/irrigationLogSync.test.js` | **7 / 7** |
 | Index assertions | `…/tests/models/indexes.test.js` | **17 / 17** |
+| Crops API | `…/tests/api/crops.test.js` | **16 / 16** |
+| Farms API | `…/tests/api/farms.test.js` | **23 / 23** |
+| Mounted routes | `ROUTE_OWNERSHIP` vs `api-documentation.md` | **41 / 41 documented**, 0 undocumented, 0 dead |
 | Secret scan | Gitleaks + `scripts/scan-staged-secrets.mjs` | **clean** |
+
+> **Backend suites run here are targeted, not the full 1,566.** Those six files
+> are the ones covering the code changed in this pass plus the whole
+> authorization surface. The full backend suite and the ml-service suite were
+> **not** re-run this session — see the note below.
 
 > **The 5 lint warnings are named, not hidden.** All five are the same rule on
 > five React context files (`AuthContext`, `ActiveFarmContext`, `LanguageContext`,
@@ -39,8 +82,9 @@ is marked as such rather than assumed.
 > `eslint-disable` was added to reach 0 errors.**
 
 **Not re-run this session, and therefore not re-claimed here:** the full backend
-suite (README records 1,566), the Android client suite (110) and the ml-service
-suite (143). Those figures come from earlier runs recorded in the README.
+suite (README records **1,566**) and the ml-service suite (**143**, with 1 known
+manifest-hash failure). Those two figures come from earlier runs recorded in the
+README. The Android suite **was** re-run and is confirmed at 110/110 above.
 
 ### Requirement matrix
 
