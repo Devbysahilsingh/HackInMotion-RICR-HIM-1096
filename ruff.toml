@@ -1,0 +1,21 @@
+# Ruff, for the Python that lives outside `ml-service/`.
+#
+# `ml-service/` carries its own `[tool.ruff]` in `ml-service/pyproject.toml` and
+# Ruff resolves the nearest config per file, so that one wins there. This file
+# governs `scripts/ml/` — the dataset acquisition, audit and evaluation tools,
+# ~3,600 lines that are as unlinted as the service was.
+#
+# Settings are kept identical to the service's on purpose: two Python trees in
+# one repository disagreeing about line length is how a lint gate turns into
+# noise that people stop reading.
+line-length = 120
+target-version = "py312"
+extend-exclude = [".venv", "**/.venv"]
+
+[lint]
+select = ["E4", "E7", "E9", "F", "E501", "B", "BLE", "S", "UP", "RUF"]
+
+[lint.per-file-ignores]
+# These are developer tools run by hand against pinned interpreters and fixed
+# argument lists, not services taking untrusted input.
+"scripts/ml/**" = ["S603", "S607"]

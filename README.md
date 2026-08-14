@@ -221,7 +221,14 @@ Schema, indexes, lifecycle: `docs/database/`.
 Plan: docs/deployment/. Web: Vercel · API: Render · ML: HF Spaces · DB: Atlas · Android: Expo Go + APK.
 
 ## Screenshots ⏳
-Farm dashboard design references are tracked in `Design-refrences/` for implementation alignment and UI review.
+Not yet captured — they are taken from the running app after deploy, and this
+repository does not present mockups as screenshots of a working system.
+
+The design-reference exports that used to live in `Design-refrences/` and
+`assets/stitch_agriguide_advisor/` were removed on 2026-08-15: they were
+third-party prototyping-tool output, never imported by the web or mobile app,
+and the UI they informed has been built. They remain in git history if anyone
+needs them (`git show a9fd000 -- Design-refrences`).
 
 ## Team & contributions
 See `docs/development/team-plan.md` — real ownership per member; commit history reflects genuine work (project policy: no manufactured contributions).

@@ -164,6 +164,15 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
       - run: pip install -r requirements.txt -r requirements-dev.txt
         working-directory: ml-service
+      # Python's half of the lint gate. The `lint` job above is Node-only, so
+      # until this step existed the ~9,800 lines of Python in this repository
+      # were the one part with no static analysis at all.
+      - name: ruff (ml-service)
+        run: python -m ruff check .
+        working-directory: ml-service
+      # scripts/ml/ is Python too, and resolves against the root ruff.toml.
+      - name: ruff (scripts/ml)
+        run: python -m ruff check scripts/ml
       - run: python -m pytest
         working-directory: ml-service
 
@@ -198,14 +207,5 @@ jobs:
           pip-audit -r ml-service/requirements.txt
           pip-audit -r ml-service/requirements-dev.txt
 
-  secrets:
-    name: Secret scan (full history)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
-        with:
-          # Gitleaks scans commits, so a shallow clone would scan almost none.
-          fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc # v2
-        env:
-          GITLEAKS_CONFIG: .gitleaks.toml
+  # The secret scan lives in its own workflow (secret-scan.yml) so it can run on
+  # a push to *any* branch without dragging the rest of this pipeline with it.

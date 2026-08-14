@@ -55,7 +55,7 @@ import sys
 from collections import Counter, defaultdict
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 
 import numpy as np
@@ -303,7 +303,10 @@ def probe(path_str: str) -> dict:
     try:
         data = Path(path_str).read_bytes()
         rec["bytes"] = len(data)
-        rec["sha1"] = hashlib.sha1(data).hexdigest()
+        # `usedforsecurity=False` is the accurate declaration, not a suppression:
+        # this is a content fingerprint used to spot byte-identical duplicates
+        # across datasets. Nothing authenticates against it.
+        rec["sha1"] = hashlib.sha1(data, usedforsecurity=False).hexdigest()
         with Image.open(io.BytesIO(data)) as img:
             rec["format"] = img.format
             rec["mode"] = img.mode
@@ -312,7 +315,7 @@ def probe(path_str: str) -> dict:
             # large speedup that does not change the perceptual hash materially.
             try:
                 img.draft("L", (HASH_SIDE * 2, HASH_SIDE * 2))
-            except Exception:  # noqa: BLE001 - not all formats support draft
+            except Exception:  # noqa: BLE001, S110 - not all formats support draft
                 pass
             img.load()
             rec["phash"] = phash(img)
@@ -602,11 +605,15 @@ def verified_pairs(items: list[Item], threshold: int, ncc_min: float, stats: dic
             stats["ncc_hist"][f"{bucket / 10:.1f}"] += 1
         keep = ncc >= ncc_min
         stats["verified"] += int(keep.sum())
+        # All four are the same `keep` mask applied to same-length arrays, so
+        # `strict=True` costs nothing and turns a future indexing mistake into
+        # an exception instead of a silently truncated duplicate list.
         yield from zip(
             i_arr[keep].tolist(),
             j_arr[keep].tolist(),
             d_arr[keep].tolist(),
             np.round(ncc[keep], 4).tolist(),
+            strict=True,
         )
 
 
@@ -662,7 +669,10 @@ def calibrate(items: list[Item], thumbs: np.ndarray, exact_groups: list[list[int
 
 
 def contact_sheet(items: list[Item], out_path: Path, sample: int) -> int:
-    rng = random.Random(SAMPLE_SEED)
+    # Seeded and reproducible: this picks which images land on a contact sheet
+    # for human review, so determinism is the requirement and cryptographic
+    # strength is not.
+    rng = random.Random(SAMPLE_SEED)  # noqa: S311
     picks = items if len(items) <= sample else rng.sample(items, sample)
     picks = sorted(picks, key=lambda it: it.relpath)
     cols = SHEET_COLS
@@ -676,7 +686,7 @@ def contact_sheet(items: list[Item], out_path: Path, sample: int) -> int:
                 x = (idx % cols) * SHEET_THUMB + (SHEET_THUMB - img.width) // 2
                 y = (idx // cols) * SHEET_THUMB + (SHEET_THUMB - img.height) // 2
                 sheet.paste(img, (x, y))
-        except Exception:  # noqa: BLE001 - a broken image is already reported
+        except Exception:  # noqa: BLE001, S112 - a broken image is already reported
             continue
     out_path.parent.mkdir(parents=True, exist_ok=True)
     sheet.save(out_path, "JPEG", quality=82)
@@ -717,7 +727,7 @@ def main() -> int:
 
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:  # noqa: BLE001 - older interpreters
+    except Exception:  # noqa: BLE001, S110 - older interpreters
         pass
 
     selected = list(LAYOUTS) if not args.only else args.only
@@ -1073,7 +1083,7 @@ def main() -> int:
     report = {
         "schema_version": 1,
         "todo": "P0-5",
-        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "method": {
             "phash": "DCT-II 32x32, top-left 8x8, DC excluded, median threshold, 63 bits",
             "near_dup_threshold_hamming": args.threshold,

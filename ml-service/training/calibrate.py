@@ -29,7 +29,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 
 import torch
@@ -88,7 +88,10 @@ def expected_calibration_error(probabilities: torch.Tensor, targets: torch.Tenso
     error = 0.0
     detail = []
 
-    for lower, upper in zip(edges[:-1], edges[1:]):
+    # `strict=True` is free here — the two slices of one tensor cannot differ in
+    # length — and documents that. Not `itertools.pairwise` (RUF007): these are
+    # bin edges, and reading them as explicit lower/upper pairs is the point.
+    for lower, upper in zip(edges[:-1], edges[1:], strict=True):  # noqa: RUF007
         # Lower-exclusive except for the first bin, so every sample lands once.
         in_bin = (confidence > lower) & (confidence <= upper)
         count = int(in_bin.sum())
@@ -446,12 +449,12 @@ def main() -> int:
     # ── Persist ──────────────────────────────────────────────────────────────
     result = {
         "todo": "P4-4",
-        "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generatedAt": datetime.now(UTC).isoformat(timespec="seconds"),
         "method": "docs/ml/confidence-strategy.md",
         "checkpoint": str(checkpoint.relative_to(REPO)).replace("\\", "/"),
         "checkpointSha256_16": bundle["checkpoint_sha256_16"],
         "calibrationSplit": args.split,
-        "samples": int(len(targets)),
+        "samples": len(targets),
         "classes": classes,
         "healthyClasses": sorted(classes[index] for index in healthy_indices),
         "temperature": round(temperature, 6),

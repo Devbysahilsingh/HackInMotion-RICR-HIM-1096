@@ -15,8 +15,33 @@ const MAX_BYTES = 1_000_000; // skip large/binary blobs
 const ALLOWLIST_MARK = 'pragma: allowlist-secret';
 const NUL = String.fromCharCode(0);
 
-/** Filenames that must never be committed regardless of content. */
-const FORBIDDEN_PATHS = [/(^|\/)\.env$/, /(^|\/)\.env\.(?!example)[\w.-]+$/, /\.pem$/, /\.p12$/];
+/**
+ * Filenames that must never be committed regardless of content.
+ *
+ * Extension rules matter more than they look: a DER-encoded key is binary, so
+ * the content rules below skip it entirely (see the NUL check) and the filename
+ * is the only thing standing in the way. The list previously stopped at `.pem`
+ * and `.p12`, which left Android release signing material — the highest-value
+ * secret this project produces — resting on `.gitignore` alone.
+ */
+const FORBIDDEN_PATHS = [
+  /(^|\/)\.env$/,
+  /(^|\/)\.env\.(?!example)[\w.-]+$/,
+  /\.pem$/,
+  /\.p12$/,
+  /\.pfx$/,
+  /\.p8$/,
+  /\.key$/,
+  /\.jks$/,
+  /\.keystore$/,
+  /(^|\/)id_rsa(\.|$)/,
+  /(^|\/)id_ed25519(\.|$)/,
+  /(^|\/)\.npmrc$/,
+  /(^|\/)google-services\.json$/,
+  /(^|\/)GoogleService-Info\.plist$/,
+  /(^|\/)service-?account[\w.-]*\.json$/i,
+  /(^|\/)credentials\.json$/,
+];
 
 const RULES = [
   // Length is deliberately {20,} rather than the exact {35}: a truncated or
@@ -58,9 +83,26 @@ function stagedFiles() {
   return out.split('\n').filter(Boolean);
 }
 
+/**
+ * Everything git tracks.
+ *
+ * For CI, where there is no staged set — running the pre-commit form there
+ * would scan zero files and report "clean", which is worse than not running it
+ * at all. The rules are identical; only the file list is wider, so a secret
+ * that reached a branch before the hook was installed on someone's clone is
+ * still caught.
+ */
+function trackedFiles() {
+  const out = execFileSync('git', ['ls-files'], { encoding: 'utf8' });
+  return out.split('\n').filter(Boolean);
+}
+
+const scanAll = process.argv.includes('--all');
+const targets = scanAll ? trackedFiles() : stagedFiles();
+
 const findings = [];
 
-for (const file of stagedFiles()) {
+for (const file of targets) {
   if (FORBIDDEN_PATHS.some((re) => re.test(file))) {
     findings.push({ file, line: 0, rule: 'forbidden-file', text: 'file must never be committed' });
     continue;

@@ -19,6 +19,14 @@
 
 -r requirements.txt
 
+# ruff:      the Python linter, pinned like everything else here. Chosen over
+#            Flake8 (plugin matrix, four config files) and Pylint (slow, opinion
+#            -heavy) because it is one binary with no plugins and it already
+#            understands the `# noqa: BLE001` / `# noqa: E402` codes this source
+#            was annotated with before any linter ran. Dev-only: it is not in
+#            requirements.txt and never reaches the runtime image.
+#            Run: `python -m ruff check .`  (config: pyproject.toml [tool.ruff])
 pytest==9.1.1
 httpx==0.28.1
 pip-audit==2.10.1
+ruff==0.14.5

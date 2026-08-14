@@ -43,7 +43,7 @@ import os
 import random
 import sys
 from collections import Counter, defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 
 import numpy as np
@@ -217,7 +217,7 @@ def main() -> int:
 
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001, S110 - best-effort UTF-8 console
         pass
 
     rules = json.loads(RULES_PATH.read_text(encoding="utf-8"))
@@ -274,7 +274,7 @@ def main() -> int:
     for it in kept:
         members[cluster_of[it.relpath]].append(it)
     representatives = []
-    for cluster, group in members.items():
+    for _cluster, group in members.items():
         group.sort(key=lambda it: it.relpath)
         representatives.append(group[0])
         for dup in group[1:]:
@@ -306,7 +306,9 @@ def main() -> int:
 
     # ---- per-class, cluster-atomic splits --------------------------------
     print("== split ==", flush=True)
-    rng = random.Random(rules["seed"])
+    # Seeded from the rules file so a split is reproducible from the manifest.
+    # Reproducibility is the whole requirement here; crypto strength is not.
+    rng = random.Random(rules["seed"])  # noqa: S311
     assignment: dict[str, list] = {s: [] for s in SPLITS}
     class_report = {}
     gate_failures = []
@@ -394,7 +396,7 @@ def main() -> int:
             f"FATAL: {len(overlap)} clusters appear in both the field test set and "
             "the train/val pool. The field benchmark would be contaminated."
         )
-    print(f"  ✔ 0 clusters shared between field test and train/val pool")
+    print("  ✔ 0 clusters shared between field test and train/val pool")
 
     ft_paths = {it.relpath for it in fieldtest}
     if ft_paths & set(where):
@@ -416,7 +418,7 @@ def main() -> int:
     manifest = {
         "schema_version": 1,
         "todo": "P0-6",
-        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "rules": {
             "path": "scripts/ml/curation-rules.json",
             "version": rules["version"],

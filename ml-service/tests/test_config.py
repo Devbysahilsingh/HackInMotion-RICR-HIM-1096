@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pytest
+from pydantic import ValidationError
 
 from app.config import ConfigError, Settings, load_settings
 
@@ -52,7 +53,11 @@ def test_docs_only_enabled_in_development() -> None:
 
 def test_settings_are_immutable() -> None:
     settings = Settings(env="test", service_key=VALID_KEY)
-    with pytest.raises(Exception):
+    # Narrowed from a bare `Exception`: `frozen=True` is what makes this fail,
+    # and pydantic reports that as a ValidationError. Accepting any exception
+    # would keep passing if the model stopped being frozen and started failing
+    # for some unrelated reason.
+    with pytest.raises(ValidationError):
         settings.service_key = "b" * 64  # type: ignore[misc]
 
 

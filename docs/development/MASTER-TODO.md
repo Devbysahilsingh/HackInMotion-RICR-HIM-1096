@@ -202,7 +202,7 @@ and is not something code can close._
 - [ ] [P0](B/A) **⏳ TEAM** — Demo script (docs/product + FINAL-PLAN-SPEC §37) + rehearsal ×2 incl. failure toggle + backup video ✔ timed ≤12min
 - [ ] [P0](B) **⏳ TEAM** — presentation.pptx ✔ team review
 - [ ] [P0](all) **⏳ TEAM** — Viva walkthrough sessions ×2 ✔ each member explains each subsystem
-- [ ] [P0](C) **⏸ AFTER DEPLOY** — Screenshots of the live app (the design references in `Design-refrences/` are not screenshots of a running system and are not presented as such)
+- [ ] [P0](C) **⏸ AFTER DEPLOY** — Screenshots of the live app. (The design-reference exports were never screenshots of a running system and were never presented as such; both trees were removed on 2026-08-15 once the UI they informed was built — see README.)
 - [ ] [P0](A) **⏳** — Submission: repo naming/structure check vs general instructions, tags, final push ✔ checklist
 
 **Why the open rows are open.** Three need people, not commits (rehearsal, deck, viva).

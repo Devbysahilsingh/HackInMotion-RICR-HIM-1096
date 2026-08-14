@@ -14,7 +14,8 @@ import re
 import time
 import uuid
 from contextlib import asynccontextmanager
-from typing import Any, AsyncIterator
+from typing import Any
+from collections.abc import AsyncIterator
 
 from anyio import to_thread
 from fastapi import FastAPI, Request
@@ -309,7 +310,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             # into the 400 below would report "malformed" for a well-formed
             # request whose only fault was its size.
             raise
-        except Exception:
+        except Exception:  # noqa: BLE001 — a parser fault is a client fault here
+            # Deliberately broad. Starlette's multipart parser raises several
+            # unrelated types for a malformed body, and every one of them means
+            # the same thing to the caller: the request could not be read. The
+            # one case that is *not* a parse failure is re-raised above.
             return _error(400, "REQUEST_INVALID", "request body could not be parsed")
 
         try:
@@ -367,7 +372,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             )
             status = 413 if exc.code == "IMAGE_TOO_LARGE" else 400
             return _error(status, exc.code, exc.message)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.error("inference_timeout", extra={"requestId": request_id, "cropCode": crop_code})
             return _error(504, "INFERENCE_TIMEOUT", "inference timed out")
         except ModelUnavailable as exc:
