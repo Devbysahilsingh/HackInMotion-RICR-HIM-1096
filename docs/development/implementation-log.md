@@ -1022,3 +1022,103 @@ Changed: `README.md`, `CLAUDE.md` (OD-4 closed), `docs/development/MASTER-TODO.m
 `mobile/README.md`, `mobile/app.config.ts`, `mobile/src/security.test.ts`,
 `web/frontend/index.html`, `docs/product/product-spec.md`, `docs/mobile/navigation.md`,
 `docs/mobile/deployment.md`, `docs/security/phase-7-scorecard.md`, and this file.
+
+---
+
+## Y-1 · Yield dataset provenance & audit — 2026-08-14 · Status: COMPLETED (documentation only)
+
+**Scope:** dataset discovery, acquisition, provenance verification and quality audit for
+`Y_hist`. **No feature code, no pipeline, no endpoint, no UI** — those are Milestones 2–6
+and each needs its own approval.
+
+### What this closes
+
+`docs/yield/yield-estimation.md` had stated since P3 that yield estimation was blocked on
+one input: `Y_hist`, the district × season × crop historical yield, with `datasets/lookup/`
+named as its home and not existing. That blocker is now closed on evidence.
+
+### What was acquired
+
+India Data Portal's *Crop Wise Area Production Yield* export (ISB Bharti Institute,
+mirroring DES): **455,359 rows, 1997-98 → 2022-23, 34 states, 740 districts, 115 crops**,
+56,222,102 bytes, sha256 `fe10fbf1…`. No API key required. The raw file sits gitignored at
+`datasets/yield/raw/`; it is **not** committed and **not** redistributed.
+
+This beat the data.gov.in APY API (the source the original plan assumed) on three
+live-verified counts: the API **ends at crop_year 2014-15** (2015 returns 562 rows, 2016+
+returns 0), has **no yield column**, and has **no unit metadata**. It beat ICRISAT's DLD
+because DLD apportions to **1966 district boundaries**, which cannot be matched to a
+farmer's present-day `Farm.location.district`.
+
+### Fidelity verified three ways, one check left open
+
+1. **Exact row match** against data.gov.in's own API — Gujarat/Amreli/Cotton(Lint)/Kharif/
+   2010-11 returns `area=269400, production=1142600` from both sources. Identical.
+2. **State yields** vs published DES figures — Punjab wheat 2022-23 computed 4.71 t/ha
+   (published ≈4.66), UP 3.735 (≈3.66).
+3. **National cotton yield** vs USDA FAS / PIB — see the defect below.
+
+**Open:** district sums run ~14–15% above published all-India wheat/rice totals while
+every yield matches. Recorded as unexplained rather than rationalised. It cannot affect
+this feature — the estimator reads per-district yields and never sums — and closing it
+needs a registered `DATAGOVIN_API_KEY` (OD-5, still open).
+
+### Audit findings
+
+Structurally the file is clean: **0 malformed rows, 0 duplicate
+(state,district,crop,season,year) keys, 0 negatives**, `yield == production ÷ area` exact
+in **455,359 of 455,359** rows, and `district_code ↔ district_name` a **perfect bijection**
+over 740 codes — which finally gives this repository a canonical district key, something
+`shared/constants/geo` has been holding a space for since P1-5.
+
+Six defects, each with a named rule and a counter rather than a silent drop:
+
+- **D1** `season = "Total"` is an aggregate, verified equal to the sum of its season rows
+  in 15,493 cases with 0 disagreements → becomes the *district all-season* tier.
+- **D2** `season = "Whole Year"` is the **primary** tier for horticulture (potato 537
+  annual districts vs 369 seasonal; onion 504 vs 393; chilli 527 vs 321).
+- **D3** `Autumn`/`Winter` (17,650 rows) are the eastern *aus*/*boro* rice seasons with no
+  enum member. **Left unresolved** by decision — mapping them by resemblance would
+  misassign whole states' rice.
+- **D4 🔴** Cotton production is in **170 kg bales mislabeled "Tonnes"**. Read as tonnes,
+  2022-23 gives 2,677 kg lint/ha (impossible); read as bales, 455 kg/ha against a
+  published 443. **Cotton excluded from v1 by owner decision** — the ×0.17 conversion is
+  not applied without a citable DES/Textiles bale definition. A citation gate, not a data
+  gate.
+- **D5** 118 impossible yields, all traced to tiny-area rows; Maharashtra 1997-98 records
+  area at the wrong magnitude (Kolhapur rice reads 223.7 t/ha; at area in hundreds of
+  hectares it is 2.24). Dropped and counted, **never rescaled** — rescaling would assert a
+  correction to a government return.
+- **D6** 569 zero-production rows in the target crops are "reported nil", not zero yield.
+
+### Sufficiency verdict
+
+**Seven crops supported** — RICE, WHEAT, MAIZE, SOYBEAN, ONION, POTATO, CHILLI — with
+293–1,268 district-season combinations each holding ≥3 observations in their last five
+available years, latest observation 2022-23 for the large majority. 81,315 rows survive
+refinement.
+
+**Tomato is unsupportable and returns `INSUFFICIENT_EVIDENCE`:** 13 districts, 5 distinct
+years, latest **2014-15**, 23% zero-production, and an annual tier whose most recent
+observation is **2003**. The original spec's hope of a "state-tier fallback with a
+low-confidence label" does not survive counting — the state tier is 2 groups, also ending
+2014-15.
+
+**`CropRegistry.yield.apyCropName`** — declared in the schema since P1-2 and populated
+nowhere — is the slot the source crop names belong in. Not yet written; that is Milestone 3.
+
+### Deviations from the brief, stated
+
+- Docs landed in `docs/yield/` (mirroring `docs/ml/dataset-research.md` +
+  `dataset-audit.md`) rather than a new `docs/data/`, following the repo's
+  domain-folder convention.
+- The machine-readable `quality-report.json` is deliberately **not** hand-written here.
+  It is emitted by the Milestone-2 pipeline so the numbers are re-derivable rather than
+  asserted; this document says so, and yields precedence to the pipeline.
+
+### Files
+
+Added: `docs/yield/dataset-research.md`, `docs/yield/dataset-audit.md`.
+Changed: `docs/yield/yield-estimation.md` (blocker closed, scope table, data plan
+replaced), `docs/api/intelligence.md` (yield row), and this file.
+Untracked/local only: `datasets/yield/raw/idp-apy-crop-wise-area-production-yield.csv`.
