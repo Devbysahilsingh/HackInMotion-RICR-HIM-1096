@@ -49,6 +49,8 @@ import type {
   SymptomCheckResponse,
   User,
   CreateCropInput,
+  YieldEstimateResponse,
+  YieldSummaryResponse,
 } from './types';
 
 // ── /auth ───────────────────────────────────────────────────────────────────
@@ -204,6 +206,20 @@ export const cropsApi = {
 
   fertilizer: (cropId: string) =>
     apiGet<FertilizerGuidance>(`/crops/${cropId}/fertilizer-guidance`),
+
+  /**
+   * A lookup against published government district statistics — never a
+   * prediction. A crop with no evidence answers 200 with `estimated: false`,
+   * so this rejects only on a real transport or auth failure.
+   */
+  yieldEstimate: (cropId: string) =>
+    apiGet<YieldEstimateResponse>(`/crops/${cropId}/yield-estimate`),
+};
+
+// ── /yield ──────────────────────────────────────────────────────────────────
+
+export const yieldApi = {
+  summary: () => apiGet<YieldSummaryResponse>('/yield/summary'),
 };
 
 // ── /dashboard and /recommendations ─────────────────────────────────────────

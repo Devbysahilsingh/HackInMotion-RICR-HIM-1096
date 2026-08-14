@@ -35,6 +35,7 @@ export const queryKeys = {
     irrigationLedger: (cropId: string, page: number) =>
       ['crops', 'irrigationLedger', cropId, page] as const,
     fertilizer: (cropId: string) => ['crops', 'fertilizer', cropId] as const,
+    yieldEstimate: (cropId: string) => ['crops', 'yieldEstimate', cropId] as const,
   },
 
   recommendations: {
@@ -88,6 +89,16 @@ export const queryKeys = {
     all: () => ['cropRec'] as const,
     run: (farmId: string, season: string, preference: string | null) =>
       ['cropRec', 'run', farmId, season, preference ?? ''] as const,
+  },
+
+  /**
+   * Yield estimation. The per-crop estimate is keyed under `crops` rather than
+   * here, beside `fertilizer`, so editing a crop's area invalidates its
+   * estimate along with everything else about it.
+   */
+  yield: {
+    all: () => ['yield'] as const,
+    summary: () => ['yield', 'summary'] as const,
   },
 } as const;
 

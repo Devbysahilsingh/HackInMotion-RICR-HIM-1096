@@ -1248,3 +1248,105 @@ Changed: `backend/src/knowledge/crops.base.json` (9 `yield` blocks + `APY_YIELD`
 `backend/src/services/registrySeedService.js` (yield dataGap), `backend/package.json`
 (`yield:build`, `yield:check`), `.gitignore`, `.claude/settings.json`,
 `datasets/README.md`, and this file.
+
+---
+
+## Y-3 · Yield estimation, end to end — 2026-08-15 · Status: COMPLETED (verified)
+
+**Scope:** the evidence ladder, the estimator, the API, and the farmer-facing UI. The
+feature is now reachable from the dashboard and has its own screen.
+
+### The decision that shaped it
+
+The spec's formula is `Y_hist × A × F_irrigation × F_event`, citing Zaveri & Lobell
+(2019) and Dhaliwal (2015). Both citations are real. **Neither supports multiplying a
+district median**, and applying them anyway would have produced a number that looks
+sourced and is not:
+
+- `Y_hist` is the median of every field in the district, irrigated and rainfed together.
+  Where one field sits in that blend depends on the district's irrigated-area share,
+  which this repository does not hold. Zaveri & Lobell measure a different quantity.
+- Dhaliwal's ~15.7% is an *average annual* pest loss. The years behind `Y_hist` were real
+  years with real pests, so it is already inside the observed yields; multiplying again
+  subtracts the same loss twice.
+
+So both are reported as **considered and not applied**, each carrying its citation and a
+reason, and the qualitative facts are surfaced as caveats instead — "your field is
+rainfed and this average includes irrigated fields". That tells a farmer which way the
+number is likely to be wrong without inventing by how much. Recorded as **ADR-026**,
+which also records the ladder, exact-match geography, the bigha refusal and why
+specificity is not confidence.
+
+What shipped: `Estimated production = Y_hist × A`, range `(Y_hist ± 1 SD) × A`.
+
+### Structure
+
+| File | Role |
+|---|---|
+| `engines/yield/lookupSchema.js` | tier names, key builders, window policy — the bottom of the stack, so the builder (a service) and the resolver (an engine) cannot drift |
+| `engines/yield/resolveEvidence.js` | the four-rung ladder, pure |
+| `engines/yield/estimateYield.js` | the estimator, pure |
+| `services/yieldService.js` | lookup load (once per process), season resolution, persistence |
+| `routes/crops.js` · `routes/yield.js` | `GET /crops/:id/yield-estimate` (nested ownership) · `GET /yield/summary` (scoped) |
+
+`yieldLookupBuilder.js` now imports its vocabulary from the engine rather than defining
+it — engines may not import from `services/`, and the resolver needed those names.
+
+### Behaviour worth recording
+
+- **A miss is an answer.** No evidence returns **200 with `estimated: false`** and a
+  reason key. A 4xx would be indistinguishable from the crop not existing.
+- **Exact geography, never fuzzy.** A farmer who typed "Anantapur" where the government
+  writes "Ananthapuramu" misses the district rungs, lands on the state tier, **and the
+  screen says so**. Verified live: that case resolves to `STATE_SEASON` with both district
+  rungs recorded as `SKIPPED`.
+- **Bigha produces no total.** `utils/locationKey.js` already forbids a converted bigha in
+  any recommendation; a quintal figure a farmer sells against is exactly where that rule
+  matters. The per-hectare basis is still served and only the total is withheld, with a
+  reason.
+- **`totals` is null, never 0.** A zero would read as a prediction of total crop failure.
+- **Season** comes from the sowing month, except where the registry lists exactly one
+  season for the crop — a mistyped date on a wheat crop would otherwise cost the farmer
+  their district figure. Added `seasonForSowingDate` to `seasonResolver.js`.
+- **ST-40's filesystem allowlist** gained `services/yieldService.js`, after confirming the
+  path is a module constant from `import.meta.url` and the file contains no `req`
+  reference at all.
+
+### Real numbers, end to end
+
+Ludhiana wheat, 2 acres, verified through the running API: basis **4.97 t/ha = 20.11
+quintal/acre** over 2018–2022, giving **37.2 – 43.2 quintal** on 0.8094 ha. Punjab wheat
+is about 5 t/ha, so this is the government's own figure arriving intact at the farmer.
+
+### UI
+
+`DashboardYieldCard` (home) and `YieldPage` (`/yield`, sidebar). The page shows the farm
+total, a crop selector in which **unestimable crops remain selectable** — selecting one is
+how a farmer learns *why* there is no number — and then the selected crop in full: range,
+basis, evidence tier, limitations, the not-applied factors with citations, the attribution
+and the why-trace. 56 i18n keys in en+hi; Hindi is machine-authored and recorded as such in
+the ledger.
+
+### Verification
+
+- Backend **1720/1720** (was 1642; +78 yield tests: ladder 18, estimator 27, API 27, plus
+  the artefact suite).
+- Web **146/146** (was 131; +15 covering the estimated, degraded, insufficient and Hindi
+  states).
+- ESLint 0 errors · Prettier clean · web `tsc --noEmit` clean · `check:ui-strings` 0
+  hardcoded · `check:i18n` 1549 keys / 0 missing in hi · `yield:check` green.
+
+### Files
+
+Added: `backend/src/engines/yield/{lookupSchema,resolveEvidence,estimateYield}.js`,
+`backend/src/services/yieldService.js`, `backend/src/routes/yield.js`,
+`backend/tests/engines/yield{Evidence,Estimator}.test.js`, `backend/tests/api/yield.test.js`,
+`shared/i18n/{en,hi}/yield.json`, `web/frontend/src/pages/YieldPage.tsx`,
+`web/frontend/src/components/domain/{YieldEstimateView,YieldEstimateView.test,DashboardYieldCard}.tsx`,
+`docs/decisions/ADR-026-yield-estimation-decisions.md`.
+Changed: `backend/src/app.js`, `routes/crops.js`, `routes/ownership-table.js`,
+`services/{yieldLookupBuilder,recommendation/seasonResolver}.js`,
+`tests/security/st-40-injection.test.js`, `shared/types/api.ts`,
+`shared/client/queryKeys.ts`, `shared/i18n/hi/_verification.json`,
+`web/frontend/src/{App.tsx,api/endpoints.ts,i18n/resources.ts,components/layout/AppLayout.tsx,pages/DashboardPage.tsx}`,
+`docs/api/intelligence.md`, `docs/yield/yield-estimation.md`, and this file.
