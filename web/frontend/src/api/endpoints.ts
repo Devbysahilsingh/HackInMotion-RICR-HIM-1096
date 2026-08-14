@@ -23,6 +23,8 @@ import type {
   DashboardResponse,
   Farm,
   FarmInput,
+  FarmRecDetailResponse,
+  FarmRecommendationsResponse,
   FarmWeather,
   FertilizerGuidance,
   HealthLog,
@@ -100,6 +102,53 @@ export const farmsApi = {
   remove: (farmId: string) => apiDelete(`/farms/${farmId}`),
 
   weather: (farmId: string) => apiGet<FarmWeather>(`/farms/${farmId}/weather`),
+
+  /**
+   * Multipart, same shape as `healthApi.analyze`: the field name is fixed to
+   * `image` (`backend/src/middleware/uploadImage.js` allowlists exactly that
+   * one field), and `Content-Type` is left for the browser to set so it can
+   * add the multipart boundary itself.
+   */
+  uploadPhoto: (
+    farmId: string,
+    image: File | Blob,
+    options: { onUploadProgress?: (fraction: number) => void; signal?: AbortSignal } = {},
+  ) => {
+    const form = new FormData();
+    form.append('image', image);
+
+    return apiPost<{ farm: Farm }>(`/farms/${farmId}/photo`, form, {
+      signal: options.signal,
+      timeout: 45_000,
+      onUploadProgress: options.onUploadProgress
+        ? (event) => {
+            if (event.total) options.onUploadProgress!(event.loaded / event.total);
+          }
+        : undefined,
+    });
+  },
+
+  removePhoto: (farmId: string) => apiDelete(`/farms/${farmId}/photo`),
+
+  /**
+   * What to plant on this field. Farm-scoped, unlike `cropRecApi.run` — it
+   * knows the field's soil, water source, standing crops, free land and
+   * reachable mandis, and gates on market availability, which a season-only
+   * wizard cannot.
+   */
+  recommendations: (farmId: string, params: { season?: Season; preference?: string } = {}) =>
+    apiGet<FarmRecommendationsResponse>(`/farms/${farmId}/recommendations`, { params }),
+
+  /** One crop out of the same ranking — never a second scoring path. */
+  recommendation: (
+    farmId: string,
+    cropCode: string,
+    params: { season?: Season; preference?: string } = {},
+  ) =>
+    apiGet<FarmRecDetailResponse>(
+      `/farms/${farmId}/recommendations/${encodeURIComponent(cropCode)}`,
+      { params },
+    ),
 };
 
 // ── /crops (mounted at the API root; both path shapes live here) ────────────
@@ -119,6 +168,28 @@ export const cropsApi = {
   ) => apiPatch<{ crop: CropWithStage }>(`/crops/${cropId}`, payload),
 
   remove: (cropId: string) => apiDelete(`/crops/${cropId}`),
+
+  /** Same multipart shape as `farmsApi.uploadPhoto` — see that comment. */
+  uploadPhoto: (
+    cropId: string,
+    image: File | Blob,
+    options: { onUploadProgress?: (fraction: number) => void; signal?: AbortSignal } = {},
+  ) => {
+    const form = new FormData();
+    form.append('image', image);
+
+    return apiPost<{ crop: CropWithStage }>(`/crops/${cropId}/photo`, form, {
+      signal: options.signal,
+      timeout: 45_000,
+      onUploadProgress: options.onUploadProgress
+        ? (event) => {
+            if (event.total) options.onUploadProgress!(event.loaded / event.total);
+          }
+        : undefined,
+    });
+  },
+
+  removePhoto: (cropId: string) => apiDelete(`/crops/${cropId}/photo`),
 
   irrigation: (cropId: string) => apiGet<IrrigationAdvice>(`/crops/${cropId}/irrigation`),
 
@@ -231,7 +302,8 @@ export const healthApi = {
     });
   },
 
-  logs: (params: { cropId?: string; page?: number; limit?: number } = {}) =>
+  /** `farmId` keeps one field's scan history out of another's. */
+  logs: (params: { cropId?: string; farmId?: string; page?: number; limit?: number } = {}) =>
     apiGetPaged<{ logs: HealthLogSummary[] }>('/crop-health/logs', { params }),
 
   log: (logId: string) => apiGet<{ log: HealthLog }>(`/crop-health/logs/${logId}`),

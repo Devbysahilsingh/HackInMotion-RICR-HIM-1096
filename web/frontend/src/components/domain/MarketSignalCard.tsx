@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { MarketSignal, MyCropSignal } from '@/api/types';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { translateMessageKey } from '@/i18n/messageKey';
-import { formatPercent, localizedName } from '@/lib/format';
+import { formatDayMonth, formatNumber, formatPercent, localizedName } from '@/lib/format';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { FreshnessDot } from '@/components/ui/FreshnessDot';
@@ -74,6 +74,30 @@ export function MarketSignalCard({
           </h3>
           <SpeakButton text={`${headline}. ${guidance}`} />
         </div>
+
+        {/*
+          The price leads, whether or not a trend exists.
+
+          This card used to open with the trend badge, so a commodity with one
+          real observation and no describable movement rendered "Not enough
+          recent reports to describe a trend" and nothing else — hiding a price
+          the API had returned. "No trend" and "no price" are different facts
+          and only the second one has nothing to show.
+        */}
+        {'latestPrice' in signal && signal.latestPrice && (
+          <div data-testid="market-latest-price">
+            <p className="font-display text-[1.75rem] font-extrabold leading-none tracking-[-0.04em] tabular-nums">
+              {t('common:unit.rupeesPerQuintal', {
+                value: formatNumber(signal.latestPrice.modalPrice, language, {
+                  maximumFractionDigits: 0,
+                }),
+              })}
+            </p>
+            <p className="mt-1.5 text-sm text-ink-500">
+              {signal.latestPrice.market} · {formatDayMonth(signal.latestPrice.date, language)}
+            </p>
+          </div>
+        )}
 
         <div className="flex flex-wrap items-center gap-2">
           <Badge tone={inner.trend && inner.trend !== 'STABLE' ? 'brand' : 'neutral'}>

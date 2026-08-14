@@ -28,15 +28,32 @@ export function ForecastStrip({ daily }: { daily: WeatherDay[] }) {
   if (forecast.length === 0) return null;
 
   return (
-    <div className="overflow-x-auto" data-testid="forecast-strip">
-      <ul className="flex min-w-max gap-2 pb-1">
-        {forecast.map((day, index) => (
+    /*
+     * The design's `.fc7`: seven equal columns that fill the width, collapsing
+     * to a horizontal scroll of narrow columns on a phone rather than shrinking
+     * each day until the temperature wraps. The week is meant to be read as one
+     * shape — which day the rain lands on — and a row of equal columns is what
+     * makes that shape legible.
+     */
+    <ul
+      className="grid auto-cols-[minmax(4.25rem,1fr)] grid-flow-col gap-2 overflow-x-auto pb-1 md:grid-flow-row md:grid-cols-7 md:gap-3 md:overflow-visible"
+      data-testid="forecast-strip"
+    >
+      {forecast.map((day, index) => {
+        // "Rain likely" is the one thing this strip has to make obvious. The
+        // threshold only tints a label — the percentage is always printed, so
+        // the colour is a second signal and never the only one.
+        const rainLikely = day.rainProbPct != null && day.rainProbPct >= 60;
+
+        return (
           <li key={day.date}>
-            <Card className="w-28 px-3 py-3 text-center">
-              <p className="text-xs font-medium text-ink-500">
+            <Card
+              className={cn('h-full px-2.5 py-3 text-center', rainLikely && 'border-info-500/40')}
+            >
+              <p className={cn('kicker', rainLikely && 'text-info-500')}>
                 {index === 0 ? t('weather:today') : formatDayMonth(day.date, language)}
               </p>
-              <p className="mt-1 text-sm font-semibold">
+              <p className="mt-1.5 text-sm font-semibold">
                 {day.tMaxC != null && day.tMinC != null
                   ? t('weather:tempRange', {
                       min: formatNumber(day.tMinC, language, { maximumFractionDigits: 0 }),
@@ -50,16 +67,21 @@ export function ForecastStrip({ daily }: { daily: WeatherDay[] }) {
                   ? `${formatNumber(day.rainMm, language, { maximumFractionDigits: 1 })} ${t('common:unit.mm')}`
                   : '—'}
               </p>
-              <p className="text-xs text-ink-500">
+              <p
+                className={cn(
+                  'text-xs',
+                  rainLikely ? 'font-semibold text-info-500' : 'text-ink-500',
+                )}
+              >
                 {day.rainProbPct != null
                   ? `${formatNumber(day.rainProbPct, language, { maximumFractionDigits: 0 })}%`
                   : '—'}
               </p>
             </Card>
           </li>
-        ))}
-      </ul>
-    </div>
+        );
+      })}
+    </ul>
   );
 }
 

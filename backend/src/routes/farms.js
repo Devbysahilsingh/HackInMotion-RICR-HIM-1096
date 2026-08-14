@@ -19,17 +19,27 @@ import {
   IRRIGATION_METHODS,
   LAND_UNITS,
   LOCATION_SOURCES,
+  SEASONS,
   SOIL_TYPES,
+  UPLOAD_REJECTION,
 } from '../config/constants.js';
 import { loadOwned } from '../middleware/loadOwned.js';
-import { farmWriteLimiter } from '../middleware/rateLimits.js';
+import { farmPhotoLimiter, farmWriteLimiter } from '../middleware/rateLimits.js';
 import { requireAuth } from '../middleware/requireAuth.js';
+import { uploadImage, uploadRejection } from '../middleware/uploadImage.js';
 import { validate } from '../middleware/validate.js';
 import { Farm } from '../models/index.js';
 import { farmWeather } from '../services/farmWeatherService.js';
 import * as farmService from '../services/farmService.js';
+import { sanitizeImage } from '../services/imagePipeline.js';
+import { storeImage } from '../integrations/cloudinary.js';
 import { warmLocation } from '../services/weatherService.js';
 import { warmMarketForState } from '../services/marketService.js';
+import {
+  recommendForFarm,
+  recommendationForCrop,
+} from '../services/recommendation/recommendationService.js';
+import { notFound } from '../utils/errors.js';
 import { sendData, sendNoContent } from '../utils/respond.js';
 import { logger } from '../utils/logger.js';
 
@@ -222,3 +232,120 @@ farmsRouter.get('/:id/weather', loadOwned({ model: Farm }), async (req, res, nex
     next(err);
   }
 });
+
+/**
+ * What to plant on this field.
+ *
+ *   GET /farms/:id/recommendations
+ *   GET /farms/:id/recommendations/:cropCode
+ *
+ * Farm-scoped, unlike `POST /crop-recommendation`, and that difference is the
+ * point. The wizard answers "what could I grow in Rabi?" from a season the
+ * farmer picks; this answers "what should I plant on *this* field next?" from
+ * the field's own soil, water source, standing crops, free land and reachable
+ * mandis — and it gates on market availability, which the wizard cannot,
+ * because a season has no location and therefore no mandis.
+ *
+ * The two share one engine. The detail route re-runs the identical pipeline and
+ * selects a crop from its result rather than scoring again, so a card and the
+ * page it opens can never disagree about the number.
+ *
+ * `season` is an optional override for a farmer planning further ahead than the
+ * calendar suggests; without it the season resolver decides.
+ */
+const recommendationQuerySchema = z
+  .object({
+    season: z.enum(SEASONS).optional(),
+    preference: z.enum(['food', 'cash', 'any']).optional(),
+  })
+  .strict();
+
+farmsRouter.get(
+  '/:id/recommendations',
+  loadOwned({ model: Farm }),
+  validate({ query: recommendationQuerySchema }),
+  async (req, res, next) => {
+    try {
+      sendData(res, await recommendForFarm(req.farm, req.query));
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+farmsRouter.get(
+  '/:id/recommendations/:cropCode',
+  loadOwned({ model: Farm }),
+  validate({ query: recommendationQuerySchema }),
+  async (req, res, next) => {
+    try {
+      // Uppercased because crop codes are canonical ids; a lowercase path
+      // segment is a client formatting choice, not a different crop.
+      const cropCode = String(req.params.cropCode ?? '').toUpperCase();
+      const result = await recommendationForCrop(req.farm, cropCode, req.query);
+
+      // A crop that is neither ranked nor excluded is not a crop this platform
+      // carries — a 404, not an empty recommendation.
+      if (!result) return next(notFound('cropRec.detailMissing'));
+
+      sendData(res, result);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+/**
+ * Farm photo (optional). Same pipeline as crop-health's analyze upload
+ * (docs/security/image-upload-security.md): multer memory storage → magic-byte
+ * sniff + bomb guards + decode/re-encode (imagePipeline.js, which strips EXIF
+ * and anything a polyglot smuggled past the structural checks) → Cloudinary,
+ * signed, server-chosen public id.
+ *
+ * Ownership is `loadOwned` here rather than crop-health's manual lookup,
+ * because the farm id is a path param — the ordinary case that middleware
+ * exists for. Middleware order — rate limiter, then ownership, then multipart
+ * parse — matches the PATCH route above: cheapest check first, so a caller
+ * with no business touching this farm is refused before a byte of the upload
+ * is ever buffered.
+ */
+farmsRouter.post(
+  '/:id/photo',
+  farmPhotoLimiter,
+  loadOwned({ model: Farm }),
+  uploadImage,
+  async (req, res, next) => {
+    try {
+      const sanitized = await sanitizeImage(req.file.buffer);
+      if (!sanitized.ok) return next(uploadRejection(sanitized.reason));
+
+      const stored = await storeImage(sanitized.jpeg);
+      if (!stored.ok) return next(uploadRejection(UPLOAD_REJECTION.STORAGE_UNAVAILABLE));
+
+      const farm = await farmService.setFarmPhoto(req.farm, {
+        url: stored.url,
+        publicId: stored.publicId,
+      });
+      sendData(res, { farm: farm.toJSON() });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+farmsRouter.delete(
+  '/:id/photo',
+  farmWriteLimiter,
+  loadOwned({ model: Farm }),
+  async (req, res, next) => {
+    try {
+      // 204, matching `DELETE /farms/:id`'s own convention: the caller already
+      // knows which farm it cleared the photo from and needs nothing echoed
+      // back.
+      await farmService.removeFarmPhoto(req.farm);
+      sendNoContent(res);
+    } catch (err) {
+      next(err);
+    }
+  },
+);

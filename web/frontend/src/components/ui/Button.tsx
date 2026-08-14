@@ -4,7 +4,8 @@ import { Link, type LinkProps } from 'react-router-dom';
 import { cn } from '@/lib/cn';
 import { Spinner } from './Spinner';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+export type ButtonVariant =
+  'primary' | 'secondary' | 'ghost' | 'danger' | 'onDark' | 'onDarkOutline';
 export type ButtonSize = 'md' | 'lg';
 
 /**
@@ -12,12 +13,21 @@ export type ButtonSize = 'md' | 'lg';
  * white-on-line secondary that warms to leaf on hover, and a text-only ghost.
  * The secondary's leaf hover is the one deliberate borrowing — it is what keeps
  * a row of secondary buttons from reading as disabled.
+ *
+ * `onDark` / `onDarkOutline` are the reference's `.b-w` and the inline
+ * white-bordered button, and they exist because the decision band, the farm and
+ * crop heroes and the irrigation verdict are all deep forest surfaces. A
+ * `primary` button on those is forest-on-forest — the shape disappears and the
+ * farmer's main action with it. Pairing them (one filled, one outlined) is also
+ * what keeps a band's two actions ranked instead of competing.
  */
 const VARIANT: Record<ButtonVariant, string> = {
   primary: 'bg-brand-600 text-white hover:bg-brand-500 active:bg-brand-800 border-brand-600',
   secondary: 'bg-surface text-ink-900 border-line hover:border-leaf-500 hover:bg-leaf-tint',
-  ghost: 'bg-transparent text-brand-600 hover:bg-brand-50 border-transparent',
+  ghost: 'bg-transparent text-brand-600 hover:underline border-transparent',
   danger: 'bg-danger-600 text-white hover:brightness-110 border-danger-600',
+  onDark: 'bg-white text-brand-600 border-white hover:bg-leaf-tint',
+  onDarkOutline: 'bg-transparent text-white border-white/45 hover:bg-white/10',
 };
 
 const SIZE: Record<ButtonSize, string> = {

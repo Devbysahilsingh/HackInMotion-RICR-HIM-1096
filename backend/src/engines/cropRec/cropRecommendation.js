@@ -86,6 +86,21 @@ export const GATE_REASONS = Object.freeze({
   SOIL_UNSUITABLE: 'SOIL_UNSUITABLE',
   WATER_UNREACHABLE: 'WATER_UNREACHABLE',
   UNSUPPORTED: 'UNSUPPORTED',
+  /**
+   * No mandi within reach of this farm has a usable price for the crop.
+   *
+   * A gate rather than a sub-score, and deliberately so. The four weights above
+   * are the documented ranking and are asserted verbatim by the suite; adding a
+   * fifth would silently change every score this engine has ever produced and
+   * make the published figures wrong. What market evidence can honestly decide
+   * is *eligibility* — a crop the farmer cannot price is one they cannot act on
+   * — and, between crops the agronomy ranks equally, the tie.
+   *
+   * It only fires when the caller supplies market evidence AND asks for it
+   * (`requireMarket`). The season-planning wizard, which has no farm market
+   * context, is unaffected.
+   */
+  MARKET_UNAVAILABLE: 'MARKET_UNAVAILABLE',
 });
 
 export const EVIDENCE = Object.freeze({
@@ -114,9 +129,25 @@ const missing = (reasonKey, detail = {}) =>
 
 // ── Gates ────────────────────────────────────────────────────────────────────
 
-function applyGates({ crop, season, farm, normal }) {
+function applyGates({ crop, season, farm, normal, market, requireMarket }) {
   if (crop.supportLevel === 'UNSUPPORTED') {
     return { gated: true, reason: GATE_REASONS.UNSUPPORTED, reasonKey: 'cropRec.gateUnsupported' };
+  }
+
+  // Market, ahead of the agronomic gates: a crop with no nearby price is out
+  // whatever the soil says, and reporting "soil unsuitable" for a crop that was
+  // never rankable would be the wrong explanation.
+  if (requireMarket && market?.available !== true) {
+    return {
+      gated: true,
+      reason: GATE_REASONS.MARKET_UNAVAILABLE,
+      reasonKey: 'cropRec.gateMarket',
+      data: {
+        marketReason: market?.reason ?? null,
+        commodityCode: market?.commodityCode ?? null,
+        ageDays: market?.ageDays ?? null,
+      },
+    };
   }
 
   // Season. A crop with an EMPTY `seasons` array is NOT gated out: the registry
@@ -309,7 +340,14 @@ function combine(factors) {
  * @param {'food'|'cash'|'any'} [input.preference]
  * @returns {{recommendations: object[], excluded: object[], limitations: object[], trace: object[]}}
  */
-export function recommendCrops({ registryCrops = [], farm = {}, season, preference } = {}) {
+export function recommendCrops({
+  registryCrops = [],
+  farm = {},
+  season,
+  preference,
+  market = null,
+  requireMarket = false,
+} = {}) {
   const normal = lookupNormal({
     state: farm.location?.state,
     district: farm.location?.district,
@@ -335,7 +373,8 @@ export function recommendCrops({ registryCrops = [], farm = {}, season, preferen
   const scored = [];
 
   for (const crop of registryCrops) {
-    const gate = applyGates({ crop, season, farm, normal });
+    const cropMarket = market?.get?.(crop.cropCode) ?? null;
+    const gate = applyGates({ crop, season, farm, normal, market: cropMarket, requireMarket });
     if (gate.gated) {
       // "excluded with stated reason" — never a silent disappearance.
       excluded.push({
@@ -377,6 +416,12 @@ export function recommendCrops({ registryCrops = [], farm = {}, season, preferen
       cautions: buildCautions(crop, factors, preference),
       sources: collectSources(crop, factors),
       factors,
+      /*
+       * Carried through rather than scored. The card shows the price, the
+       * ranking uses it only to break an agronomic tie, and a caller that
+       * supplied no market evidence gets `null` — never an invented figure.
+       */
+      market: cropMarket,
     });
   }
 
@@ -397,10 +442,17 @@ export function recommendCrops({ registryCrops = [], farm = {}, season, preferen
 
   // Ranked, then a total order: better evidence wins a tie, then the code, so
   // two identical requests always render identically.
+  /*
+   * Ranked, then a total order: better evidence wins a tie, then the fresher
+   * market report, then the code so two identical requests always render
+   * identically. Market breaks ties only — it never moves a crop past one the
+   * agronomy scored higher.
+   */
   scored.sort(
     (a, b) =>
       b.score - a.score ||
       b.evidenceRatio - a.evidenceRatio ||
+      marketAge(a) - marketAge(b) ||
       a.cropCode.localeCompare(b.cropCode),
   );
 
@@ -418,6 +470,10 @@ export function recommendCrops({ registryCrops = [], farm = {}, season, preferen
     trace,
   };
 }
+
+/** Days since the crop's newest nearby report; crops with none sort last. */
+const marketAge = (entry) =>
+  typeof entry.market?.ageDays === 'number' ? entry.market.ageDays : Number.MAX_SAFE_INTEGER;
 
 /**
  * One reason per sourced factor, each naming the registry field it used so the

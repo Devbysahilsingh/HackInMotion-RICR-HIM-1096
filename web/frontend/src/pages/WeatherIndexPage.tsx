@@ -11,6 +11,7 @@ import { Card } from '@/components/ui/Card';
 import { SkeletonList } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/states';
 import { IconChevronRight, IconCloud, IconPlus } from '@/components/ui/icons';
+import { useActiveFarm } from '@/farm/ActiveFarmContext';
 
 /**
  * The top-level Weather entry.
@@ -20,11 +21,16 @@ import { IconChevronRight, IconCloud, IconPlus } from '@/components/ui/icons';
  * (`/farms/:farmId/weather` used to be reachable only through a farm's detail
  * page, which made the single most-asked farmer question two screens deep).
  *
- * One farm: straight to that farm's weather, no pointless picker. Several:
- * pick the field. None: the same guidance every other screen gives.
+ * The sidebar's active-farm selection takes priority when one exists: this is
+ * the page the "switch farms while already on Weather" requirement is really
+ * about, since `WeatherPage` itself is purely URL-scoped and has no farm
+ * concept of its own. Falling back to the old single-farm/multi-farm logic
+ * only when there is no resolved active farm yet (e.g. the farm list is still
+ * loading) keeps this correct before `ActiveFarmContext` has settled.
  */
 export default function WeatherIndexPage() {
   const { t } = useTranslation(['weather', 'farm', 'common']);
+  const { activeFarmId, setActiveFarmId } = useActiveFarm();
 
   const query = useQuery({
     queryKey: queryKeys.farms.list(),
@@ -53,7 +59,9 @@ export default function WeatherIndexPage() {
         }
       >
         {(data) =>
-          data.farms.length === 1 ? (
+          activeFarmId && data.farms.some((farm) => farm.id === activeFarmId) ? (
+            <Navigate to={`/farms/${activeFarmId}/weather`} replace />
+          ) : data.farms.length === 1 ? (
             <Navigate to={`/farms/${data.farms[0]!.id}/weather`} replace />
           ) : (
             <ul className="space-y-3" data-testid="weather-farm-list">
@@ -61,6 +69,7 @@ export default function WeatherIndexPage() {
                 <li key={farm.id}>
                   <Link
                     to={`/farms/${farm.id}/weather`}
+                    onClick={() => setActiveFarmId(farm.id)}
                     className="block rounded-xl focus-visible:outline-none"
                   >
                     <Card className="flex items-center justify-between gap-3 p-4 hover:bg-canvas">

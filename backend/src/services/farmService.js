@@ -205,6 +205,54 @@ export async function updateFarm(farm, patch) {
 }
 
 /**
+ * Stores a new farm photo, destroying whatever photo it replaces.
+ *
+ * The previous asset's id is `select: false` on the schema, so it is reloaded
+ * explicitly here rather than trusted from whatever the caller's `farm` already
+ * carries. Cleanup of the *old* asset is fire-and-forget: the farmer is
+ * replacing a photo, not waiting on Cloudinary to finish deleting the one they
+ * just moved past, and `destroyImage` never throws (it reports and is logged
+ * by its own caller here on failure).
+ *
+ * @param {import('mongoose').Document} farm an already-authorized farm
+ * @param {{url: string, publicId: string}} stored the result of `storeImage`
+ * @param {{destroy?: Function}} [options] injection seam, mirrors deleteFarmCascade
+ */
+export async function setFarmPhoto(farm, { url, publicId }, { destroy = destroyImage } = {}) {
+  const previous = await Farm.findById(farm._id).select('+photoPublicId').lean();
+  if (previous?.photoPublicId) {
+    void destroy(previous.photoPublicId).then((result) => {
+      if (!result.ok) logger.warn({ reason: result.reason }, 'previous farm photo cleanup failed');
+    });
+  }
+
+  farm.set('photoUrl', url);
+  farm.set('photoPublicId', publicId);
+  await farm.save();
+  return farm;
+}
+
+/**
+ * Removes a farm's photo. Idempotent — a farm with no photo simply saves
+ * unchanged fields, so a retried or duplicate call never errors.
+ *
+ * @param {import('mongoose').Document} farm an already-authorized farm
+ * @param {{destroy?: Function}} [options]
+ */
+export async function removeFarmPhoto(farm, { destroy = destroyImage } = {}) {
+  const previous = await Farm.findById(farm._id).select('+photoPublicId').lean();
+  if (previous?.photoPublicId) {
+    const result = await destroy(previous.photoPublicId);
+    if (!result.ok) logger.warn({ reason: result.reason }, 'farm photo cleanup failed');
+  }
+
+  farm.set('photoUrl', undefined);
+  farm.set('photoPublicId', undefined);
+  await farm.save();
+  return farm;
+}
+
+/**
  * Cascade delete (docs/database/data-lifecycle.md: "farmer delete → cascade
  * crops, healthLogs, irrigationLogs, recommendations").
  *
@@ -247,6 +295,11 @@ export async function deleteFarmCascade(farm, { destroy = destroyImage } = {}) {
     healthLogs.map((log) => log.imagePublicId),
     destroy,
   );
+
+  // The farm's own photo gets the same treatment — same reasoning as above,
+  // one asset instead of a collection of them.
+  const farmDoc = await Farm.findById(farmId).select('+photoPublicId').lean();
+  await destroyImages([farmDoc?.photoPublicId], destroy);
 
   // Health logs carry a denormalized farmId; irrigation logs are reachable
   // only through their crop, so both routes are covered where they exist.

@@ -95,7 +95,17 @@ export const SPREAD_RATES = ['NONE', 'SLOW', 'RAPID'] as const;
 export type SpreadRate = (typeof SPREAD_RATES)[number];
 
 export type SupportLevel = 'SPECIALIZED' | 'GENERAL' | 'LIMITED' | 'UNSUPPORTED';
-export type GrowthStage = 'INITIAL' | 'DEVELOPMENT' | 'MID' | 'LATE';
+
+/**
+ * FAO-56's four stages, in calendar order — the same array, in the same order,
+ * as `GROWTH_STAGES` in `backend/src/config/constants.js`.
+ *
+ * Exported as a runtime value and not only as a union because a stage
+ * *timeline* has to draw the stages a crop has not reached yet, which means
+ * knowing the whole sequence rather than only the one the engine returned.
+ */
+export const GROWTH_STAGES = ['INITIAL', 'DEVELOPMENT', 'MID', 'LATE'] as const;
+export type GrowthStage = (typeof GROWTH_STAGES)[number];
 export type Priority = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'INFO';
 export type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 export type FreshnessStatus = 'live' | 'cached' | 'historical' | 'pending';
@@ -229,6 +239,8 @@ export interface Farm {
   irrigationMethod: IrrigationMethod;
   locationKey?: string;
   notes?: string;
+  /** Optional. Set via `POST /farms/:id/photo`, never part of the create/update body. */
+  photoUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -236,7 +248,7 @@ export interface Farm {
 /** What a create/update body may carry — server-derived fields excluded. */
 export type FarmInput = Omit<
   Farm,
-  'id' | 'userId' | 'locationKey' | 'cropCount' | 'createdAt' | 'updatedAt'
+  'id' | 'userId' | 'locationKey' | 'cropCount' | 'photoUrl' | 'createdAt' | 'updatedAt'
 >;
 
 // ── Crops ───────────────────────────────────────────────────────────────────
@@ -272,6 +284,12 @@ export interface Crop {
     lastComputedAt?: string;
     initialized: boolean;
   };
+  /**
+   * Optional. Set via `POST /crops/:id/photo`, never part of the create/update
+   * body. Distinct from a crop-health scan photo (`HealthLog.imageUrl`) — this
+   * is the farmer's own picture of the planting, not a diagnostic image.
+   */
+  photoUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -515,6 +533,10 @@ export interface CropCard {
   healthFlag: string | null;
   marketSignal: MarketTrend | null;
   freshness: Freshness;
+  /** The crop's own photo, if the farmer added one. Never a stock photo. */
+  photoUrl: string | null;
+  areaValue: number | null;
+  areaUnit: LandUnit | null;
 }
 
 export interface DashboardResponse {
@@ -567,6 +589,12 @@ export interface MyCropSignal {
   state: string | null;
   district: string | null;
   cropIds: string[];
+  /**
+   * The most recent observed price, independent of `signal.trend` — present
+   * whenever at least one price row exists, even on a day the engine could
+   * not compute a trend from it.
+   */
+  latestPrice: MarketPricePoint | null;
   signal: MarketSignal;
   freshness: Freshness;
 }
@@ -746,6 +774,108 @@ export interface CropRecResponse {
   request: { farmId: string; season: Season; preference: string | null };
 }
 
+// ── Farm-scoped recommendations (GET /farms/:id/recommendations) ────────────
+
+/**
+ * Whether a crop can be priced at a mandi this farm can reach.
+ *
+ * A **hard eligibility gate**, not a score: a crop the farmer cannot price is
+ * one they cannot act on, so it is excluded from the ranking rather than ranked
+ * with an empty market column. It is deliberately absent from the weighted
+ * score — the four agronomic weights are published and asserted verbatim — and
+ * instead breaks ties between crops the agronomy ranks equally.
+ *
+ * No kilometre distance appears: Agmarknet publishes no mandi coordinates, so
+ * proximity is stated in administrative terms or not at all.
+ */
+export type MarketBand = 'FRESH' | 'RECENT' | 'OLDER' | 'STALE';
+
+export interface RecMarketEvidence {
+  available: boolean;
+  /** Present when `available` is false — why this crop could not be ranked. */
+  reason?: 'NO_COMMODITY_MAPPING' | 'NO_NEARBY_REPORT' | 'REPORT_TOO_OLD';
+  commodityCode?: string;
+  mandi?: string;
+  district?: string | null;
+  state?: string | null;
+  proximity?: MandiProximity;
+  modalPrice?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  unit?: string | null;
+  reportedAt?: string;
+  ageDays?: number;
+  band?: MarketBand;
+  mandiCount?: number;
+  observations?: number;
+  trend?: MarketTrend | null;
+  changePct7d?: number | null;
+}
+
+/** A ranked crop, with the market evidence that made it eligible. */
+export interface FarmRecItem extends CropRecItem {
+  market: RecMarketEvidence | null;
+}
+
+export interface RecSeason {
+  /** The season the resolver picked from the calendar. */
+  season: Season;
+  /** What is in the ground now, which is usually a different season. */
+  currentSeason: Season;
+  sowingWindowOpen: boolean;
+  year: number;
+  /** Always `CALENDAR_MONTH` — a published convention, never a local measurement. */
+  basis: 'CALENDAR_MONTH';
+  /** What the ranking actually used; a query may override the resolver. */
+  applied: Season;
+  overridden: boolean;
+}
+
+export interface RecLand {
+  totalAcres: number;
+  allocatedAcres: number;
+  availableAcres: number;
+  /** Crops holding ground whose area nobody recorded — the figure's error bar. */
+  unmeasuredCrops: number;
+  occupiedBy: { cropCode: string; status: CropStatus; acres: number }[];
+}
+
+export interface FarmRecommendationsResponse {
+  farm: {
+    id: string;
+    name: string;
+    location: FarmLocation;
+    soilType: SoilType;
+    irrigationMethod: IrrigationMethod;
+  };
+  season: RecSeason;
+  land: RecLand;
+  standingCrops: { cropCode: string; status: CropStatus; sowingDate: string | null }[];
+  marketContext: {
+    scope: { state: string | null; district: string | null; days: number };
+    mandiCount: number;
+    commodityCount: number;
+    freshness: Freshness;
+    policy: {
+      freshWithinDays: number;
+      recentWithinDays: number;
+      olderWithinDays: number;
+      staleAfterDays: number;
+    };
+    windowDays: number;
+  };
+  recommendations: FarmRecItem[];
+  excluded: CropRecExclusion[];
+  limitations: { key: string; data?: Record<string, unknown> }[];
+  trace: TraceStep[];
+}
+
+/** The same payload, with one crop selected out of it — never re-scored. */
+export interface FarmRecDetailResponse extends FarmRecommendationsResponse {
+  recommendation: FarmRecItem | null;
+  excludedEntry: CropRecExclusion | null;
+}
+
 // ── Community ───────────────────────────────────────────────────────────────
 
 export interface CommunityAlert {
@@ -788,9 +918,35 @@ export interface NearbyMandi {
   commodities: MandiCommodity[];
 }
 
+/**
+ * One commodity trading nearby, rolled up across every mandi in scope.
+ *
+ * The area-wide answer to "what is wheat fetching, and which way has it moved?",
+ * so a screen does not have to reduce `mandis` itself to find the newest report
+ * — three surfaces would each need the same reduction, and the movement figure
+ * has to come from the signal engine rather than from arithmetic in a component.
+ *
+ * `trend` is null whenever the engine declined to describe one (too few
+ * observations, most often), and `reasonCode` says why. It is never a
+ * manufactured `STABLE`.
+ */
+export interface NearbyCommodity {
+  commodityCode: string;
+  /** The newest observation for it anywhere in scope, and which mandi filed it. */
+  latest: MandiCommodity & { market: string; district: string | null; state: string };
+  /** How many nearby mandis reported it at all. */
+  mandiCount: number;
+  observations: number;
+  trend: MarketTrend | null;
+  changePct7d: number | null;
+  changePct30d: number | null;
+  reasonCode: string;
+}
+
 export interface NearbyMandisResponse {
   scope: { state: string | null; district: string | null; days: number };
   mandis: NearbyMandi[];
+  commodities: NearbyCommodity[];
   availableCommodities: string[];
   counts: { mandis: number; inDistrict: number; commodities: number };
   freshness: Freshness;

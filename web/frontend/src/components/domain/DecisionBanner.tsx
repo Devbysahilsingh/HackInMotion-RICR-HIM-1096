@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
@@ -10,6 +11,7 @@ import { IconAlertTriangle, IconCheck, IconChevronRight, IconInfo } from '@/comp
 import { localizeCropParams, useCropNames } from '@/hooks/useCropNames';
 import { cn } from '@/lib/cn';
 import { feedTarget } from '@/lib/feedTarget';
+import { HeadlineFigures } from './HeadlineFigures';
 import { WhyTrace } from './WhyTrace';
 
 /**
@@ -50,10 +52,24 @@ export function DecisionBanner({
   item,
   onAcknowledge,
   isAcknowledging = false,
+  kicker,
+  actions,
 }: {
   item: FeedItem;
   onAcknowledge?: (item: FeedItem) => void;
   isAcknowledging?: boolean;
+  /**
+   * Overrides the band's eyebrow. The dashboard says "Today's farm decision";
+   * a crop's own screen says "Today, for this crop", because the farmer has
+   * already chosen the subject and repeating "farm" there is noise.
+   */
+  kicker?: ReactNode;
+  /**
+   * Extra actions beside the band's own, for a screen that can offer something
+   * more specific than "view all" — the crop page's "check a leaf" and
+   * "irrigation plan", which are the two things the design puts here.
+   */
+  actions?: ReactNode;
 }) {
   const { t } = useTranslation(['common', 'irrigation', 'weather', 'market', 'health']);
   const cropName = useCropNames();
@@ -76,14 +92,30 @@ export function DecisionBanner({
       className={cn('furrow relative overflow-hidden rounded-[18px] text-white', tone.band)}
     >
       <div className="px-5 py-6 sm:px-[30px] sm:py-7">
-        <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[0.6875rem] font-semibold uppercase tracking-[0.13em] text-white/70">
-          <Icon size={14} />
+        {/*
+          The design opens the band with a 40px rounded tile carrying the
+          decision's icon, then the section label. The tile matters: it gives the
+          eye somewhere to land before a 46px headline, which otherwise starts
+          mid-sentence at the top-left of a large colour field.
+        */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <span
+            aria-hidden="true"
+            className="grid size-10 shrink-0 place-items-center rounded-xl bg-white/[0.16]"
+          >
+            <Icon size={22} />
+          </span>
+          <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.13em] text-leaf-tint/80">
+            {kicker ?? t('common:decision.kicker')}
+          </span>
           {/*
             The priority word, not a decorative label: it is the accessible
             equivalent of the band's colour, so the meaning survives greyscale
             and screen readers alike (accessibility.md — never colour-alone).
           */}
-          <span>{t(`common:priority.${item.priority}`)}</span>
+          <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[0.719rem] font-semibold text-white">
+            {t(`common:priority.${item.priority}`)}
+          </span>
           {freshness && (
             <FreshnessDot
               freshness={freshness}
@@ -91,24 +123,34 @@ export function DecisionBanner({
               data-testid="decision-freshness"
             />
           )}
-        </p>
+        </div>
 
         {/*
           `text-white` sits on the heading itself, not on the section. The base
           layer sets an explicit colour on h1–h4, and an explicitly-coloured
           element does not inherit — so a `text-white` on the parent loses and
           the headline renders in near-black on a coloured ground.
+
+          46px at the top end, per the design. It steps down rather than wrapping
+          to four lines on a 390px screen, which is the width this has to survive.
         */}
         <h2
           id="decision-banner-title"
-          className="mt-3 max-w-3xl text-[1.75rem] leading-[1.06] text-white sm:text-[2.125rem]"
+          className="mt-3.5 max-w-3xl text-[1.75rem] leading-[1.04] text-white sm:text-[2.25rem] lg:text-[2.875rem]"
         >
           {title}
         </h2>
 
-        {body && <p className="mt-3 max-w-2xl text-[0.9375rem] text-white/85">{body}</p>}
+        {body && (
+          <p className="mt-3 max-w-[52ch] text-[0.9375rem] leading-relaxed text-white/85 sm:text-[1.0625rem]">
+            {body}
+          </p>
+        )}
 
-        <div className="mt-5 flex flex-wrap items-center gap-2">
+        {/* The evidence at a glance, from the engine's own payload. */}
+        <HeadlineFigures item={item} className="my-[22px]" />
+
+        <div className="mt-5 flex flex-wrap items-center gap-2.5">
           {target && (
             /*
              * A link, not a button: it navigates, so the browser's own
@@ -128,8 +170,7 @@ export function DecisionBanner({
 
           {onAcknowledge && item.acknowledgedAt === null && (
             <Button
-              variant="ghost"
-              className="text-white hover:bg-white/15"
+              variant="onDarkOutline"
               data-testid="decision-ack"
               onClick={() => onAcknowledge(item)}
               isLoading={isAcknowledging}
@@ -139,6 +180,8 @@ export function DecisionBanner({
             </Button>
           )}
 
+          {actions}
+
           <SpeakButton text={`${title}. ${body}`} className="text-white hover:bg-white/15" />
         </div>
 
@@ -146,16 +189,14 @@ export function DecisionBanner({
           The explanation, inline. The reference's own caption for this screen is
           "One answer, with the working shown" — putting the reasoning a
           navigation away would make it something nobody reads.
-        */}
-        {/*
-          The trace keeps its own cream panel rather than being recoloured to
-          match the band. Forcing white text onto it made a light surface carry
-          white type — invisible. A pale panel on the coloured ground also reads
-          correctly as "this is the evidence, not the verdict".
+
+          `onDark` renders it as an inset cut into the band rather than a pale
+          card laid on it: the design's own treatment, and the one that does not
+          put white type on a cream ground.
         */}
         {trace != null && (
-          <div className="mt-5 border-t border-white/20 pt-4">
-            <WhyTrace trace={trace} />
+          <div className="mt-5">
+            <WhyTrace trace={trace} tone="onDark" />
           </div>
         )}
       </div>

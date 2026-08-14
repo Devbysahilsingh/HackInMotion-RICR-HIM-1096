@@ -243,6 +243,33 @@ export const IconTrendDown = (props: IconProps) => (
   </Svg>
 );
 
+export const IconImage = (props: IconProps) => (
+  <Svg {...props}>
+    <rect x="3" y="4" width="18" height="16" rx="2" />
+    <circle cx="8.5" cy="10" r="1.5" />
+    <path d="m21 16-5.5-5.5a1.5 1.5 0 0 0-2.12 0L4 19" />
+  </Svg>
+);
+
+/** A viewfinder — corner brackets around a centre point. Crop-health scan. */
+export const IconScan = (props: IconProps) => (
+  <Svg {...props}>
+    <path d="M4 8V6a2 2 0 0 1 2-2h2" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v2" />
+    <path d="M20 16v2a2 2 0 0 1-2 2h-2" />
+    <path d="M8 20H6a2 2 0 0 1-2-2v-2" />
+    <circle cx="12" cy="12" r="1.5" />
+  </Svg>
+);
+
+export const IconMenu = (props: IconProps) => (
+  <Svg {...props}>
+    <path d="M4 6h16" />
+    <path d="M4 12h16" />
+    <path d="M4 18h16" />
+  </Svg>
+);
+
 export const IconTrendFlat = (props: IconProps) => (
   <Svg {...props}>
     <path d="M3 12h14" />

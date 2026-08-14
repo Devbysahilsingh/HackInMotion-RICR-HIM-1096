@@ -110,6 +110,16 @@
   --color-sky-700: #276073;
 
   /*
+   * Info and warn are the reference's `--info` / `--warn`, and they are NOT the
+   * same values as `sky-700` / `harvest-700`. The tint pair is what a label sits
+   * on; these two are what a *mark* is drawn in — the filled bars in a rain
+   * chart, a warning rule. Reusing the darker text colours for fills made the
+   * charts read as text, which is exactly the drift this separation prevents.
+   */
+  --color-info-500: #3b7b90;
+  --color-warn-500: #b87c15;
+
+  /*
    * Feed priority. Ranked, and each has ≥4.5:1 text contrast on its own tint.
    * The tints are the reference's `-t` family so a priority chip sits in the
    * same warm world as the cards around it.
@@ -145,6 +155,9 @@
   --color-line-strong: #d6cfb8;
   --color-surface: #ffffff;
   --color-canvas: #f7f4ea;
+  /* The quiet tag ground — a half-step darker than the canvas so a muted tag
+   * still reads as a tag when it sits directly on the page rather than a card. */
+  --color-mute: #f0ede2;
 
   /*
    * Two families, as the reference specifies: a tight grotesque for headings
@@ -273,12 +286,83 @@
    */
   .strata {
     display: flex;
-    height: 6px;
+    height: 8px;
     overflow: hidden;
   }
 
   .strata > i {
     flex: 1;
+  }
+
+  /*
+   * The reference's `.ph` — a forest→earth→harvest gradient standing in for a
+   * photograph.
+   *
+   * The design composes with imagery throughout (crop tiles, the landing hero,
+   * the auth split). No crop carries a photo in this system: `Crop` has no image
+   * field and there is no asset library, so every one of those slots would have
+   * to be filled with a stock photo of a crop that is not the farmer's. That is
+   * exactly the fabrication rule 7 forbids — a photo reads as evidence.
+   *
+   * The gradient is the design's own answer: it is the fallback `.ph` defines,
+   * it carries the palette's soil-to-harvest arc, and it cannot be mistaken for
+   * a picture of anything. Where a *real* image exists — a leaf the farmer
+   * actually uploaded — it is shown instead.
+   */
+  .ph {
+    position: relative;
+    overflow: hidden;
+    background-image: linear-gradient(150deg, #2a7a4e, #8b5e3c 65%, #d9a441);
+  }
+
+  /*
+   * Forecast bars — the seven-day chart's three grounds, and the only place in
+   * the app that paints a weather condition as a colour.
+   *
+   * Three, not a continuous ramp, because the categories are what a farmer acts
+   * on: a wet day, a flagged-hot day, an ordinary day. Each gradient runs from
+   * its saturated end toward a paler one so a row of seven bars reads as a
+   * landscape rather than as seven flat blocks.
+   *
+   * The hues are the palette's own — `--color-info-500` for water,
+   * `--color-danger-600` for a flagged risk, `--color-harvest-500` for warmth —
+   * so the chart cannot drift away from the rest of the product. They are
+   * written as literals rather than `var()` because a CSS gradient stop
+   * interpolated from a custom property cannot be transitioned, and because the
+   * pale ends are tints of those tokens that exist nowhere else.
+   *
+   * Colour is never the only signal: every bar prints its temperature and its
+   * rainfall underneath, and carries an accessible label (accessibility.md —
+   * never colour-alone).
+   */
+  .wxbar-rain {
+    background-image: linear-gradient(180deg, #3b7b90 0%, #7ba6b6 55%, #b3cbd4 100%);
+  }
+
+  .wxbar-risk {
+    background-image: linear-gradient(180deg, #b93f2e 0%, #cd6f5f 55%, #e0a096 100%);
+  }
+
+  .wxbar-mild {
+    background-image: linear-gradient(180deg, #edc584 0%, #e2b25f 55%, #d9a441 100%);
+  }
+}
+
+/*
+ * The scan sweep — a soft light band travelling down the leaf photograph while
+ * the analysis runs.
+ *
+ * Deliberately slow and low-contrast: this is "we are reading your photo", not
+ * a targeting reticle. It is purely decorative, always `aria-hidden`, and the
+ * global `prefers-reduced-motion` rule below stops it outright rather than
+ * leaving a stutter.
+ */
+@keyframes scanSweep {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(300%);
   }
 }
 

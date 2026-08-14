@@ -41,6 +41,16 @@ export function resolveMessageKey(messageKey: string): ResolvedMessageKey {
  * the generic internal-error string rather than printing a raw identifier at a
  * farmer — the exact failure the backend's key-scanner test exists to prevent,
  * caught a second time here at the render edge.
+ *
+ * A third check catches a narrower but real failure: i18next's default
+ * behaviour when `params` is missing a key a template asks for is to leave
+ * `{{thatKey}}` literally in the output rather than fail — it does not throw
+ * and the result is not empty, so the two guards above never see it. That
+ * happened in production (a feed item's evidence object nested its values one
+ * level deeper than the i18n template expected), so any residual `{{` in the
+ * resolved string is treated as the same class of failure as a missing
+ * translation: a farmer must never see raw template syntax, even from a
+ * wiring bug this function cannot otherwise detect.
  */
 export function translateMessageKey(
   t: TFunction,
@@ -53,5 +63,6 @@ export function translateMessageKey(
   if (!resolved.known) return t('errors:internal');
 
   const value = t(resolved.full, { ...params, defaultValue: '' });
-  return value || t('errors:internal');
+  if (!value || value.includes('{{')) return t('errors:internal');
+  return value;
 }

@@ -380,6 +380,33 @@ describe('Market API and nightly ingest', () => {
       assert.equal(entry.series, undefined);
     });
 
+    it('carries the latest observed price independent of the trend', async () => {
+      await MarketPrice.insertMany(risingSeries());
+      const farm = await createFarm(alice.accessToken);
+      await plantCrop(alice, farm);
+
+      const res = await server.request(MY_CROPS, { token: alice.accessToken });
+      const [entry] = res.body.data.crops;
+
+      // The newest row in the fixture: the last of the 14 days, at the
+      // higher price — present even though a fallback UI cannot rely on
+      // `signal.trend` alone to show a number.
+      assert.ok(entry.latestPrice, 'no latest price was reported for an active commodity');
+      assert.equal(entry.latestPrice.market, 'Kalamna');
+      assert.equal(entry.latestPrice.modalPrice, 2400);
+    });
+
+    it('reports latestPrice as null when there is genuinely no price data', async () => {
+      const farm = await createFarm(alice.accessToken);
+      await plantCrop(alice, farm);
+
+      const res = await server.request(MY_CROPS, { token: alice.accessToken });
+      const [entry] = res.body.data.crops;
+
+      assert.equal(entry.latestPrice, null);
+      assert.equal(entry.signal.trend, null);
+    });
+
     it('never shows another account’s crops', async () => {
       const aliceFarm = await createFarm(alice.accessToken);
       await plantCrop(alice, aliceFarm, { cropCode: 'RICE' });

@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { useAuth } from '@/auth/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/Field';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { Notice } from '@/components/ui/states';
 import { useApiErrorMessage, useServerValidation } from '@/hooks/useApiError';
 import { useLanguage } from '@/i18n/LanguageContext';
@@ -65,6 +66,7 @@ export default function RegisterPage() {
     <AuthShell
       title={t('auth:registerTitle')}
       subtitle={t('auth:registerSubtitle')}
+      panelMessage={t('auth:registerPanelMessage')}
       footer={
         <>
           {t('auth:haveAccount')}{' '}
@@ -95,6 +97,20 @@ export default function RegisterPage() {
           }
           {...register('name')}
         />
+
+        {/*
+          The design's inline language row. The choice itself still lives in
+          `LanguageContext` (the same toggle sits in the header above), this is
+          only a second, more visible place to make it — the language the
+          account is created in matters enough that the reference gives it its
+          own row rather than leaving it to the corner toggle alone.
+        */}
+        <div>
+          <p className="mb-1.5 block text-sm font-medium text-ink-700">
+            {t('auth:languagePrompt')}
+          </p>
+          <LanguageToggle />
+        </div>
 
         <TextField
           label={t('auth:emailLabel')}

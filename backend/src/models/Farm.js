@@ -54,6 +54,15 @@ const farmSchema = new Schema(
     locationKey: { type: String },
 
     notes: { type: String, trim: true, maxlength: 500 },
+
+    /**
+     * Optional farm photo. Mirrors `CropHealthLog`'s imageUrl/imagePublicId
+     * split: the URL is served plainly, the Cloudinary public id is
+     * `select: false` — never returned to a client — and exists only so
+     * `deleteFarmCascade` can destroy the asset (AU-5).
+     */
+    photoUrl: { type: String },
+    photoPublicId: { type: String, select: false },
   },
   baseOptions('farms'),
 );

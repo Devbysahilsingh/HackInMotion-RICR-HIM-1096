@@ -195,6 +195,24 @@ export function createCropHealthRouter({ analyze = analyzeCropHealth } = {}) {
         .trim()
         .regex(/^[a-f\d]{24}$/i)
         .optional(),
+      /**
+       * Scans belonging to one field.
+       *
+       * `CropHealthLog` has carried `farmId` since it was written, but nothing
+       * could filter on it — so a farmer with onion on one field and soybean on
+       * another saw both fields' scan history on whichever field they had
+       * selected. The crop-health screen is farm-scoped like every other
+       * farm-dependent surface, and this is what lets it be.
+       *
+       * Ownership is unaffected: `ownedBy` still scopes the query by `userId`,
+       * so a farmId belonging to someone else simply matches nothing (AU-2 —
+       * an empty list, never a 403).
+       */
+      farmId: z
+        .string()
+        .trim()
+        .regex(/^[a-f\d]{24}$/i)
+        .optional(),
       page: z.coerce.number().int().min(1).max(PAGE_MAX).default(1),
       limit: z.coerce.number().int().min(1).max(PAGE_SIZE_MAX).default(PAGE_SIZE_DEFAULT),
     })
@@ -202,10 +220,14 @@ export function createCropHealthRouter({ analyze = analyzeCropHealth } = {}) {
 
   cropHealthRouter.get('/logs', validate({ query: logsQuerySchema }), async (req, res, next) => {
     try {
-      const { cropId, page, limit } = req.query;
+      const { cropId, farmId, page, limit } = req.query;
 
       // `ownedBy` scopes the query itself. Never post-filter (AU-4).
-      const filter = { ...ownedBy(req), ...(cropId ? { cropId } : {}) };
+      const filter = {
+        ...ownedBy(req),
+        ...(cropId ? { cropId } : {}),
+        ...(farmId ? { farmId } : {}),
+      };
 
       const [logs, total] = await Promise.all([
         CropHealthLog.find(filter)

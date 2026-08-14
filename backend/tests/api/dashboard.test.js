@@ -31,6 +31,7 @@ import { runExpiry } from '../../src/jobs/expiry.js';
 import { runFeedRefresh } from '../../src/jobs/feedRefresh.js';
 import {
   Crop,
+  CropHealthLog,
   CropRegistry,
   Farm,
   Recommendation,
@@ -341,13 +342,68 @@ describe('Dashboard, recommendations and the feed jobs', () => {
       assert.equal(card.stageReason, 'STAGE_DERIVED');
       assert.deepEqual(card.names, { en: 'Wheat', hi: 'Wheat' });
       assert.equal(card.irrigationVerdict, 'IRRIGATE_TODAY');
-      // No health chain exists until Phase 3; null is honest, 'healthy' would
-      // be fabricated (rule 7).
+      // No scan has ever been analyzed for this crop; null is honest,
+      // 'healthy' would be fabricated (rule 7).
       assert.equal(card.healthFlag, null);
       assert.equal(card.marketSignal, null);
       assert.equal(card.freshness.status, 'live');
       assert.equal(card.freshness.source, 'open-meteo');
       assert.ok(card.freshness.fetchedAt);
+      // Never sown with an area in this fixture.
+      assert.equal(card.areaValue, null);
+      assert.equal(card.areaUnit, null);
+    });
+
+    it('carries the crop’s own area, and the severity of its most recent analyzed scan', async () => {
+      await CropRegistry.create(registryDoc());
+
+      const farm = await createFarm(alice.accessToken);
+      const crop = await plantCrop(alice, farm, { areaValue: 2.5, areaUnit: 'acre' });
+
+      const scan = (overrides = {}) => ({
+        userId: alice.user.id,
+        cropId: crop._id,
+        farmId: farm.id,
+        imageUrl: 'https://res.cloudinary.com/demo/image/upload/v1/fixture.jpg',
+        imagePublicId: `fixture-${Math.random()}`,
+        status: 'analyzed',
+        analysis: { source: 'rules', severityAssessment: 'MILD' },
+        ...overrides,
+      });
+
+      // An older SEVERE scan, then a newer MILD one — the card must report
+      // the newer one, not the more severe one and not the first one found.
+      await CropHealthLog.create(scan({ analysis: { source: 'rules', severityAssessment: 'SEVERE' } }));
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      await CropHealthLog.create(scan());
+
+      const data = await getDashboard(alice.accessToken);
+      const [card] = data.cropCards;
+
+      assert.equal(card.areaValue, 2.5);
+      assert.equal(card.areaUnit, 'acre');
+      assert.equal(card.healthFlag, 'MILD');
+    });
+
+    it('does not flag a crop whose only scan reached no assessable severity', async () => {
+      await CropRegistry.create(registryDoc());
+
+      const farm = await createFarm(alice.accessToken);
+      const crop = await plantCrop(alice, farm);
+
+      await CropHealthLog.create({
+        userId: alice.user.id,
+        cropId: crop._id,
+        farmId: farm.id,
+        imageUrl: 'https://res.cloudinary.com/demo/image/upload/v1/fixture.jpg',
+        imagePublicId: 'fixture-not-assessed',
+        status: 'analyzed',
+        analysis: { source: 'rules', severityAssessment: 'NOT_ASSESSED' },
+      });
+
+      const data = await getDashboard(alice.accessToken);
+
+      assert.equal(data.cropCards[0].healthFlag, null);
     });
 
     it('labels a crop whose cell has never been fetched as pending, not live', async () => {

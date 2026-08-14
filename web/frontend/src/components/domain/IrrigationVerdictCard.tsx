@@ -73,13 +73,22 @@ export function IrrigationVerdictCard({
       className={cn('border', VERDICT_TONE[verdict] ?? VERDICT_TONE.UNAVAILABLE)}
     >
       <div className="space-y-3 p-4 sm:p-5">
+        {/*
+          The design sets the watering verdict as the largest thing on its
+          surface — the whole screen is built to deliver one word ("Wait"). At
+          card scale that becomes a display-weight heading rather than the
+          body-sized label it used to be: a farmer scanning the page should be
+          able to read the answer without reading the card.
+        */}
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <h3 className="flex items-center gap-2 text-base font-semibold">
-            <IconDroplet size={20} aria-hidden="true" />
-            {title}
-          </h3>
+          <span className="kicker flex items-center gap-1.5">
+            <IconDroplet size={14} aria-hidden="true" />
+            {t('irrigation:pageTitle')}
+          </span>
           <SpeakButton text={`${title}. ${body}`} />
         </div>
+
+        <h3 className="max-w-[20ch] text-[1.5rem] leading-tight sm:text-[1.75rem]">{title}</h3>
 
         <p className="text-sm text-ink-700">{body}</p>
 

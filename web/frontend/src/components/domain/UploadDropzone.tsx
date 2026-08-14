@@ -21,10 +21,24 @@ export function UploadDropzone({
   file,
   onSelect,
   disabled = false,
+  title,
+  hint,
+  cta,
+  alt,
 }: {
   file: File | null;
   onSelect: (file: File | null) => void;
   disabled?: boolean;
+  /**
+   * Copy overrides. Default to the crop-health scan strings — the original,
+   * only caller — so passing nothing changes nothing there. A second caller
+   * (farm-photo onboarding) needs its own wording: "the affected plant" is
+   * specific to a diagnosis photo and would misdescribe a farm photo.
+   */
+  title?: string;
+  hint?: string;
+  cta?: string;
+  alt?: string;
 }) {
   const { t } = useTranslation(['health', 'errors', 'common']);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -90,7 +104,7 @@ export function UploadDropzone({
           <div className="space-y-3">
             <img
               src={previewUrl}
-              alt={t('health:photoAlt')}
+              alt={alt ?? t('health:photoAlt')}
               data-testid="upload-preview"
               className="mx-auto max-h-64 rounded-lg object-contain"
             />
@@ -108,15 +122,15 @@ export function UploadDropzone({
             <span className="inline-flex text-brand-500" aria-hidden="true">
               <IconUpload size={32} />
             </span>
-            <p className="text-base font-semibold">{t('health:dropzoneTitle')}</p>
-            <p className="text-xs text-ink-500">{t('health:dropzoneHint')}</p>
+            <p className="text-base font-semibold">{title ?? t('health:dropzoneTitle')}</p>
+            <p className="text-xs text-ink-500">{hint ?? t('health:dropzoneHint')}</p>
             <Button
               onClick={() => inputRef.current?.click()}
               disabled={disabled}
               leadingIcon={<IconCamera size={18} />}
               data-testid="upload-choose"
             >
-              {t('health:dropzoneCta')}
+              {cta ?? t('health:dropzoneCta')}
             </Button>
           </div>
         )}

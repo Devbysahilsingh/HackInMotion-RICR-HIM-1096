@@ -17,8 +17,9 @@ import {
   PAGE_SIZE_MAX,
 } from '../config/constants.js';
 import { loadOwned, ownedBy } from '../middleware/loadOwned.js';
-import { irrigationLogLimiter } from '../middleware/rateLimits.js';
+import { cropPhotoLimiter, irrigationLogLimiter } from '../middleware/rateLimits.js';
 import { requireAuth } from '../middleware/requireAuth.js';
+import { uploadImage, uploadRejection } from '../middleware/uploadImage.js';
 import { validate } from '../middleware/validate.js';
 import { Crop, CropRegistry, Farm } from '../models/index.js';
 import {
@@ -27,7 +28,9 @@ import {
   assertSowingDateInRange,
   assertTransitionAllowed,
   deleteCropCascade,
+  removeCropPhoto,
   resolveCropCode,
+  setCropPhoto,
   withStages,
 } from '../services/cropService.js';
 import {
@@ -37,6 +40,9 @@ import {
   recordIrrigation,
 } from '../services/irrigationService.js';
 import { fertilizerGuidance } from '../services/fertilizerService.js';
+import { sanitizeImage } from '../services/imagePipeline.js';
+import { storeImage } from '../integrations/cloudinary.js';
+import { UPLOAD_REJECTION } from '../config/constants.js';
 import { validationError } from '../utils/errors.js';
 import { pageMeta, sendData, sendNoContent } from '../utils/respond.js';
 
@@ -200,6 +206,47 @@ cropsRouter.patch(
 cropsRouter.delete('/crops/:id', requireAuth, loadCrop, async (req, res, next) => {
   try {
     await deleteCropCascade(req.crop._id, req.auth.userId);
+    sendNoContent(res);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * Crop profile photo (optional) — the farmer's own picture of this planting,
+ * distinct from a crop-health diagnostic scan (`POST /crop-health/analyze`).
+ * Same pipeline as the farm photo route: multer memory storage → magic-byte
+ * sniff + bomb guards + decode/re-encode (imagePipeline.js) → Cloudinary,
+ * signed, server-chosen public id. `loadCrop` proves the farm above the crop
+ * is owned too (AU-3) before a byte of the upload is buffered.
+ */
+cropsRouter.post(
+  '/crops/:id/photo',
+  requireAuth,
+  cropPhotoLimiter,
+  loadCrop,
+  uploadImage,
+  async (req, res, next) => {
+    try {
+      const sanitized = await sanitizeImage(req.file.buffer);
+      if (!sanitized.ok) return next(uploadRejection(sanitized.reason));
+
+      const stored = await storeImage(sanitized.jpeg);
+      if (!stored.ok) return next(uploadRejection(UPLOAD_REJECTION.STORAGE_UNAVAILABLE));
+
+      const crop = await setCropPhoto(req.crop, { url: stored.url, publicId: stored.publicId });
+      const [payload] = await withStages([crop]);
+      sendData(res, { crop: payload });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+cropsRouter.delete('/crops/:id/photo', requireAuth, loadCrop, async (req, res, next) => {
+  try {
+    // 204, matching `DELETE /farms/:id/photo`'s own convention.
+    await removeCropPhoto(req.crop);
     sendNoContent(res);
   } catch (err) {
     next(err);

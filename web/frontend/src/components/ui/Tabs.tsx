@@ -19,6 +19,7 @@ export function Tabs<T extends string>({
   onChange,
   label,
   className,
+  idBase,
 }: {
   items: TabItem<T>[];
   value: T;
@@ -26,8 +27,17 @@ export function Tabs<T extends string>({
   /** Accessible name for the tab list — what these tabs are *of*. */
   label: string;
   className?: string;
+  /**
+   * Prefix for the generated ids, so a caller rendering its own `TabPanel` can
+   * give it the id this strip's `aria-controls` actually points at. Without one
+   * the generated `useId()` prefix is unknowable from outside, and every panel
+   * id a caller invents is a dangling reference — the association a screen
+   * reader relies on to move from tab to panel.
+   */
+  idBase?: string;
 }) {
-  const baseId = useId();
+  const generatedId = useId();
+  const baseId = idBase ?? generatedId;
   const listRef = useRef<HTMLDivElement>(null);
 
   const move = (delta: number) => {

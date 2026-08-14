@@ -1,18 +1,26 @@
-import { useEffect, useRef, type ReactNode } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { useState, type ReactNode } from 'react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
+import { useAuth } from '@/auth/AuthContext';
+import { FarmSwitcher } from '@/components/domain/FarmSwitcher';
+import { ActiveFarmProvider, useActiveFarm } from '@/farm/ActiveFarmContext';
+import { usePageHeading } from '@/hooks/usePageHeading';
 import { cn } from '@/lib/cn';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
+import { ConfirmDialog } from '@/components/ui/Modal';
 import {
   IconCamera,
   IconChart,
   IconClock,
   IconCloud,
+  IconDroplet,
   IconField,
   IconHome,
   IconLeaf,
+  IconScan,
   IconSettings,
+  IconTrendUp,
   IconUsers,
 } from '@/components/ui/icons';
 
@@ -21,12 +29,9 @@ import {
  *
  * Navigation is bottom tabs under 768px and a sidebar above it
  * (ux-flows.md) — the bottom bar mirrors the Android app's layout so the two
- * surfaces share muscle memory.
- *
- * The bottom bar carries the five destinations a farmer reaches for daily;
- * the sidebar has room for the full set. Weather and History are therefore
- * sidebar-only here — on mobile they stay one tap away through the dashboard
- * and each farm's detail page, never orphaned.
+ * surfaces share muscle memory. The bottom bar's five destinations are
+ * unchanged by the sidebar redesign below; it is a distinct navigation
+ * paradigm for a thumb-reachable phone screen, not a collapsed sidebar.
  */
 const NAV = [
   { to: '/dashboard', labelKey: 'common:nav.dashboard', Icon: IconHome },
@@ -36,66 +41,86 @@ const NAV = [
   { to: '/community', labelKey: 'common:nav.community', Icon: IconUsers },
 ] as const;
 
-/** Sidebar-only additions, slotted after Market. */
-const NAV_DESKTOP_EXTRA = [
-  { to: '/weather', labelKey: 'weather:pageTitle', Icon: IconCloud },
-  { to: '/history', labelKey: 'common:nav.history', Icon: IconClock },
-] as const;
-
 export function AppLayout() {
   const { t } = useTranslation('common');
 
   return (
-    <div className="min-h-dvh md:flex">
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-brand-600 focus:px-4 focus:py-2 focus:text-white"
-      >
-        {t('nav.skipToContent')}
-      </a>
-
-      <Sidebar />
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <TopBar />
-        {/*
-          1480px, from the reference. Wider than the old 4xl (896px) because the
-          dashboard now lays out in two and three columns on a desktop — at 896px
-          a "split" layout is really just a narrow column with a gutter.
-        */}
-        <main
-          id="main"
-          className="mx-auto w-full max-w-[92.5rem] flex-1 px-4 pb-24 pt-6 sm:px-6 md:pb-12 lg:px-8"
+    <ActiveFarmProvider>
+      <div className="min-h-dvh md:flex">
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-brand-600 focus:px-4 focus:py-2 focus:text-white"
         >
-          <Outlet />
-        </main>
-      </div>
+          {t('nav.skipToContent')}
+        </a>
 
-      <BottomTabs />
-    </div>
+        <Sidebar />
+
+        <div className="flex min-w-0 flex-1 flex-col">
+          <TopBar />
+          {/*
+            1480px, from the reference. Wider than the old 4xl (896px) because the
+            dashboard now lays out in two and three columns on a desktop — at 896px
+            a "split" layout is really just a narrow column with a gutter.
+          */}
+          <main
+            id="main"
+            className="mx-auto w-full max-w-[92.5rem] flex-1 px-4 pb-24 pt-6 sm:px-6 md:pb-12 lg:px-8"
+          >
+            <Outlet />
+          </main>
+        </div>
+
+        <BottomTabs />
+      </div>
+    </ActiveFarmProvider>
   );
 }
 
 /**
  * The dark rail.
  *
- * Deep forest with the furrow texture, straight from the design reference. It
- * does real work beyond looking agricultural: a dark rail against a cream body
- * separates "where am I in the app" from "what is the app telling me" without
- * needing a border, which is what lets the content column stay borderless and
- * calm.
+ * Deep forest with the furrow texture, per the reference. A real farm
+ * switcher sits below the wordmark — `FarmSwitcher` reads and writes
+ * `ActiveFarmContext`, the one shared source of truth every farm-dependent
+ * page and query reads from — then the nine destinations the reference
+ * names, then the account section, pinned to the bottom behind a divider.
  *
  * The active marker is a leaf-coloured left edge plus a tinted fill — two
  * signals, so it survives both greyscale and a farmer glancing at a sunlit
  * screen.
  */
 function Sidebar() {
-  const { t } = useTranslation('common');
+  const { t } = useTranslation(['common', 'weather', 'irrigation', 'market', 'auth']);
+  const { user, logout } = useAuth();
+  const { activeFarmId } = useActiveFarm();
+  const navigate = useNavigate();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const items = [
+    { to: '/dashboard', labelKey: 'common:nav.today', Icon: IconHome },
+    { to: activeFarmId ? `/farms/${activeFarmId}` : '/farms', labelKey: 'common:nav.myFarm', Icon: IconField },
+    { to: '/weather', labelKey: 'weather:pageTitle', Icon: IconCloud },
+    { to: '/irrigation', labelKey: 'irrigation:pageTitle', Icon: IconDroplet },
+    { to: '/market', labelKey: 'market:pageTitle', Icon: IconTrendUp },
+    { to: '/scan', labelKey: 'common:nav.cropHealth', Icon: IconScan },
+    { to: '/crop-recommendation', labelKey: 'common:nav.whatToPlant', Icon: IconLeaf },
+    /*
+     * Community was reachable from the bottom tabs but not from the sidebar, so
+     * on any desktop screen the page existed and nothing linked to it. It sits
+     * after "what to plant" because both answer a question about the season
+     * rather than about today, and before the account block.
+     */
+    { to: '/community', labelKey: 'common:nav.community', Icon: IconUsers },
+    { to: '/history', labelKey: 'common:nav.history', Icon: IconClock },
+    { to: '/settings', labelKey: 'common:nav.settings', Icon: IconSettings },
+  ] as const;
 
   return (
     <nav
-      aria-label={t('nav.primary')}
-      className="furrow sticky top-0 hidden h-dvh w-[15.75rem] shrink-0 flex-col gap-0.5 bg-brand-800 py-4 md:flex"
+      aria-label={t('common:nav.primary')}
+      className="furrow sticky top-0 hidden h-dvh w-[16.5rem] shrink-0 flex-col bg-brand-800 py-4 md:flex"
     >
       <p className="flex items-center gap-2.5 px-[18px] pb-4">
         <span
@@ -105,25 +130,74 @@ function Sidebar() {
           <IconLeaf size={18} />
         </span>
         <span className="font-display text-[17px] font-extrabold tracking-tight text-white">
-          {t('app.name')}
+          {t('common:app.name')}
         </span>
       </p>
 
-      {[...NAV.slice(0, 4), ...NAV_DESKTOP_EXTRA, ...NAV.slice(4)].map(({ to, labelKey, Icon }) => (
-        <NavLink key={to} to={to} className={sidebarLinkClass}>
-          <Icon size={20} />
-          {t(labelKey)}
-        </NavLink>
-      ))}
+      <FarmSwitcher />
 
-      <div className="mt-auto">
-        <NavLink to="/settings" className={sidebarLinkClass}>
-          <IconSettings size={20} />
-          {t('nav.settings')}
-        </NavLink>
+      <div className="flex flex-col gap-0.5">
+        {items.map(({ to, labelKey, Icon }) => (
+          <NavLink key={labelKey} to={to} className={sidebarLinkClass}>
+            <Icon size={20} />
+            {t(labelKey)}
+          </NavLink>
+        ))}
       </div>
+
+      <div className="mt-auto border-t border-white/10 px-[15px] pt-4">
+        <div className="flex items-center gap-2.5">
+          <span
+            className="grid size-9 shrink-0 place-items-center rounded-full bg-leaf-500 text-sm font-bold text-brand-900"
+            aria-hidden="true"
+          >
+            {userInitials(user?.name ?? '')}
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-white">{user?.name}</p>
+            <button
+              type="button"
+              data-testid="sidebar-logout"
+              onClick={() => setConfirmOpen(true)}
+              className="touch-target -ml-0.5 text-xs font-medium text-brand-100/75 hover:text-white"
+            >
+              {t('auth:logout')}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/*
+        The same confirm the Settings page uses (auth:logoutConfirmTitle/Body)
+        — a persistent sidebar control gets tapped by accident far more often
+        than a dedicated settings screen does, so this is not optional here.
+      */}
+      <ConfirmDialog
+        open={confirmOpen}
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={async () => {
+          setIsLoggingOut(true);
+          await logout();
+          setIsLoggingOut(false);
+          setConfirmOpen(false);
+          navigate('/login', { replace: true });
+        }}
+        title={t('auth:logoutConfirmTitle')}
+        body={t('auth:logoutConfirmBody')}
+        confirmLabel={t('auth:logout')}
+        isPending={isLoggingOut}
+      />
     </nav>
   );
+}
+
+function userInitials(name: string): string {
+  const letters = name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word[0]?.toUpperCase() ?? '')
+    .slice(0, 2);
+  return letters.join('') || '?';
 }
 
 const sidebarLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -209,20 +283,13 @@ export function PageHeader({
   actions?: ReactNode;
   children?: ReactNode;
 }) {
-  const { t } = useTranslation('common');
-  const headingRef = useRef<HTMLHeadingElement>(null);
-  const location = useLocation();
-
   /**
    * Focus moves to the page title on every navigation, and the document title
    * follows the route (accessibility.md: "focus moved to page title on route
    * change"; routes.md: "document titles localized"). Without this a
    * screen-reader user stays parked wherever the previous page left them.
    */
-  useEffect(() => {
-    document.title = `${title} · ${t('app.name')}`;
-    headingRef.current?.focus();
-  }, [title, location.key, t]);
+  const headingRef = usePageHeading(title);
 
   return (
     <div className="mb-6 space-y-2">

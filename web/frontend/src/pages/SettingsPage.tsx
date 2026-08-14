@@ -10,12 +10,12 @@ import { useAuth } from '@/auth/AuthContext';
 import { PreferenceToggle } from '@/components/domain/PreferenceToggle';
 import { VoicePanel } from '@/components/domain/VoicePanel';
 import { PageHeader } from '@/components/layout/AppLayout';
-import { Button } from '@/components/ui/Button';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card, Section } from '@/components/ui/Card';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ConfirmDialog } from '@/components/ui/Modal';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { useToast } from '@/components/ui/Toast';
-import { cn } from '@/lib/cn';
 import { useApiErrorMessage } from '@/hooks/useApiError';
 
 /**
@@ -95,7 +95,21 @@ export default function SettingsPage() {
           </Section>
         )}
 
-        <Section title={t('common:language.label')} as="h2">
+        <Section
+          title={t('common:language.label')}
+          as="h2"
+          action={
+            /*
+              Through to the full language screen, which shows each language in
+              its own script with a sample of crop names and the standing note
+              about what has been verified. The inline toggle stays for a quick
+              change; the page is where the choice is actually explained.
+            */
+            <ButtonLink to="/settings/language" variant="ghost" size="md">
+              {t('common:action.viewAll')}
+            </ButtonLink>
+          }
+        >
           {/*
             The toggle switches the interface immediately (localStorage +
             `<html lang>`); this persists the same choice to the account so a
@@ -173,11 +187,13 @@ export default function SettingsPage() {
 }
 
 /**
- * Acre or hectare, as a radio group.
+ * Acre or hectare.
  *
- * A radio group rather than a select: there are exactly two options, both are
- * worth seeing at once, and a native select on Android opens a modal sheet for
- * a two-item choice.
+ * This was a hand-rolled radio group until the design pass; it is now the shared
+ * `SegmentedControl`, which is the same control the design uses everywhere a
+ * small exclusive choice appears. One implementation means the selected chip,
+ * its shadow and its disabled behaviour cannot drift between here and the
+ * market and weather screens.
  */
 function LandUnitChoice({
   value,
@@ -191,34 +207,13 @@ function LandUnitChoice({
   const { t } = useTranslation('common');
 
   return (
-    <div
-      role="radiogroup"
-      aria-label={t('unit.landLabel')}
-      aria-busy={isPending || undefined}
-      className="inline-flex gap-1 rounded-full bg-canvas p-1"
-    >
-      {LAND_UNITS.map((unit) => {
-        const selected = unit === value;
-        return (
-          <button
-            key={unit}
-            type="button"
-            role="radio"
-            aria-checked={selected}
-            disabled={isPending}
-            data-testid={`land-unit-${unit}`}
-            onClick={() => !selected && onChange(unit)}
-            className={cn(
-              'touch-target rounded-full px-4 font-display text-sm font-semibold transition-colors disabled:opacity-50',
-              selected
-                ? 'bg-surface text-brand-600 shadow-card'
-                : 'text-ink-500 hover:text-ink-900',
-            )}
-          >
-            {t(`unit.${unit}`)}
-          </button>
-        );
-      })}
-    </div>
+    <SegmentedControl
+      label={t('unit.landLabel')}
+      value={value}
+      disabled={isPending}
+      testId="land-unit"
+      onChange={onChange}
+      options={LAND_UNITS.map((unit) => ({ value: unit, label: t(`unit.${unit}`) }))}
+    />
   );
 }

@@ -12,7 +12,14 @@ import { FEED_MAX_ACTIVE_PER_USER, FEED_PRIORITY_RANK, FRESHNESS } from '../conf
 import { tierConfig } from '../config/env.js';
 import { deriveStage } from '../engines/stage/deriveStage.js';
 import { isActive } from '../engines/feedComposer/feedComposer.js';
-import { Crop, CropRegistry, Farm, Recommendation, WeatherSnapshot } from '../models/index.js';
+import {
+  Crop,
+  CropHealthLog,
+  CropRegistry,
+  Farm,
+  Recommendation,
+  WeatherSnapshot,
+} from '../models/index.js';
 
 /**
  * Upserts composed items.
@@ -140,14 +147,17 @@ const toFeedItem = (item) => ({
  *
  * Query budget, fixed regardless of how much the farmer owns:
  *   1 feed · 1 farms · 1 crops · 1 registry · 1 snapshots · 1 latest-market
- * Every join below is done in memory over those six result sets — no query runs
- * inside a loop.
+ *   · 1 latest-health-log-per-crop
+ * Every join below is done in memory over those seven result sets — no query
+ * runs inside a loop.
  */
 export async function dashboard(userId, { asOf = new Date() } = {}) {
   const [feed, farms, crops] = await Promise.all([
     activeFeed(userId, asOf),
     Farm.find({ userId }).select('name location soilType locationKey sizeValue sizeUnit').lean(),
-    Crop.find({ userId, status: 'active' }).select('cropCode farmId sowingDate status').lean(),
+    Crop.find({ userId, status: 'active' })
+      .select('cropCode farmId sowingDate status photoUrl areaValue areaUnit')
+      .lean(),
   ]);
 
   // The designed onboarding payload, not empty arrays: "Empty state (no farms)
@@ -165,16 +175,32 @@ export async function dashboard(userId, { asOf = new Date() } = {}) {
   const farmById = new Map(farms.map((farm) => [String(farm._id), farm]));
   const locationKeys = [...new Set(farms.map((farm) => farm.locationKey).filter(Boolean))];
 
-  const [registryDocs, snapshots] = await Promise.all([
+  const [registryDocs, snapshots, healthLogs] = await Promise.all([
     CropRegistry.find({ cropCode: { $in: [...new Set(crops.map((crop) => crop.cropCode))] } })
       .select('cropCode names kcStages supportLevel')
       .lean(),
     WeatherSnapshot.find({ locationKey: { $in: locationKeys } })
       .select('locationKey source status fetchedAt expiresAt')
       .lean(),
+    // Newest first per crop (the compound index `userId_cropId_createdAt`
+    // covers this filter+sort), so the first row seen for a cropId below is
+    // already that crop's latest analysis.
+    CropHealthLog.find({
+      userId,
+      cropId: { $in: crops.map((crop) => crop._id) },
+      status: 'analyzed',
+    })
+      .select('cropId analysis.severityAssessment')
+      .sort({ cropId: 1, createdAt: -1 })
+      .lean(),
   ]);
 
   const registryByCode = new Map(registryDocs.map((doc) => [doc.cropCode, doc]));
+  const latestHealthByCrop = new Map();
+  for (const log of healthLogs) {
+    const key = String(log.cropId);
+    if (!latestHealthByCrop.has(key)) latestHealthByCrop.set(key, log);
+  }
 
   // The feed already carries each crop's irrigation verdict, so the cards read
   // it from there instead of re-running the engine per crop.
@@ -200,6 +226,13 @@ export async function dashboard(userId, { asOf = new Date() } = {}) {
     const irrigation = irrigationByCrop.get(String(crop._id));
     const market = marketByCrop.get(crop.cropCode);
 
+    // The engine-assessed severity from the crop's most recent analyzed scan,
+    // if it flagged one — 'NOT_ASSESSED' is not a flag (nothing wrong was
+    // found, or nothing was found yet), and a crop nobody has ever scanned
+    // reports null rather than a fabricated 'healthy' (rule 7/9).
+    const latestHealth = latestHealthByCrop.get(String(crop._id));
+    const severity = latestHealth?.analysis?.severityAssessment ?? null;
+
     return {
       cropId: String(crop._id),
       farmId: String(crop.farmId),
@@ -208,11 +241,14 @@ export async function dashboard(userId, { asOf = new Date() } = {}) {
       stage: stage.stage,
       stageReason: stage.reasonCode,
       irrigationVerdict: irrigation ? irrigation.data.verdict : null,
-      // No health chain exists until Phase 3; reporting null is honest,
-      // reporting 'healthy' would be fabricated.
-      healthFlag: null,
+      healthFlag: severity && severity !== 'NOT_ASSESSED' ? severity : null,
       marketSignal: market ? market.data.trend : null,
       freshness: snapshotFreshness(snapshot, asOf),
+      // The farmer's own photo of this planting, if they added one — never a
+      // stock photo standing in for it (rule 7).
+      photoUrl: crop.photoUrl ?? null,
+      areaValue: crop.areaValue ?? null,
+      areaUnit: crop.areaUnit ?? null,
     };
   });
 

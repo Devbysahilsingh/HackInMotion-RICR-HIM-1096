@@ -40,6 +40,21 @@ const cropSchema = new Schema(
       /** False until a farmer log or a rain run anchors the ledger to reality. */
       initialized: { type: Boolean, required: true, default: false },
     },
+
+    /**
+     * Optional crop profile photo — the farmer's own picture of this planting,
+     * shown wherever the crop is listed. Mirrors `Farm.photoUrl`/`photoPublicId`
+     * (itself mirroring `CropHealthLog`): the URL is served plainly, the
+     * Cloudinary public id is `select: false` — never returned to a client —
+     * and exists only so `deleteCropCascade` can destroy the asset (AU-5).
+     *
+     * Deliberately separate from `CropHealthLog.imageUrl`, which is a
+     * diagnostic scan photo, not a picture of the crop itself — a health scan
+     * must never overwrite this field, and this field is never read by the
+     * health pipeline.
+     */
+    photoUrl: { type: String },
+    photoPublicId: { type: String, select: false },
   },
   baseOptions('crops'),
 );

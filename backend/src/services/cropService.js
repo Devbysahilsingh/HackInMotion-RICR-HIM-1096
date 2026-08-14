@@ -201,6 +201,51 @@ export async function assertAreaWithinFarm(farm, { areaValue, areaUnit, excludeC
 }
 
 /**
+ * Stores a new crop profile photo, destroying whatever photo it replaces.
+ * Mirrors `farmService.setFarmPhoto` exactly.
+ *
+ * Old-asset cleanup is fire-and-forget: the farmer is replacing a photo, not
+ * waiting on Cloudinary to finish deleting the one they just moved past.
+ *
+ * @param {import('mongoose').Document} crop an already-authorized crop
+ * @param {{url: string, publicId: string}} stored the result of `storeImage`
+ * @param {{destroy?: Function}} [options]
+ */
+export async function setCropPhoto(crop, { url, publicId }, { destroy = destroyImage } = {}) {
+  const previous = await Crop.findById(crop._id).select('+photoPublicId').lean();
+  if (previous?.photoPublicId) {
+    void destroy(previous.photoPublicId).then((result) => {
+      if (!result.ok) logger.warn({ reason: result.reason }, 'previous crop photo cleanup failed');
+    });
+  }
+
+  crop.set('photoUrl', url);
+  crop.set('photoPublicId', publicId);
+  await crop.save();
+  return crop;
+}
+
+/**
+ * Removes a crop's profile photo. Idempotent — a crop with no photo simply
+ * saves unchanged fields.
+ *
+ * @param {import('mongoose').Document} crop an already-authorized crop
+ * @param {{destroy?: Function}} [options]
+ */
+export async function removeCropPhoto(crop, { destroy = destroyImage } = {}) {
+  const previous = await Crop.findById(crop._id).select('+photoPublicId').lean();
+  if (previous?.photoPublicId) {
+    const result = await destroy(previous.photoPublicId);
+    if (!result.ok) logger.warn({ reason: result.reason }, 'crop photo cleanup failed');
+  }
+
+  crop.set('photoUrl', undefined);
+  crop.set('photoPublicId', undefined);
+  await crop.save();
+  return crop;
+}
+
+/**
  * Deletes a crop and everything that hangs off it.
  *
  * ADR-002 rules out transactions, so this is ordered rather than atomic:
@@ -221,8 +266,12 @@ export async function deleteCropCascade(cropId, userId, { destroy = destroyImage
   // database to find them by. `imagePublicId` is `select: false`, so it has to
   // be asked for explicitly.
   const healthLogs = await CropHealthLog.find({ cropId, userId }).select('+imagePublicId').lean();
+  // The crop's own profile photo gets the same treatment — same reasoning,
+  // one asset instead of a collection of them (mirrors
+  // farmService.deleteFarmCascade).
+  const cropDoc = await Crop.findOne({ _id: cropId, userId }).select('+photoPublicId').lean();
   await destroyImages(
-    healthLogs.map((log) => log.imagePublicId),
+    [...healthLogs.map((log) => log.imagePublicId), cropDoc?.photoPublicId],
     destroy,
   );
 

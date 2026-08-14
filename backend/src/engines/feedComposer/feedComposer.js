@@ -200,7 +200,16 @@ export function weatherRiskCandidate({ userId, farmId, cropId, cropCode, risk, a
       riskType: risk.type,
       level: risk.level,
       daysAhead: risk.daysAhead,
+      date: risk.date,
       thresholdSource: risk.thresholdSource,
+      // Spread onto the top level, not just nested: every `weather.bodyXXX`
+      // i18n template (`{{humidityThresholdPct}}`, `{{consecutiveDays}}`,
+      // `{{rainMm}}`, `{{tMinC}}`, …) interpolates against this object
+      // directly, and i18next leaves an unmatched `{{placeholder}}` literally
+      // in the rendered string rather than failing loudly — so a param that
+      // exists only under `trace` renders as raw template syntax to the
+      // farmer. `trace` is kept alongside, unchanged, for `WhyTrace`.
+      ...risk.data,
       trace: risk.data,
     },
     validUntil: validUntilFor({
@@ -216,7 +225,7 @@ export function weatherRiskCandidate({ userId, farmId, cropId, cropCode, risk, a
  * "Signal flip vs yesterday → MEDIUM feed item"), so a steadily rising price
  * produces one item, not one every night.
  */
-export function marketCandidate({ userId, cropCode, signal, previousTrend, asOf }) {
+export function marketCandidate({ userId, cropCode, signal, previousTrend, district, asOf }) {
   if (!signal?.trend || signal.trend === previousTrend) return null;
 
   return {
@@ -234,6 +243,14 @@ export function marketCandidate({ userId, cropCode, signal, previousTrend, asOf 
       changePct7d: signal.changePct7d ?? null,
       changePct30d: signal.changePct30d ?? null,
       momentumDiverges: Boolean(signal.momentumDiverges),
+      // `market.guidanceRising`/`guidanceFalling` interpolate `{{pct}}` (and
+      // `guidanceRising` also `{{district}}`) against this object directly —
+      // same class of bug as the weather-risk fix above. `pct` is a
+      // magnitude (never negative; the template itself carries "up"/"down"),
+      // rounded to one decimal so the sentence reads as a price, not a float.
+      pct:
+        signal.changePct7d == null ? null : Math.round(Math.abs(signal.changePct7d) * 10) / 10,
+      district: district ?? null,
       trace: signal.trace ?? null,
     },
     validUntil: validUntilFor({ type: FEED_TYPES.MARKET, asOf }),
@@ -265,6 +282,12 @@ const CONTRADICTIONS = [
       data: {
         ...irrigation.data,
         supersedes: ['IRRIGATE_TODAY', 'HEAVY_RAIN'],
+        // `irrigation.bodyHoldForRain` interpolates `{{rainMm}}` and
+        // `{{date}}` directly — both now sit at the top level of `rain.data`
+        // (weatherRiskCandidate's own fix, above), not three levels deep at
+        // `rain.data.trace.rainMm`.
+        rainMm: rain.data.rainMm,
+        date: rain.data.date,
         rain: rain.data,
       },
     }),

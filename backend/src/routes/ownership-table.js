@@ -83,6 +83,47 @@ export const ROUTE_OWNERSHIP = [
     param: 'id',
   },
 
+  // What to plant on this field. Farm-scoped — the ranking depends on the
+  // field's soil, water source, standing crops, free land and reachable
+  // mandis — so `loadOwned` resolves `:id` before the pipeline runs, exactly
+  // as it does for the weather read above.
+  {
+    method: 'GET',
+    path: '/api/v1/farms/:id/recommendations',
+    auth: 'required',
+    ownership: 'direct',
+    resource: 'farm',
+    param: 'id',
+  },
+  {
+    method: 'GET',
+    path: '/api/v1/farms/:id/recommendations/:cropCode',
+    auth: 'required',
+    ownership: 'direct',
+    resource: 'farm',
+    param: 'id',
+  },
+
+  // Optional farm profile photo. Same ownership shape as the farm itself —
+  // `loadOwned` resolves `:id` before multer ever buffers a byte.
+  {
+    method: 'POST',
+    path: '/api/v1/farms/:id/photo',
+    auth: 'required',
+    ownership: 'direct',
+    resource: 'farm',
+    param: 'id',
+    multipart: true,
+  },
+  {
+    method: 'DELETE',
+    path: '/api/v1/farms/:id/photo',
+    auth: 'required',
+    ownership: 'direct',
+    resource: 'farm',
+    param: 'id',
+  },
+
   // ── Crops ──────────────────────────────────────────────────────────────────
   {
     method: 'POST',
@@ -119,6 +160,27 @@ export const ROUTE_OWNERSHIP = [
   {
     method: 'DELETE',
     path: '/api/v1/crops/:id',
+    auth: 'required',
+    ownership: 'nested',
+    resource: 'crop',
+    param: 'id',
+  },
+
+  // Optional crop profile photo — distinct from a crop-health diagnostic
+  // scan. Same nested ownership chain as the crop itself (AU-3: the farm
+  // above the crop is verified too).
+  {
+    method: 'POST',
+    path: '/api/v1/crops/:id/photo',
+    auth: 'required',
+    ownership: 'nested',
+    resource: 'crop',
+    param: 'id',
+    multipart: true,
+  },
+  {
+    method: 'DELETE',
+    path: '/api/v1/crops/:id/photo',
     auth: 'required',
     ownership: 'nested',
     resource: 'crop',

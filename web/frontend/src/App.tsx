@@ -28,6 +28,11 @@ const SymptomCheckPage = lazy(() => import('@/pages/health/SymptomCheckPage'));
 const WeatherPage = lazy(() => import('@/pages/WeatherPage'));
 const WeatherIndexPage = lazy(() => import('@/pages/WeatherIndexPage'));
 const MarketPage = lazy(() => import('@/pages/MarketPage'));
+const MandiDetailPage = lazy(() => import('@/pages/MandiDetailPage'));
+const IrrigationPlanPage = lazy(() => import('@/pages/IrrigationPlanPage'));
+const DiseaseDetailPage = lazy(() => import('@/pages/health/DiseaseDetailPage'));
+const CropRecDetailPage = lazy(() => import('@/pages/CropRecDetailPage'));
+const LanguagePage = lazy(() => import('@/pages/LanguagePage'));
 const HistoryPage = lazy(() => import('@/pages/HistoryPage'));
 const CropRecommendationPage = lazy(() => import('@/pages/CropRecommendationPage'));
 const CommunityPage = lazy(() => import('@/pages/CommunityPage'));
@@ -120,6 +125,27 @@ export default function App() {
 
             <Route path="/weather" element={<WeatherIndexPage />} />
             <Route path="/market" element={<MarketPage />} />
+            {/*
+              One mandi, one commodity. The market name is encoded into the path
+              and the commodity rides as a query parameter — a mandi trades many
+              things, so the pair is what identifies the series being shown.
+            */}
+            <Route path="/market/:market" element={<MandiDetailPage />} />
+
+            {/*
+              The farm-wide watering plan. Crop-level irrigation still lives on
+              each crop's own tab; this is the "should I water anything today?"
+              view the design gives its own screen.
+            */}
+            <Route path="/irrigation" element={<IrrigationPlanPage />} />
+
+            {/* The knowledge base behind a diagnosis, reachable without a scan. */}
+            <Route path="/health/disease/:code" element={<DiseaseDetailPage />} />
+
+            {/* Why one candidate scored what it did. Needs farm + season in the query. */}
+            <Route path="/crop-recommendation/:cropCode" element={<CropRecDetailPage />} />
+
+            <Route path="/settings/language" element={<LanguagePage />} />
             <Route path="/history" element={<HistoryPage />} />
             <Route path="/crop-recommendation" element={<CropRecommendationPage />} />
             <Route path="/community" element={<CommunityPage />} />

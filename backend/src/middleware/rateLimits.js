@@ -213,6 +213,21 @@ export const farmWriteLimiter = rateLimit({
 });
 
 /**
+ * Farm photo upload: 20 / day / user.
+ *
+ * The expensive step is the same one crop-health analysis guards against — a
+ * sharp re-encode plus a Cloudinary store — so this gets its own bucket for
+ * the same reason `healthAnalyzeDailyLimiter` exists, rather than sharing
+ * `farmWriteLimiter`'s 60/hour (sized for cheap field edits, not image
+ * processing). 20/day comfortably covers onboarding — one photo per farm, a
+ * couple of retakes — with headroom for a farmer who reshoots a few times.
+ */
+export const farmPhotoLimiter = perUserDaily(20);
+
+/** Crop profile photo upload: 20 / day / user. Same reasoning as `farmPhotoLimiter`. */
+export const cropPhotoLimiter = perUserDaily(20);
+
+/**
  * docs/api/users.md: "PATCH /users/me | Auth · RL 30/h".
  *
  * Hourly rather than daily, so it does not share `perUserDaily`. Settings are

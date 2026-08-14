@@ -116,6 +116,12 @@ export async function priceSeries({ commodityCode, state, district, days = 30 })
 
   const signal = computeMarketSignal({ rows });
 
+  // The newest row, independent of trend. `signal.trend` is null whenever
+  // there is nothing to compare against (one observation, or a flat window),
+  // but a single real price is still worth showing — "no trend" and "no
+  // price" are different facts, and only the second one has nothing to say.
+  const latest = rows.length > 0 ? rows[rows.length - 1] : null;
+
   return {
     series: rows.map((row) => ({
       date: row.date,
@@ -126,6 +132,16 @@ export async function priceSeries({ commodityCode, state, district, days = 30 })
       // Rule 9: a clamped price is labelled, never passed off as published.
       adjusted: Boolean(row.flagged),
     })),
+    latestPrice: latest
+      ? {
+          date: latest.date,
+          market: latest.market,
+          minPrice: latest.minPrice,
+          modalPrice: latest.modalPrice,
+          maxPrice: latest.maxPrice,
+          adjusted: Boolean(latest.flagged),
+        }
+      : null,
     signal: {
       trend: signal.trend,
       changePct7d: signal.changePct7d,
@@ -195,7 +211,7 @@ export async function myCropSignals(userId, { days = 30 } = {}) {
 
   const results = await Promise.all(
     [...uniquePlaces.values()].map(async (place) => {
-      const { signal, freshness } = await priceSeries({
+      const { signal, freshness, latestPrice } = await priceSeries({
         commodityCode: place.commodityCode,
         state: place.state,
         district: place.district,
@@ -208,6 +224,10 @@ export async function myCropSignals(userId, { days = 30 } = {}) {
         state: place.state ?? null,
         district: place.district ?? null,
         cropIds: place.cropIds,
+        // The actual current price, independent of `signal.trend` — a
+        // dashboard card can say "₹4,720/quintal" even on the day there is
+        // no trend to describe (rule 7: real data, never a placeholder).
+        latestPrice,
         // The minimal projection the dashboard card needs — no price series.
         // The trace stays: this is the feed job's only signal source, and
         // dropping it made every market feed item violate R12 ("no
@@ -385,6 +405,7 @@ export async function nearbyMandis({ state, district, days = 30, commodityCode }
   return {
     scope: { state: state ?? null, district: district ?? null, days: windowDays },
     mandis,
+    commodities: commodityRollup(rows),
     availableCommodities: available,
     counts: {
       mandis: mandis.length,
@@ -393,4 +414,75 @@ export async function nearbyMandis({ state, district, days = 30, commodityCode }
     },
     freshness: { ...marketFreshness(rows), truncated },
   };
+}
+
+/**
+ * One row per commodity trading nearby: its newest observation anywhere in the
+ * scope, and how the area's prices for it have moved.
+ *
+ * ## Why the server does this rather than the client
+ *
+ * Two reasons, and both are correctness rather than convenience. "Which
+ * observation is the newest for this commodity across nine mandis" is a
+ * reduction the client would have to repeat identically on the market screen,
+ * the dashboard card and the crop screen — three copies of one rule. And the
+ * movement figure has to come from `computeMarketSignal`, the same engine that
+ * produces every other trend in the product; a percentage computed in React
+ * would be a second, unversioned opinion about what "rising" means (rule 5).
+ *
+ * ## What the trend is, and is not
+ *
+ * It describes the whole scope — the farmer's district and state together, which
+ * is exactly what `priceSeries` already returns when no district is given. It is
+ * **not** a per-mandi trend: one mandi rarely reports often enough in a 30-day
+ * window to support one, and splitting the series that far would produce
+ * confident percentages from two observations. `reasonCode` says so when the
+ * engine declined, and `trend: null` is returned rather than a manufactured
+ * `STABLE` (NFR-7: never a prediction, and never a described trend the data does
+ * not support).
+ *
+ * The engine's trace is deliberately omitted here: it would repeat per
+ * commodity and this is a list payload. A farmer who wants the working opens
+ * that commodity, where `GET /market/prices` serves it in full.
+ */
+function commodityRollup(rows) {
+  const byCommodity = new Map();
+
+  for (const row of rows) {
+    if (!byCommodity.has(row.commodityCode)) byCommodity.set(row.commodityCode, []);
+    byCommodity.get(row.commodityCode).push(row);
+  }
+
+  return [...byCommodity.entries()]
+    .map(([commodityCode, commodityRows]) => {
+      // `rows` arrives newest-first; the signal engine reads a series forwards.
+      const ascending = [...commodityRows].sort((a, b) => a.date - b.date);
+      const latest = ascending[ascending.length - 1];
+      const signal = computeMarketSignal({ rows: ascending });
+
+      return {
+        commodityCode,
+        latest: {
+          market: latest.market,
+          district: latest.district ?? null,
+          state: latest.state,
+          minPrice: latest.minPrice,
+          maxPrice: latest.maxPrice,
+          modalPrice: latest.modalPrice,
+          unit: latest.unit ?? null,
+          date: latest.date,
+          source: latest.source,
+        },
+        /** How many mandis nearby reported it at all — the basket's breadth. */
+        mandiCount: new Set(commodityRows.map((entry) => `${entry.state}|${entry.market}`)).size,
+        observations: commodityRows.length,
+        trend: signal.trend,
+        changePct7d: signal.changePct7d,
+        changePct30d: signal.changePct30d,
+        reasonCode: signal.reasonCode,
+      };
+    })
+    .sort(
+      (a, b) => b.observations - a.observations || a.commodityCode.localeCompare(b.commodityCode),
+    );
 }

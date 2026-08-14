@@ -18,6 +18,13 @@ export const queryKeys = {
     list: () => ['farms', 'list'] as const,
     detail: (farmId: string) => ['farms', 'detail', farmId] as const,
     weather: (farmId: string) => ['farms', 'weather', farmId] as const,
+    /**
+     * What to plant on this field. Under the `farms` prefix on purpose: a farm
+     * edit or a new crop changes the free land and the standing-crop set, so
+     * invalidating `farms.all()` correctly drops the ranking too.
+     */
+    recommendations: (farmId: string, season: string | undefined) =>
+      ['farms', 'recommendations', farmId, season ?? 'auto'] as const,
   },
 
   crops: {
@@ -39,6 +46,8 @@ export const queryKeys = {
     all: () => ['health'] as const,
     logs: (cropId: string | undefined, page: number) =>
       ['health', 'logs', cropId ?? 'all', page] as const,
+    /** Scan history for one field — a different list from one crop's. */
+    farmLogs: (farmId: string, page: number) => ['health', 'farmLogs', farmId, page] as const,
     log: (logId: string) => ['health', 'log', logId] as const,
   },
 
@@ -65,6 +74,20 @@ export const queryKeys = {
     all: () => ['community'] as const,
     alerts: (district: string | undefined, state: string | undefined) =>
       ['community', 'alerts', district ?? '', state ?? ''] as const,
+  },
+
+  /**
+   * Crop recommendation.
+   *
+   * The endpoint is a POST, but the request is a pure read — the same farm,
+   * season and preference always produce the same ranking — so the suitability
+   * detail screen caches it by its inputs rather than smuggling the chosen item
+   * through router state, which would not survive a refresh or a shared link.
+   */
+  cropRec: {
+    all: () => ['cropRec'] as const,
+    run: (farmId: string, season: string, preference: string | null) =>
+      ['cropRec', 'run', farmId, season, preference ?? ''] as const,
   },
 } as const;
 

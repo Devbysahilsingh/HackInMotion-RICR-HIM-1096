@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +11,7 @@ import { LAND_UNITS, type CreateCropInput, type RegistrySummary } from '@/api/ty
 import { Button } from '@/components/ui/Button';
 import { SelectField, TextField } from '@/components/ui/Field';
 import { ErrorState, Notice } from '@/components/ui/states';
+import { UploadDropzone } from './UploadDropzone';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { formatNumber, localizedName, toDateInputValue } from '@/lib/format';
 import { toAcres } from '@/lib/units';
@@ -69,15 +70,29 @@ export function CropForm({
   onSubmit,
   formError,
   availableAcres = null,
+  defaultValues,
+  submitLabel,
 }: {
   isSubmitting: boolean;
-  onSubmit: (values: CreateCropInput) => void;
+  /**
+   * `photo` is the file the farmer selected in this form, or null if they
+   * didn't add one — uploading it is the caller's job (it needs a real crop
+   * id, which does not exist until `cropsApi.create` returns), mirroring how
+   * the farm-onboarding wizard uploads a farm photo only after the farm
+   * itself is created.
+   */
+  onSubmit: (values: CreateCropInput, photo: File | null) => void;
   formError?: string | null;
   /** Ground still open on the farm, in acres; null when unknown. */
   availableAcres?: number | null;
+  /** Pre-fills the form — used when re-adding a crop the farmer is editing. */
+  defaultValues?: Partial<CreateCropInput>;
+  /** Defaults to `crop:saveCta`. */
+  submitLabel?: string;
 }) {
   const { t } = useTranslation(['crop', 'common', 'agri']);
   const { language } = useLanguage();
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
 
   const registryQuery = useQuery({
     queryKey: queryKeys.registry.list(),
@@ -95,12 +110,14 @@ export function CropForm({
   } = useForm<CropFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      cropCode: '',
-      freeTextLabel: '',
-      sowingDate: toDateInputValue(new Date()),
-      variety: '',
-      areaValue: '',
-      areaUnit: 'acre',
+      cropCode: defaultValues?.cropCode ?? '',
+      freeTextLabel: defaultValues?.freeTextLabel ?? '',
+      sowingDate: defaultValues?.sowingDate
+        ? toDateInputValue(defaultValues.sowingDate)
+        : toDateInputValue(new Date()),
+      variety: defaultValues?.variety ?? '',
+      areaValue: defaultValues?.areaValue ?? '',
+      areaUnit: defaultValues?.areaUnit ?? 'acre',
     },
   });
 
@@ -114,18 +131,21 @@ export function CropForm({
         ? undefined
         : Number(parsed.areaValue);
 
-    onSubmit({
-      cropCode: parsed.cropCode,
-      ...(parsed.cropCode === 'OTHER' && parsed.freeTextLabel
-        ? { freeTextLabel: parsed.freeTextLabel }
-        : {}),
-      // The API coerces to a Date; an ISO day is unambiguous either way.
-      sowingDate: new Date(`${parsed.sowingDate}T00:00:00`).toISOString(),
-      ...(parsed.variety ? { variety: parsed.variety } : {}),
-      ...(area && Number.isFinite(area) && area > 0
-        ? { areaValue: area, areaUnit: parsed.areaUnit ?? 'acre' }
-        : {}),
-    });
+    onSubmit(
+      {
+        cropCode: parsed.cropCode,
+        ...(parsed.cropCode === 'OTHER' && parsed.freeTextLabel
+          ? { freeTextLabel: parsed.freeTextLabel }
+          : {}),
+        // The API coerces to a Date; an ISO day is unambiguous either way.
+        sowingDate: new Date(`${parsed.sowingDate}T00:00:00`).toISOString(),
+        ...(parsed.variety ? { variety: parsed.variety } : {}),
+        ...(area && Number.isFinite(area) && area > 0
+          ? { areaValue: area, areaUnit: parsed.areaUnit ?? 'acre' }
+          : {}),
+      },
+      photoFile,
+    );
   });
 
   const minDate = toDateInputValue(new Date(Date.now() - SOWING_MAX_PAST_DAYS * DAY_MS));
@@ -214,6 +234,18 @@ export function CropForm({
         {...register('variety')}
       />
 
+      <div className="space-y-1.5">
+        <p className="block text-sm font-medium text-ink-700">{t('crop:photoLabel')}</p>
+        <UploadDropzone
+          file={photoFile}
+          onSelect={setPhotoFile}
+          title={t('crop:photoTitle')}
+          hint={t('crop:photoHint')}
+          cta={t('crop:photoCta')}
+          alt={t('crop:photoAlt')}
+        />
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <TextField
           label={t('crop:areaLabel')}
@@ -244,7 +276,7 @@ export function CropForm({
       </div>
 
       <Button type="submit" size="lg" fullWidth isLoading={isSubmitting} data-testid="crop-submit">
-        {t('crop:saveCta')}
+        {submitLabel ?? t('crop:saveCta')}
       </Button>
     </form>
   );

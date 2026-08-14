@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { cropsApi, farmsApi } from '@/api/endpoints';
 import { queryKeys } from '@/api/queryKeys';
@@ -15,6 +15,17 @@ import { availableFarmAcres } from '@/lib/units';
 export default function CropFormPage() {
   const { t } = useTranslation(['crop', 'common']);
   const { farmId = '' } = useParams();
+  const [searchParams] = useSearchParams();
+
+  /**
+   * Pre-selects the crop when the farmer arrived from a recommendation.
+   *
+   * A hint, not a decision: the form's own select stays editable and its
+   * validation is unchanged, so a code that is not in the registry simply
+   * leaves the field empty rather than submitting something the API would
+   * reject. Uppercased because crop codes are canonical ids.
+   */
+  const suggestedCropCode = (searchParams.get('cropCode') ?? '').toUpperCase() || undefined;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const toast = useToast();
@@ -40,7 +51,26 @@ export default function CropFormPage() {
 
   const create = useMutation({
     mutationFn: (values: CreateCropInput) => cropsApi.create(farmId, values),
-    onSuccess: ({ crop }) => {
+  });
+  const uploadPhoto = useMutation({
+    mutationFn: ({ cropId, photo }: { cropId: string; photo: File }) =>
+      cropsApi.uploadPhoto(cropId, photo),
+  });
+
+  const handleSubmit = async (values: CreateCropInput, photo: File | null) => {
+    setFormError(null);
+    try {
+      const { crop } = await create.mutateAsync(values);
+
+      if (photo) {
+        try {
+          await uploadPhoto.mutateAsync({ cropId: crop.id, photo });
+        } catch {
+          // Non-fatal: the crop exists either way. The photo can be added
+          // again from the crop's own page.
+        }
+      }
+
       void queryClient.invalidateQueries({ queryKey: queryKeys.farms.detail(farmId) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.crops.all() });
       // A new crop changes the dashboard's card set and, after the next feed
@@ -48,9 +78,10 @@ export default function CropFormPage() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.dashboard() });
       toast.push(t('common:action.done'));
       navigate(`/crops/${crop.id}`, { replace: true });
-    },
-    onError: (error) => setFormError(toMessage(error)),
-  });
+    } catch (error) {
+      setFormError(toMessage(error));
+    }
+  };
 
   return (
     <>
@@ -63,13 +94,11 @@ export default function CropFormPage() {
         }
       />
       <CropForm
-        isSubmitting={create.isPending}
+        defaultValues={suggestedCropCode ? { cropCode: suggestedCropCode } : undefined}
+        isSubmitting={create.isPending || uploadPhoto.isPending}
         formError={formError}
         availableAcres={availableAcres}
-        onSubmit={(values) => {
-          setFormError(null);
-          create.mutate(values);
-        }}
+        onSubmit={(values, photo) => void handleSubmit(values, photo)}
       />
     </>
   );

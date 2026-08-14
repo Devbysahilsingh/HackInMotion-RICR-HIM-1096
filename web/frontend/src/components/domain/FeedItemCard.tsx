@@ -29,10 +29,18 @@ export function FeedItemCard({
   item,
   onAcknowledge,
   isAcknowledging = false,
+  tone = 'default',
 }: {
   item: FeedItem;
   onAcknowledge?: (item: FeedItem) => void;
   isAcknowledging?: boolean;
+  /**
+   * `attention` is the design's warm-tinted panel for the one item it singles
+   * out beside the day's decision. It changes the card's ground, not its
+   * content — the priority chip still carries the ranked meaning, so the tint
+   * is never the only thing saying "look here".
+   */
+  tone?: 'default' | 'attention';
 }) {
   const { t } = useTranslation(['common', 'irrigation', 'weather', 'market', 'health']);
   const cropName = useCropNames();
@@ -67,6 +75,7 @@ export function FeedItemCard({
       data-type={item.type}
       className={cn(
         'overflow-hidden',
+        tone === 'attention' && 'border-harvest-500 bg-harvest-tint',
         item.priority === 'CRITICAL' && 'border-priority-critical/40',
         acknowledged && 'opacity-60',
       )}

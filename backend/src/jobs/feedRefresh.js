@@ -160,6 +160,7 @@ async function marketCandidatesFor(userId, cropCodes, asOf) {
         cropCode: entry.cropCode,
         signal: entry.signal,
         previousTrend: previousByCrop.get(entry.cropCode),
+        district: entry.district,
         asOf,
       }),
     )

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
@@ -14,9 +14,10 @@ import {
 import { Button } from '@/components/ui/Button';
 import { SelectField, TextAreaField, TextField } from '@/components/ui/Field';
 import { Notice } from '@/components/ui/states';
-import { IconLocation } from '@/components/ui/icons';
+import { IconLocation, IconTrash } from '@/components/ui/icons';
 import { useGeolocation, type GeolocationErrorKind } from '@/hooks/useGeolocation';
 import { toAcres } from '@/lib/units';
+import { UploadDropzone } from './UploadDropzone';
 
 /**
  * Farm create/edit.
@@ -102,18 +103,33 @@ export function FarmForm({
   onSubmit,
   formError,
   allocatedAcres = null,
+  existingPhotoUrl = null,
+  onRemovePhoto,
+  isRemovingPhoto = false,
 }: {
   defaultValues?: Partial<FarmInput>;
   submitLabel: string;
   isSubmitting: boolean;
-  onSubmit: (values: FarmInput) => void;
+  /**
+   * `photo` is the file the farmer picked here, or null if they left the slot
+   * alone. Uploading it is the caller's job: `POST /farms/:id/photo` needs a
+   * real farm id, which does not exist until `farmsApi.create` returns. This
+   * is the same split `CropForm` already uses.
+   */
+  onSubmit: (values: FarmInput, photo: File | null) => void;
   formError?: string | null;
   /** Acres already given to crops (edit mode); the size may not go below it. */
   allocatedAcres?: number | null;
+  /** The photo already stored on this farm (edit mode). */
+  existingPhotoUrl?: string | null;
+  /** Clears the stored photo. Absent → no remove control is offered. */
+  onRemovePhoto?: () => void;
+  isRemovingPhoto?: boolean;
 }) {
   const { t } = useTranslation(['farm', 'agri', 'common']);
   const gps = useGeolocation();
   const schema = useMemo(() => makeSchema(allocatedAcres), [allocatedAcres]);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
 
   const {
     register,
@@ -164,23 +180,26 @@ export function FarmForm({
       ? parsed.name.trim()
       : (parsed.village?.trim() ?? '') || parsed.district.trim() || t('farm:defaultName');
 
-    onSubmit({
-      name,
-      location: {
-        ...(hasCoordinates ? { lat: parsed.lat, lon: parsed.lon } : {}),
-        state: parsed.state,
-        district: parsed.district,
-        ...(parsed.village?.trim() ? { village: parsed.village.trim() } : {}),
-        // 'gps' asserts a device measured this position, so it is only claimed
-        // when the device actually did — a hand-typed coordinate is 'manual'.
-        source: hasCoordinates && gps.coordinates ? 'gps' : 'manual',
+    onSubmit(
+      {
+        name,
+        location: {
+          ...(hasCoordinates ? { lat: parsed.lat, lon: parsed.lon } : {}),
+          state: parsed.state,
+          district: parsed.district,
+          ...(parsed.village?.trim() ? { village: parsed.village.trim() } : {}),
+          // 'gps' asserts a device measured this position, so it is only claimed
+          // when the device actually did — a hand-typed coordinate is 'manual'.
+          source: hasCoordinates && gps.coordinates ? 'gps' : 'manual',
+        },
+        sizeValue: parsed.sizeValue,
+        sizeUnit: parsed.sizeUnit,
+        soilType: parsed.soilType,
+        irrigationMethod: parsed.irrigationMethod,
+        ...(parsed.notes ? { notes: parsed.notes } : {}),
       },
-      sizeValue: parsed.sizeValue,
-      sizeUnit: parsed.sizeUnit,
-      soilType: parsed.soilType,
-      irrigationMethod: parsed.irrigationMethod,
-      ...(parsed.notes ? { notes: parsed.notes } : {}),
-    });
+      photoFile,
+    );
   });
 
   return (
@@ -354,6 +373,52 @@ export function FarmForm({
           </option>
         ))}
       </SelectField>
+
+      {/*
+        The field photo. Optional and last, because a farmer who has no photo
+        to hand must never be held up by it — but present in the create flow
+        rather than only on the farm's own page, because the moment they are
+        describing the field is the moment they know which picture is of it.
+
+        The stored photo (edit mode) is shown as-is until a replacement is
+        picked; picking one previews the replacement, and the upload itself
+        happens after save, against the real farm id.
+      */}
+      <fieldset className="space-y-3 rounded-xl border border-line p-4">
+        <legend className="px-1 text-sm font-semibold">{t('farm:photoLabel')}</legend>
+
+        {existingPhotoUrl && !photoFile && (
+          <div className="space-y-3">
+            <img
+              src={existingPhotoUrl}
+              alt={t('farm:photoAlt')}
+              className="max-h-56 w-full rounded-lg object-cover"
+              data-testid="farm-photo-current"
+            />
+            {onRemovePhoto && (
+              <Button
+                variant="secondary"
+                onClick={onRemovePhoto}
+                isLoading={isRemovingPhoto}
+                leadingIcon={<IconTrash size={18} />}
+                data-testid="farm-photo-remove"
+              >
+                {t('farm:photoRemoveCta')}
+              </Button>
+            )}
+          </div>
+        )}
+
+        <UploadDropzone
+          file={photoFile}
+          onSelect={setPhotoFile}
+          disabled={isSubmitting}
+          title={t('farm:photoTitle')}
+          hint={t('farm:photoHint')}
+          cta={t('farm:photoCta')}
+          alt={t('farm:photoAlt')}
+        />
+      </fieldset>
 
       <TextAreaField
         label={t('farm:notesLabel')}

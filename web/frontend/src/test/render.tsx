@@ -6,6 +6,7 @@ import { render, type RenderOptions, type RenderResult } from '@testing-library/
 
 import { AuthProvider } from '@/auth/AuthContext';
 import { ToastProvider } from '@/components/ui/Toast';
+import { ActiveFarmProvider } from '@/farm/ActiveFarmContext';
 import { LanguageProvider } from '@/i18n/LanguageContext';
 import { initI18n } from '@/i18n';
 import type { Language } from '@/api/types';
@@ -70,7 +71,9 @@ export function renderWithProviders(
           <AuthProvider>
             <LanguageProvider>
               <ToastProvider>
-                <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
+                <MemoryRouter initialEntries={[route]}>
+                  <ActiveFarmProvider>{children}</ActiveFarmProvider>
+                </MemoryRouter>
               </ToastProvider>
             </LanguageProvider>
           </AuthProvider>
