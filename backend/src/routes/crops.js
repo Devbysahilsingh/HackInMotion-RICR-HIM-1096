@@ -12,6 +12,7 @@ import { z } from 'zod';
 import {
   CROP_STATUSES,
   LAND_UNITS,
+  PAGE_MAX,
   PAGE_SIZE_DEFAULT,
   PAGE_SIZE_MAX,
 } from '../config/constants.js';
@@ -268,7 +269,7 @@ cropsRouter.post(
 );
 
 const ledgerQuerySchema = z.object({
-  page: z.coerce.number().int().positive().default(1),
+  page: z.coerce.number().int().positive().max(PAGE_MAX).default(1),
   limit: z.coerce.number().int().positive().max(PAGE_SIZE_MAX).default(PAGE_SIZE_DEFAULT),
 });
 

@@ -129,6 +129,33 @@ export async function fetchJson(url, options = {}) {
         method: 'GET',
         headers: { Accept: 'application/json', ...headers },
         signal: controller.signal,
+        /**
+         * Never follow a redirect — the same policy `services/aiVision.js` and
+         * `integrations/mlService.js` already apply, extended to the last
+         * outbound path that lacked it.
+         *
+         * `fetch` follows up to twenty by default, and the `Location` header is
+         * chosen by whoever answers the request — a hijacked provider, a DNS
+         * answer we did not verify, a captive portal on the host's network. The
+         * consequences are two, and neither depends on the key material:
+         *
+         *  - **Internal reach.** The next GET originates from the backend host,
+         *    so `Location: http://169.254.169.254/…` or `http://127.0.0.1:4000/…`
+         *    turns an outbound weather poll into a request against the platform
+         *    metadata service or a service bound to loopback. Zod rejects the
+         *    body afterwards, but the request has already been made.
+         *  - **Credential replay.** `fetch` strips only `Authorization` across
+         *    origins; any custom header in `options.headers` is replayed
+         *    verbatim. No caller passes one today — this makes that stay true
+         *    rather than depending on it.
+         *
+         * Every provider behind this helper is a fixed JSON endpoint that never
+         * legitimately redirects (Open-Meteo, the OWM one-call API,
+         * data.gov.in), so refusing costs nothing: the throw below is caught as
+         * a transport failure, retried once, and then tiers down exactly like
+         * any other provider fault.
+         */
+        redirect: 'error',
       });
 
       if (!response.ok) {

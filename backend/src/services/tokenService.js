@@ -43,12 +43,31 @@ export function signAccessToken(userId) {
 }
 
 /**
+ * The shape every user id has. Ids are Mongo ObjectIds, so a subject claim
+ * that is not 24 hex characters cannot name an account no matter what it is.
+ */
+const OBJECT_ID_PATTERN = /^[a-f\d]{24}$/i;
+
+/**
  * Verification pins the algorithm, issuer and audience.
  *
  * `algorithms` is the important one: without an explicit allowlist, a token
  * presenting `alg: none` — or one signed with the public half of an asymmetric
  * pair — can be accepted. Every failure mode returns null; the caller turns
  * that into one generic 401 so nothing distinguishes expired from forged.
+ *
+ * The subject is shape-checked here rather than trusted onward, because a
+ * verified signature says only that WE issued the claim — not that the claim
+ * is a user id. `sub` survives verification as whatever JSON type it was
+ * signed as, and the caller's next act is a database lookup keyed on it:
+ *   - `sub: {$ne: null}` reaches the query as an operator and matches the
+ *     first account in the collection, which is an impersonation primitive
+ *   - `sub: 'not-an-object-id'` throws a CastError, surfacing as a 500 that
+ *     both breaks the "one generic 401" contract above and writes a stack
+ *     trace on every request
+ * Neither is reachable without the signing secret today. It is validated all
+ * the same: this function's contract is "a valid token names a user", and the
+ * cost of making that true for every input is one comparison.
  *
  * @returns {{ userId: string, jti: string } | null}
  */
@@ -59,6 +78,9 @@ export function verifyAccessToken(token) {
       issuer: JWT_ISSUER,
       audience: JWT_AUDIENCE,
     });
+
+    if (typeof payload.sub !== 'string' || !OBJECT_ID_PATTERN.test(payload.sub)) return null;
+
     return { userId: payload.sub, jti: payload.jti };
   } catch {
     return null;

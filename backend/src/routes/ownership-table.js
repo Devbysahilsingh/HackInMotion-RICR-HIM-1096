@@ -15,6 +15,21 @@
  *                     'scoped'  — a list, filtered by userId in the query
  *                     'none'    — reference data, owned by nobody
  *   param             the path parameter carrying the id, when there is one
+ *   queryParam        the query-string parameter carrying the id, for routes
+ *                     that address an owned document without a path segment.
+ *                     Such a route is every bit as addressable as a `:param`
+ *                     one — the id is simply somewhere else — so the matrix
+ *                     substitutes it the same way and demands the same 404.
+ *   bodyParam         the request-body field carrying the id, same principle
+ *                     again. Added in Phase 7: three POST routes take the id
+ *                     they address in the body, and because they declared no
+ *                     `param` or `queryParam` the ST-10 matrix had nothing to
+ *                     substitute — so the three endpoints where an
+ *                     attacker-supplied id is the *whole* attack were the
+ *                     three the sweep skipped. ST-11 drives these.
+ *   bodySample        the rest of a valid body for such a route, so it is
+ *                     refused on ownership rather than on validation.
+ *   multipart         true when the body is multipart rather than JSON.
  */
 export const ROUTE_OWNERSHIP = [
   // ── Auth ───────────────────────────────────────────────────────────────────
@@ -159,16 +174,36 @@ export const ROUTE_OWNERSHIP = [
   },
 
   // ── Crop recommendation ────────────────────────────────────────────────────
-  // `farmId` arrives in the body rather than the path, so there is no `param`
-  // for the matrix to substitute; ownership is still a userId-filtered query
-  // and a farm the caller does not own answers 404.
-  { method: 'POST', path: '/api/v1/crop-recommendation', auth: 'required', ownership: 'scoped' },
+  // `farmId` arrives in the body rather than the path; ownership is still a
+  // userId-filtered query and a farm the caller does not own answers 404.
+  // `bodyParam` is what lets the matrix substitute it (ST-11).
+  {
+    method: 'POST',
+    path: '/api/v1/crop-recommendation',
+    auth: 'required',
+    ownership: 'direct',
+    resource: 'farm',
+    bodyParam: 'farmId',
+    bodySample: { season: 'KHARIF' },
+  },
 
   // ── Market ─────────────────────────────────────────────────────────────────
   // Mandi prices are public data with no owner, so `/prices` is authenticated
   // but unscoped. `/my-crops` reads the caller's crops and IS scoped.
   { method: 'GET', path: '/api/v1/market/prices', auth: 'required', ownership: 'none' },
   { method: 'GET', path: '/api/v1/market/my-crops', auth: 'required', ownership: 'scoped' },
+  // `/nearby` answers "what is trading near THIS farm", so it addresses one
+  // owned farm — by `farmId` in the query string rather than a path segment.
+  // That difference is presentational only: it is as addressable as any
+  // `/:id` route and gets the same 401 / 404 / malformed-id matrix.
+  {
+    method: 'GET',
+    path: '/api/v1/market/nearby',
+    auth: 'required',
+    ownership: 'direct',
+    resource: 'farm',
+    queryParam: 'farmId',
+  },
 
   // ── Registry ───────────────────────────────────────────────────────────────
   // Reference data: no farmer owns it and it contains nothing personal, so it
@@ -176,16 +211,27 @@ export const ROUTE_OWNERSHIP = [
   { method: 'GET', path: '/api/v1/registry/crops', auth: 'public', ownership: 'none' },
 
   // ── Crop health ────────────────────────────────────────────────────────────
-  // `analyze` and `symptom-check` take `cropId` in the body, so like
-  // `/crop-recommendation` there is no `param` for the matrix to substitute;
-  // both still resolve the crop *and* its farm through userId-filtered queries
-  // (AU-3) and answer 404 for a crop the caller does not own.
-  { method: 'POST', path: '/api/v1/crop-health/analyze', auth: 'required', ownership: 'scoped' },
+  // `analyze` and `symptom-check` take `cropId` in the body — `analyze` as a
+  // multipart field. Both resolve the crop *and* its farm through
+  // userId-filtered queries (AU-3) and answer 404 for a crop the caller does
+  // not own; `bodyParam` is what makes the matrix prove it (ST-11).
+  {
+    method: 'POST',
+    path: '/api/v1/crop-health/analyze',
+    auth: 'required',
+    ownership: 'direct',
+    resource: 'crop',
+    bodyParam: 'cropId',
+    multipart: true,
+  },
   {
     method: 'POST',
     path: '/api/v1/crop-health/symptom-check',
     auth: 'required',
-    ownership: 'scoped',
+    ownership: 'direct',
+    resource: 'crop',
+    bodyParam: 'cropId',
+    bodySample: { answers: { part: 'leaf' } },
   },
   { method: 'GET', path: '/api/v1/crop-health/logs', auth: 'required', ownership: 'scoped' },
   {
@@ -215,6 +261,23 @@ export const ROUTE_OWNERSHIP = [
 /** Routes the ST-10 matrix must exercise for 401 / 404 / scoping behaviour. */
 export const protectedRoutes = () => ROUTE_OWNERSHIP.filter((row) => row.auth === 'required');
 
-/** Routes addressing a specific owned document by id. */
+/**
+ * Routes addressing a specific owned document by id — wherever that id rides.
+ * A route carrying it in the query string is exactly as attackable as one
+ * carrying it in the path, so both belong in the same matrix.
+ */
 export const addressableRoutes = () =>
-  ROUTE_OWNERSHIP.filter((row) => ['direct', 'nested'].includes(row.ownership) && row.param);
+  ROUTE_OWNERSHIP.filter(
+    (row) => ['direct', 'nested'].includes(row.ownership) && (row.param || row.queryParam),
+  );
+
+/**
+ * Routes addressing an owned document by an id carried in the request BODY.
+ *
+ * Kept separate from `addressableRoutes` for one practical reason: a body-borne
+ * id cannot be substituted by rewriting a URL, and one of these routes is
+ * multipart, so the sweep needs a different request builder. ST-11 owns it and
+ * asserts that every row here is exercised, so a fourth body-id route cannot
+ * join the table without being tested.
+ */
+export const bodyAddressableRoutes = () => ROUTE_OWNERSHIP.filter((row) => row.bodyParam);

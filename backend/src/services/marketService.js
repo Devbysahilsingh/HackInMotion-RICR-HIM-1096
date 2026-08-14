@@ -8,7 +8,12 @@
  * involved (`/market/my-crops`), and there it is applied as a query filter,
  * never as a post-filter (AU-4).
  */
-import { MARKET_QUERY_MAX_DAYS, MARKET_WARM_FRESH_DAYS } from '../config/constants.js';
+import {
+  MARKET_NEARBY_SCAN_LIMIT,
+  MARKET_QUERY_MAX_DAYS,
+  MARKET_SERIES_SCAN_LIMIT,
+  MARKET_WARM_FRESH_DAYS,
+} from '../config/constants.js';
 import { env } from '../config/env.js';
 import { runMarketRefresh } from '../jobs/marketRefresh.js';
 import { logger } from '../utils/logger.js';
@@ -90,10 +95,24 @@ export async function priceSeries({ commodityCode, state, district, days = 30 })
   if (district) filter.district = district;
   if (state) filter.state = state;
 
-  const rows = await MarketPrice.find(filter)
+  /**
+   * Newest-first with a ceiling, then restored to ascending order for the wire.
+   *
+   * The sort direction is the load-bearing half. Sorting ascending and capping
+   * would discard the *newest* observations — precisely the ones the 7- and
+   * 30-observation windows are computed from — so a truncated series would not
+   * merely be short, it would carry a signal describing the wrong fortnight.
+   * One row over the ceiling is fetched so "there was more" is detectable
+   * rather than inferred from an exactly-full page.
+   */
+  const newestFirst = await MarketPrice.find(filter)
     .select('date market minPrice modalPrice maxPrice source flagged')
-    .sort({ date: 1 })
+    .sort({ date: -1 })
+    .limit(MARKET_SERIES_SCAN_LIMIT + 1)
     .lean();
+
+  const truncated = newestFirst.length > MARKET_SERIES_SCAN_LIMIT;
+  const rows = newestFirst.slice(0, MARKET_SERIES_SCAN_LIMIT).reverse();
 
   const signal = computeMarketSignal({ rows });
 
@@ -117,7 +136,9 @@ export async function priceSeries({ commodityCode, state, district, days = 30 })
       // R12: the numbers behind the verdict travel with it.
       trace: signal.trace,
     },
-    freshness: marketFreshness(rows),
+    // Rule 9: a series that hit the ceiling is a shortened one, and says so
+    // rather than presenting itself as the whole window.
+    freshness: { ...marketFreshness(rows), truncated },
   };
 }
 
@@ -290,10 +311,25 @@ export async function nearbyMandis({ state, district, days = 30, commodityCode }
   if (state) filter.state = state;
   if (commodityCode) filter.commodityCode = commodityCode;
 
+  /**
+   * Capped, and already sorted the right way round: the dedup below keeps the
+   * first row it sees for each (mandi, commodity), so newest-first means a
+   * ceiling only ever drops older duplicates of pairs already recorded. It can
+   * still cut a whole mandi off the tail of a very large state, which is why
+   * the result reports `truncated` rather than quietly serving a short list.
+   *
+   * Without this the filter degenerated to `{date: {$gte: since}}` whenever a
+   * farm carried no state — every mandi row in the country for 90 days, pulled
+   * into memory to build a response of a few dozen kilobytes.
+   */
   const rows = await MarketPrice.find(filter)
     .select('commodityCode market district state date minPrice maxPrice modalPrice source unit')
     .sort({ date: -1 })
+    .limit(MARKET_NEARBY_SCAN_LIMIT + 1)
     .lean();
+
+  const truncated = rows.length > MARKET_NEARBY_SCAN_LIMIT;
+  if (truncated) rows.length = MARKET_NEARBY_SCAN_LIMIT;
 
   /**
    * One entry per (market, commodity), holding that commodity's most recent
@@ -355,6 +391,6 @@ export async function nearbyMandis({ state, district, days = 30, commodityCode }
       inDistrict: mandis.filter((m) => m.proximity === 'SAME_DISTRICT').length,
       commodities: available.length,
     },
-    freshness: marketFreshness(rows),
+    freshness: { ...marketFreshness(rows), truncated },
   };
 }

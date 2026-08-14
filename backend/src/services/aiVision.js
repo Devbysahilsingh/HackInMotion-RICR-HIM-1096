@@ -573,6 +573,15 @@ export async function postJsonToProvider(url, options = {}) {
         headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...headers },
         body: payload,
         signal: controller.signal,
+        // Never follow a redirect. `fetch` defaults to following up to twenty,
+        // and it strips only `Authorization` on a cross-origin hop — a custom
+        // credential header such as `x-goog-api-key` is replayed verbatim to
+        // whatever host the `Location` names. A provider that answered 302 to
+        // `http://169.254.169.254/…` would therefore both hand it our API key
+        // and turn this POST into a GET against link-local metadata. These are
+        // fixed JSON endpoints that never legitimately redirect, so refusing is
+        // free: the rejection lands in the catch below and tiers down.
+        redirect: 'error',
       });
 
       if (!response.ok) {

@@ -12,7 +12,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 
-import { PAGE_SIZE_DEFAULT, PAGE_SIZE_MAX } from '../config/constants.js';
+import { PAGE_MAX, PAGE_SIZE_DEFAULT, PAGE_SIZE_MAX } from '../config/constants.js';
 import { loadOwned } from '../middleware/loadOwned.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import { validate } from '../middleware/validate.js';
@@ -36,7 +36,7 @@ dashboardRouter.get('/', async (req, res, next) => {
 
 const historyQuerySchema = z
   .object({
-    page: z.coerce.number().int().positive().default(1),
+    page: z.coerce.number().int().positive().max(PAGE_MAX).default(1),
     limit: z.coerce.number().int().positive().max(PAGE_SIZE_MAX).default(PAGE_SIZE_DEFAULT),
   })
   .strict();

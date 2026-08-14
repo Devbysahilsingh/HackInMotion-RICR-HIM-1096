@@ -1,0 +1,172 @@
+# Continuous integration — quality and security gates.
+#
+# Written during the Phase 7 completion pass, which found that the repository
+# had no CI configuration at all: every gate in docs/testing/strategy.md was
+# reachable only by a human remembering to run it. The pre-commit hook
+# (.githooks/pre-commit) covers staged-secret scanning and nothing else.
+#
+# ## Security posture of this workflow
+#
+#   - `permissions: contents: read` at the top level, so every job starts from
+#     read-only and the default write-all token is never issued. No job here
+#     writes to the repository, publishes a package, or comments on a PR, so
+#     nothing needs more.
+#   - Triggered by `pull_request`, never `pull_request_target`. The latter runs
+#     with the base repository's secrets and a writable token while checking out
+#     the *fork's* code — which is how a fork PR reads repository secrets. This
+#     workflow needs no secret and must never gain one under that trigger.
+#   - Every third-party action is pinned to a full commit SHA. A tag is a
+#     movable pointer: `@v4` follows wherever the maintainer (or someone who
+#     compromises them) moves it. The trailing comment records which tag the SHA
+#     was resolved from, so an upgrade is still legible.
+#   - `npm ci`, never `npm install`: the lockfile is the audited artefact, and
+#     `install` is free to resolve something else.
+#
+# ## What this does NOT do
+#
+# It does not deploy, publish, or touch any environment. Deployment stays manual
+# (docs/deployment/) and Render's `autoDeploy: false` is deliberate.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Read-only by default. A job that genuinely needs more must ask for it itself.
+permissions:
+  contents: read
+
+# A new push supersedes an in-flight run for the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.12'
+
+jobs:
+  # ── Repo-wide static gates ────────────────────────────────────────────────
+  lint:
+    name: Lint · format · i18n
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      # Zero hardcoded user-facing strings, en/hi key parity (CLAUDE.md rule 8).
+      - run: npm run check:i18n
+      - run: npm run check:ui-strings
+
+  # ── Test suites, one job each so a failure names its own surface ──────────
+  backend:
+    name: Backend tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      # Includes the whole ST-01..70 security battery and the RES matrix.
+      - run: npm test
+        working-directory: backend
+
+  web:
+    name: Web tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: web/frontend/package-lock.json
+      - run: npm ci
+        working-directory: web/frontend
+      - run: npm test
+        working-directory: web/frontend
+      - run: npx tsc --noEmit
+        working-directory: web/frontend
+
+  mobile:
+    name: Mobile tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+        working-directory: mobile
+      - run: npm test
+        working-directory: mobile
+      - run: npx tsc --noEmit
+        working-directory: mobile
+
+  ml:
+    name: ml-service tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+        working-directory: ml-service
+      - run: python -m pytest
+        working-directory: ml-service
+
+  # ── Dependency and secret scanning ────────────────────────────────────────
+  dependencies:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      # `--omit=dev` is the shipped surface. Build tooling is audited too, in
+      # the advisory step below, because a compromised bundler is a real supply
+      # chain risk — it simply is not a *runtime* vulnerability of the product.
+      - name: npm audit (production dependencies)
+        run: |
+          npm --prefix backend audit --omit=dev --audit-level=low
+          npm --prefix web/frontend audit --omit=dev --audit-level=low
+
+      - name: npm audit (build tooling, advisory)
+        continue-on-error: true
+        run: npm --prefix mobile audit --audit-level=high
+
+      - name: pip-audit
+        run: |
+          pip install pip-audit
+          pip-audit -r ml-service/requirements.txt
+          pip-audit -r ml-service/requirements-dev.txt
+
+  secrets:
+    name: Secret scan (full history)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          # Gitleaks scans commits, so a shallow clone would scan almost none.
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc # v2
+        env:
+          GITLEAKS_CONFIG: .gitleaks.toml

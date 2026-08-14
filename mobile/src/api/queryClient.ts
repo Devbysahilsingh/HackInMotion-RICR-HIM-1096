@@ -62,6 +62,32 @@ export const queryPersister = createAsyncStoragePersister({
 });
 
 /**
+ * Erases the persisted cache from disk, now.
+ *
+ * `queryClient.clear()` empties the *in-memory* cache and the persister
+ * notices — but it writes on a 2s throttle, so between a logout and that write
+ * the previous farmer's dehydrated dashboard, farms, prices and health history
+ * are still sitting in AsyncStorage in plain text. Killing the app inside that
+ * window (or handing the phone over, which is the threat model this cache is
+ * cleared for at all) leaves them there to be rehydrated by whoever logs in
+ * next.
+ *
+ * A throttled write is the wrong instrument for a privacy boundary, so logout
+ * deletes the key outright and does not depend on the throttle firing.
+ * Swallowed on failure for the same reason `clearRefreshToken` is: logout must
+ * always end signed out, and a storage error is not a reason to strand a farmer
+ * inside an account.
+ */
+export async function clearPersistedCache(): Promise<void> {
+  try {
+    await queryPersister.removeClient();
+  } catch {
+    // Already gone, or the store is unwritable. Either way there is nothing
+    // further this device can do about it.
+  }
+}
+
+/**
  * Which queries are allowed to survive a restart.
  *
  * Only successful reads. A failed query would rehydrate as a permanent error

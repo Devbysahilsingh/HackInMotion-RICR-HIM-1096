@@ -7,9 +7,9 @@
  * and a farm belonging to someone else is indistinguishable from one that
  * does not exist (404, never 403).
  *
- * Rate limiting is the documented global bucket (300/15min/IP); farms.md
- * declares no stricter bucket, and the 10-farm cap already bounds what
- * repeated creates can achieve.
+ * Reads use the documented global bucket (300/15min/IP). Writes do not: they
+ * carry a fire-and-forget provider warm, so the 10-farm cap bounds the
+ * collection but not the free-tier spend behind it. See `farmWriteLimiter`.
  */
 import { Router } from 'express';
 import { z } from 'zod';
@@ -22,6 +22,7 @@ import {
   SOIL_TYPES,
 } from '../config/constants.js';
 import { loadOwned } from '../middleware/loadOwned.js';
+import { farmWriteLimiter } from '../middleware/rateLimits.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import { validate } from '../middleware/validate.js';
 import { Farm } from '../models/index.js';
@@ -153,18 +154,23 @@ farmsRouter.get('/', async (req, res, next) => {
   }
 });
 
-farmsRouter.post('/', validate({ body: createFarmSchema }), async (req, res, next) => {
-  try {
-    const farm = await farmService.createFarm(req.auth.userId, req.body);
-    sendData(res, { farm: farm.toJSON() }, { status: 201 });
-    // After the response, never before it: rule 3 forbids a farmer's request
-    // depending on a provider. Without this the new field showed "Not fetched
-    // yet" until the 3-hourly job ran. See weatherService.warmLocation.
-    warmFarmLocation(farm);
-  } catch (err) {
-    next(err);
-  }
-});
+farmsRouter.post(
+  '/',
+  farmWriteLimiter,
+  validate({ body: createFarmSchema }),
+  async (req, res, next) => {
+    try {
+      const farm = await farmService.createFarm(req.auth.userId, req.body);
+      sendData(res, { farm: farm.toJSON() }, { status: 201 });
+      // After the response, never before it: rule 3 forbids a farmer's request
+      // depending on a provider. Without this the new field showed "Not fetched
+      // yet" until the 3-hourly job ran. See weatherService.warmLocation.
+      warmFarmLocation(farm);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
 
 farmsRouter.get('/:id', loadOwned({ model: Farm }), async (req, res, next) => {
   try {
@@ -176,6 +182,7 @@ farmsRouter.get('/:id', loadOwned({ model: Farm }), async (req, res, next) => {
 
 farmsRouter.patch(
   '/:id',
+  farmWriteLimiter,
   loadOwned({ model: Farm }),
   validate({ body: updateFarmSchema }),
   async (req, res, next) => {

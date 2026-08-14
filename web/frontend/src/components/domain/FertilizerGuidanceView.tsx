@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
+import { safeExternalUrl } from '@shared/client/url';
+
 import type { FertilizerGuidance, FertilizerRecommendation, SourceRef } from '@/api/types';
 import { translateMessageKey } from '@/i18n/messageKey';
 import { Badge } from '@/components/ui/Badge';
@@ -201,29 +203,41 @@ function formatDoseValue(value: unknown): string {
   return String(value);
 }
 
+/**
+ * Attribution.
+ *
+ * The citation URL is a *data* field on an API response, so it is passed
+ * through `safeExternalUrl` before it can become an `href`: React copies
+ * `javascript:` into the attribute verbatim, and a citation is exactly the kind
+ * of low-attention link a farmer clicks. A refused URL still renders — as text
+ * beside the citation, the way the mobile client renders every URL — because
+ * losing the provenance would be a worse outcome than not linking it.
+ */
 export function SourceList({ sources }: { sources: SourceRef[] }) {
   if (sources.length === 0) return null;
 
   return (
     <ul className="space-y-1 text-xs text-ink-500" data-testid="source-list">
-      {sources.map((source, index) => (
-        <li key={`${source.org}-${index}`}>
-          {source.url ? (
-            <a
-              href={source.url}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="underline underline-offset-2 hover:text-brand-700"
-            >
-              {source.org} — {source.title}
-            </a>
-          ) : (
-            <span>
-              {source.org} — {source.title}
-            </span>
-          )}
-        </li>
-      ))}
+      {sources.map((source, index) => {
+        const href = safeExternalUrl(source.url);
+
+        return (
+          <li key={`${source.org}-${index}`}>
+            {href ? (
+              <a
+                href={href}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="underline underline-offset-2 hover:text-brand-700"
+              >
+                {source.org} — {source.title}
+              </a>
+            ) : (
+              <span>{[source.org, source.title, source.url].filter(Boolean).join(' — ')}</span>
+            )}
+          </li>
+        );
+      })}
     </ul>
   );
 }

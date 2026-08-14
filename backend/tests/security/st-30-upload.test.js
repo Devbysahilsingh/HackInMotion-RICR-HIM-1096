@@ -17,6 +17,7 @@
  */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import sharp from 'sharp';
 
 import {
@@ -116,6 +117,77 @@ describe('ST-30 · upload pipeline', () => {
       const result = await sanitizeImage(Buffer.alloc(0));
       assert.equal(result.ok, false);
       assert.equal(result.reason, UPLOAD_REJECTION.NO_FILE);
+    });
+
+    it('rejects markup that calls itself an image', async () => {
+      /**
+       * SVG and HTML are the two payloads that matter most here and neither is
+       * a binary format, so neither has magic bytes to sniff — they are refused
+       * because the sniff *fails*, not because a denylist names them. That is
+       * the stronger property, and it is worth an explicit test because SVG is
+       * the classic stored-XSS carrier: an SVG served back from an image URL is
+       * executed as a document by a browser, script and all.
+       *
+       * The `<?xml` prologue is included deliberately — it is the one that most
+       * resembles a legitimate container header and would be the first thing a
+       * prefix-matching sniffer got wrong.
+       */
+      const markup = {
+        svg: '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>',
+        svgWithProlog:
+          '<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"/>',
+        html: '<!doctype html><html><body><script>fetch("/api/v1/farms")</script></body></html>',
+        // A JPEG signature followed by markup: the polyglot's simplest form.
+        jpegPrefixedSvg: '\xff\xd8\xff<svg onload="alert(1)"/>',
+      };
+
+      /**
+       * `jpegPrefixedSvg` lands on a different reason class than the other
+       * three, and correctly so: the JPEG signature makes the sniff say "jpeg",
+       * so the failure happens one step later, at the decode. The property
+       * under test is that nothing gets through — the reason class is the
+       * pipeline honestly reporting which guard caught it, and pinning all four
+       * to one class would be asserting a coincidence.
+       */
+      const expected = {
+        svg: UPLOAD_REJECTION.NOT_AN_IMAGE,
+        svgWithProlog: UPLOAD_REJECTION.NOT_AN_IMAGE,
+        html: UPLOAD_REJECTION.NOT_AN_IMAGE,
+        jpegPrefixedSvg: UPLOAD_REJECTION.UNREADABLE,
+      };
+
+      for (const [label, payload] of Object.entries(markup)) {
+        const result = await sanitizeImage(Buffer.from(payload, 'binary'));
+
+        assert.equal(result.ok, false, `${label} was accepted`);
+        assert.equal(result.reason, expected[label], `${label} changed reason class`);
+        // Whatever the class, no fragment of the payload may be echoed back.
+        assert.ok(!JSON.stringify(result).includes('alert('), `${label} echoed its own script`);
+      }
+    });
+
+    it('derives nothing from the filename, however hostile it is', () => {
+      /**
+       * `sanitizeImage` takes a Buffer and no name — there is no parameter a
+       * traversal sequence could arrive in, which is why memory storage was
+       * chosen over multer's `dest` (see middleware/uploadImage.js). The stored
+       * object's name is built by integrations/cloudinary.js from ids we
+       * generate.
+       *
+       * Asserting the arity is the honest form of this test: it proves the
+       * absence of the sink rather than testing that a particular escaping
+       * routine happens to work on a particular set of inputs.
+       */
+      assert.equal(sanitizeImage.length, 1, 'sanitizeImage grew a second parameter');
+
+      // And the pipeline module must not have acquired a filesystem sink.
+      const source = readFileSync(
+        new URL('../../src/services/imagePipeline.js', import.meta.url),
+        'utf8',
+      );
+      for (const sink of ['node:fs', "from 'fs'", 'writeFile', 'createWriteStream', 'path.join']) {
+        assert.ok(!source.includes(sink), `imagePipeline.js reached for ${sink}`);
+      }
     });
   });
 

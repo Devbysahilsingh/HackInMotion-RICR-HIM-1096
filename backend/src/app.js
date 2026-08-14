@@ -82,6 +82,32 @@ export function createApp({ extraRouters = [] } = {}) {
   // Liveness probe sits outside the API prefix: it is infrastructure, not product.
   app.use(healthRouter);
 
+  /**
+   * Nothing under the API prefix may be written down by a cache.
+   *
+   * Express attaches a weak `ETag` to every JSON response, and a 200 carrying a
+   * validator but no explicit freshness is *heuristically* cacheable
+   * (RFC 9111 §4.2.2). That is fine for the crop registry and wrong for
+   * everything else here: the bodies are one farmer's farms, coordinates,
+   * health history and prices.
+   *
+   * A shared cache is largely blocked already — RFC 9111 §3.5 forbids reusing a
+   * response to a request carrying `Authorization` unless the response opts in
+   * — but that argument covers only the bearer routes, and it is the *private*
+   * cache that matches this product's stated threat model anyway: a shared
+   * handset or a village-kiosk browser, where the next person hits Back and the
+   * disk cache re-renders the previous farmer's dashboard without a token being
+   * involved at all.
+   *
+   * Set before the routers so a route that knows better can override it —
+   * `registry.js` does exactly that, because reference data is public,
+   * identical for everyone, and worth caching for an hour.
+   */
+  app.use(API_PREFIX, (req, res, next) => {
+    res.set('Cache-Control', 'no-store');
+    next();
+  });
+
   app.use(`${API_PREFIX}/auth`, authRouter);
   app.use(`${API_PREFIX}/users`, usersRouter);
   // Crops are addressed both under their farm and directly, so this router

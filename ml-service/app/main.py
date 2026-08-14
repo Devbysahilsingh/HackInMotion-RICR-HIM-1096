@@ -49,7 +49,9 @@ MAX_REQUEST_BYTES = MAX_IMAGE_BYTES + MULTIPART_OVERHEAD_BYTES
 # Starlette spools multipart parts to a temporary FILE above 1MB by default.
 # docs/ml/inference-architecture.md requires a stateless service with no
 # filesystem writes, so the spool threshold is raised above the request cap to
-# keep every upload in memory. The 8MB ceiling is what makes that safe.
+# keep every upload in memory. The 8MB ceiling is what makes that safe — and
+# that ceiling is only real because BodySizeLimitMiddleware counts the stream;
+# see the note there for why the Content-Length check alone did not deliver it.
 # (max_part_size is a constructor argument, not a class default, so it is passed
 # per-call at the request.form() site instead.)
 MultiPartParser.spool_max_size = MAX_REQUEST_BYTES
@@ -63,6 +65,92 @@ def _error(status: int, code: str, message: str) -> JSONResponse:
     """Safe error envelope: a stable code and a message that leaks nothing."""
     body = ErrorResponse(error=ErrorBody(code=code, message=message))
     return JSONResponse(status_code=status, content=body.model_dump())
+
+
+class RequestBodyTooLarge(Exception):
+    """More body bytes arrived than MAX_REQUEST_BYTES allows.
+
+    Raised out of the ASGI receive channel, so it surfaces wherever the body is
+    being consumed rather than at a single call site.
+    """
+
+
+class BodySizeLimitMiddleware:
+    """Caps the request body on bytes actually received, not on what was declared.
+
+    Content-Length is a claim, and a client can simply decline to make it: an
+    HTTP/1.1 chunked request carries no Content-Length at all, so a header-only
+    check is bypassed by omitting the header. Nothing underneath closed that gap
+    either — Starlette's `max_part_size` bounds only *non-file* parts
+    (formparsers.MultiPartParser.on_part_data checks the limit solely on the
+    `file is None` branch and appends file data unchecked), so an unbounded file
+    part streamed straight into the SpooledTemporaryFile and, past
+    spool_max_size, onto disk. That both admitted an unbounded body and broke
+    the no-filesystem-writes property the spool_max_size line above assumes.
+
+    Counting the stream is the only cap that actually holds. The Content-Length
+    fast path is kept ahead of it because rejecting before the first byte is
+    read is strictly cheaper when the client is honest.
+    """
+
+    def __init__(self, app: Any, max_bytes: int) -> None:
+        self.app = app
+        self.max_bytes = max_bytes
+
+    async def __call__(self, scope: Any, receive: Any, send: Any) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        declared = _header_value(scope, b"content-length")
+        if declared is not None:
+            try:
+                if int(declared) > self.max_bytes:
+                    await _error(413, "IMAGE_TOO_LARGE", "request body exceeds the size limit")(
+                        scope, receive, send
+                    )
+                    return
+            except ValueError:
+                await _error(400, "REQUEST_INVALID", "malformed Content-Length header")(
+                    scope, receive, send
+                )
+                return
+
+        received = 0
+        started = False
+
+        async def counting_receive() -> Any:
+            nonlocal received
+            message = await receive()
+            if message["type"] == "http.request":
+                received += len(message.get("body", b""))
+                if received > self.max_bytes:
+                    raise RequestBodyTooLarge
+            return message
+
+        async def tracking_send(message: Any) -> None:
+            nonlocal started
+            if message["type"] == "http.response.start":
+                started = True
+            await send(message)
+
+        try:
+            await self.app(scope, counting_receive, tracking_send)
+        except RequestBodyTooLarge:
+            if started:
+                # Headers are already on the wire; there is no valid way to
+                # replace the response. Let it surface as a transport error.
+                raise
+            await _error(413, "IMAGE_TOO_LARGE", "request body exceeds the size limit")(
+                scope, receive, send
+            )
+
+
+def _header_value(scope: Any, name: bytes) -> str | None:
+    for key, value in scope.get("headers", ()):
+        if key.lower() == name:
+            return value.decode("latin-1")
+    return None
 
 
 def _request_id(request: Request) -> str:
@@ -151,16 +239,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.state.settings = resolved
 
     # ── Middleware ──────────────────────────────────────────────────────
-    @application.middleware("http")
-    async def limit_request_size(request: Request, call_next: Any):  # type: ignore[no-untyped-def]
-        declared = request.headers.get("content-length")
-        if declared is not None:
-            try:
-                if int(declared) > MAX_REQUEST_BYTES:
-                    return _error(413, "IMAGE_TOO_LARGE", "request body exceeds the size limit")
-            except ValueError:
-                return _error(400, "REQUEST_INVALID", "malformed Content-Length header")
-        return await call_next(request)
+    application.add_middleware(BodySizeLimitMiddleware, max_bytes=MAX_REQUEST_BYTES)
 
     # ── Error handlers (safe errors, stable codes) ───────────────────────
     @application.exception_handler(HTTPException)
@@ -224,6 +303,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             form = await request.form(
                 max_files=4, max_fields=8, max_part_size=MAX_REQUEST_BYTES
             )
+        except RequestBodyTooLarge:
+            # Not a parse failure: the body outgrew the cap mid-stream. Let it
+            # reach BodySizeLimitMiddleware, which answers 413. Collapsing it
+            # into the 400 below would report "malformed" for a well-formed
+            # request whose only fault was its size.
+            raise
         except Exception:
             return _error(400, "REQUEST_INVALID", "request body could not be parsed")
 

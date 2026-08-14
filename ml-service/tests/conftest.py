@@ -131,6 +131,41 @@ def make_pixel_bomb(width: int, height: int) -> bytes:
     )
 
 
+MULTIPART_BOUNDARY = "----mltest"
+MULTIPART_CONTENT_TYPE = f"multipart/form-data; boundary={MULTIPART_BOUNDARY}"
+# 256KB blocks: big enough that a 32MB body is ~128 reads, small enough that the
+# cap lands mid-body rather than on a boundary.
+MULTIPART_BLOCK = b"\xff\xd8\xff" + b"\x00" * (256 * 1024 - 3)
+
+
+def multipart_prologue() -> bytes:
+    """Everything up to the first byte of image data."""
+    return (
+        f"--{MULTIPART_BOUNDARY}\r\n"
+        'Content-Disposition: form-data; name="cropCode"\r\n\r\nTOMATO\r\n'
+        f"--{MULTIPART_BOUNDARY}\r\n"
+        'Content-Disposition: form-data; name="image"; filename="leaf.jpg"\r\n'
+        "Content-Type: image/jpeg\r\n\r\n"
+    ).encode()
+
+
+def chunked_multipart(total_bytes: int) -> Iterator[bytes]:
+    """A multipart body yielded in pieces, so the client sends it chunked.
+
+    A generator body makes httpx use `Transfer-Encoding: chunked`, which by
+    definition carries no Content-Length — the exact shape that slips past a
+    header-only size check. The image part opens with a real JPEG signature so
+    that nothing can reject it on format grounds: size has to be the only thing
+    wrong with it.
+    """
+    yield multipart_prologue()
+    sent = 0
+    while sent < total_bytes:
+        sent += len(MULTIPART_BLOCK)
+        yield MULTIPART_BLOCK
+    yield f"\r\n--{MULTIPART_BOUNDARY}--\r\n".encode()
+
+
 def make_truncated_jpeg() -> bytes:
     full = make_image_bytes(400, 400)
     return full[: len(full) // 2]

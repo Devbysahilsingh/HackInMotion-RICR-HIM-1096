@@ -50,6 +50,7 @@ import type { Language, User } from '@shared/types/api';
 
 import { authApi } from '../api/endpoints';
 import { refreshSession } from '../api/client';
+import { clearPersistedCache } from '../api/queryClient';
 import {
   clearRefreshToken,
   getRefreshToken,
@@ -208,6 +209,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setSessionUnverified(false);
             setStatus('anonymous');
             queryClient.clear();
+            await clearPersistedCache();
             return;
           }
 
@@ -235,6 +237,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSessionUnverified(false);
         setStatus('anonymous');
         queryClient.clear();
+        // Not awaited: this listener runs inside an interceptor and the UI must
+        // swap to the auth stack now, not after a storage round-trip.
+        void clearPersistedCache();
       }),
     [queryClient],
   );
@@ -286,8 +291,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSessionUnverified(false);
       setStatus('anonymous');
       // Privacy on a shared device: the persisted cache holds this farmer's
-      // farms, prices, health history and profile.
+      // farms, prices, health history and profile. `clear()` handles the
+      // in-memory copy; the on-disk copy needs deleting outright, because the
+      // persister only rewrites it on a 2s throttle and a phone handed over —
+      // or killed — inside that window would keep it.
       queryClient.clear();
+      await clearPersistedCache();
     }
   }, [queryClient]);
 

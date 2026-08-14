@@ -28,7 +28,8 @@ import {
   UPLOAD_REJECTION,
   UPLOAD_REJECTION_KEYS,
 } from '../config/constants.js';
-import { AppError } from '../utils/errors.js';
+import { AppError, validationError } from '../utils/errors.js';
+import { scrubParsed } from './sanitize.js';
 
 /**
  * A rejection the farmer can act on.
@@ -77,11 +78,29 @@ const MULTER_REASONS = {
  * Deliberately does NOT validate the bytes — that is the pipeline's job, and
  * splitting them keeps this file to one concern: what the parser will accept
  * off the wire.
+ *
+ * It DOES re-run the Mongo-operator scrub over the text fields, because this is
+ * the one body in the application the app-level `mongoSanitize` cannot see.
+ * That middleware is mounted before route matching and only ever inspects what
+ * `express.json` parsed; the multipart body does not exist until the call
+ * below. And multer's field assembler interprets bracket syntax, so a part
+ * named `cropId[$ne]` arrives as `{cropId: {$ne: '…'}}` — a real operator
+ * object in `req.body`, on the only multipart routes we have. Zod rejects it
+ * downstream today; this makes the multipart path carry the same belt every
+ * JSON route already wears rather than depending on that.
  */
 export function uploadImage(req, res, next) {
   upload(req, res, (err) => {
     if (!err) {
       if (!req.file?.buffer?.length) return next(uploadRejection(UPLOAD_REJECTION.NO_FILE));
+
+      const scrubbed = scrubParsed(req.body);
+      // Over-deep is rejected outright rather than partially cleaned, matching
+      // mongoSanitize; it is a malformed request, not a bad photo, so it gets
+      // the validation envelope rather than an upload reason class.
+      if (!scrubbed.ok) return next(validationError([{ field: '(root)', rule: 'too_deep' }]));
+      if (scrubbed.removed) req.sanitized = true;
+
       return next();
     }
 

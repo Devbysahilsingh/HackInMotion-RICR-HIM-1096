@@ -11,8 +11,14 @@
 #   httpx  — a hard requirement of fastapi.testclient.TestClient. Without it the
 #            API contract could only be tested by starting a real server and
 #            talking to a socket, which is slower and flakier for no gain.
+#   pip-audit — the Python half of the dependency gate that
+#            docs/security/security-testing.md already mandates ("npm
+#            audit/pip-audit"). Pinning it here means the gate is reproducible
+#            rather than depending on whatever a developer happens to have
+#            installed globally. Run: `python -m pip_audit -r requirements.txt`.
 
 -r requirements.txt
 
 pytest==9.1.1
 httpx==0.28.1
+pip-audit==2.10.1

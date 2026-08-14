@@ -27,6 +27,18 @@ function limitHandler(req, res) {
 
   res.set('Retry-After', String(Number.isFinite(retryAfterSeconds) ? retryAfterSeconds : 60));
 
+  /**
+   * The route as the caller addressed it.
+   *
+   * `req.path` is relative to the router the limiter is mounted on, so every
+   * trip recorded a stripped path: the login bucket wrote `/login`, and
+   * `/logs` would have been ambiguous between two routers. The mount prefix is
+   * what makes the row identifiable. The query string is dropped — it is
+   * caller-controlled content, and this row is written on a path an attacker
+   * chooses.
+   */
+  const route = req.originalUrl.split('?')[0];
+
   // Audited: a spike here is the brute-force signal the threat model relies on.
   // Recorded directly rather than through a helper hung off the request — that
   // indirection was never wired up, so every rate-limit trip went unaudited
@@ -37,9 +49,25 @@ function limitHandler(req, res) {
       event: AUDIT_EVENTS.RATE_LIMITED,
       userId: req.auth?.userId,
       ip: req.ip,
-      meta: { route: req.path, userAgent: storedUserAgent(req) },
+      meta: { route, userAgent: storedUserAgent(req) },
     })
     .catch((err) => logger.warn({ err }, 'rate-limit audit failed'));
+
+  // Also on the log stream, in the same shape the error handler uses for the
+  // other refusal classes — an operator watching logs should not have to query
+  // the database to notice a bucket emptying.
+  logger.warn(
+    {
+      security: 'rate_limited',
+      code: 'RATE_LIMITED',
+      method: req.method,
+      route,
+      ip: req.ip,
+      userId: req.auth?.userId,
+      requestId: req.id,
+    },
+    'security refusal',
+  );
 
   res.status(429).json({
     success: false,
@@ -144,6 +172,45 @@ export const healthAnalyzeBurstLimiter = rateLimit({
 
 /** docs/api/crop-health.md: "POST /crop-health/symptom-check | Auth · RL 30/day". */
 export const symptomCheckLimiter = perUserDaily(SYMPTOM_CHECK_DAILY_LIMIT);
+
+/**
+ * Farm writes: 60 / hour / user.
+ *
+ * ## Why this bucket exists at all
+ *
+ * `docs/api/farms.md` declares no limit, and the reasoning recorded on the
+ * router — that `MAX_FARMS_PER_USER` already bounds what repeated creates can
+ * achieve — holds for the *database* and not for the side effect. Both writes
+ * call `warmFarmLocation`, which spends an Open-Meteo call for any grid cell
+ * that has no fresh snapshot. Cells are 0.1° (`LOCATION_KEY_PRECISION`), and
+ * `INDIA_BOUNDS` spans roughly 31° by 29° — on the order of ninety thousand
+ * distinct cells one farm can be walked through, one PATCH at a time. The
+ * ten-farm ceiling never applies, because nothing is being created.
+ *
+ * So the only thing bounding provider spend was the global 300/15min/IP
+ * bucket: about 28,800 writes a day from a single address, each able to cost a
+ * provider call. Rule 10 requires free-tier quotas to be guarded by per-user
+ * caps, and this was the one write path with no cap of its own.
+ *
+ * ## Why 60/hour does not harm a real farmer
+ *
+ * A holding is near-static. The heaviest honest session is onboarding: ten
+ * farms — the hard maximum — plus corrections to each, well under forty
+ * writes, and finished in one sitting rather than sustained for an hour. Sixty
+ * leaves half as much headroom again above that, while cutting the per-account
+ * amplification from ~28,800/day to 1,440. Hourly rather than daily so a
+ * farmer who genuinely reorganises their farms twice in a week is never told
+ * to come back tomorrow.
+ *
+ * Deletes are not counted: a delete warms nothing, and the create that a
+ * delete-and-recreate loop depends on is already counted here.
+ */
+export const farmWriteLimiter = rateLimit({
+  ...baseOptions,
+  windowMs: 60 * 60 * 1000,
+  limit: 60,
+  keyGenerator: (req) => req.auth?.userId ?? ipKeyGenerator(req.ip),
+});
 
 /**
  * docs/api/users.md: "PATCH /users/me | Auth · RL 30/h".

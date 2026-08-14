@@ -26,6 +26,7 @@ import { z } from 'zod';
 import {
   AUDIT_EVENTS,
   MAX_HEALTH_DESCRIPTION,
+  PAGE_MAX,
   PAGE_SIZE_DEFAULT,
   PAGE_SIZE_MAX,
   SPREAD_RATES,
@@ -194,7 +195,7 @@ export function createCropHealthRouter({ analyze = analyzeCropHealth } = {}) {
         .trim()
         .regex(/^[a-f\d]{24}$/i)
         .optional(),
-      page: z.coerce.number().int().min(1).default(1),
+      page: z.coerce.number().int().min(1).max(PAGE_MAX).default(1),
       limit: z.coerce.number().int().min(1).max(PAGE_SIZE_MAX).default(PAGE_SIZE_DEFAULT),
     })
     .strict();

@@ -55,19 +55,27 @@ export const ML_FAILURE = {
  * an unexpected field means the service and this client disagree about the
  * contract, and silently ignoring it is how a version skew goes unnoticed.
  * Anything genuinely optional is declared optional.
+ *
+ * `.strict()` is what actually delivers that. A bare `z.object()` *strips*
+ * unknown keys and reports success, which is the silent-ignore this comment
+ * already said was unacceptable — the intent was documented but not enforced.
+ * Rejecting instead costs nothing at runtime: a contract mismatch tiers down to
+ * the AI path rather than serving a half-understood answer.
  */
-const predictionSchema = z.object({
-  diseaseCode: z.string().min(1).nullable(),
-  uncertain: z.boolean(),
-  confidence: z.number().min(0).max(1).nullable().optional(),
-  top3: z
-    .array(z.object({ code: z.string().min(1), prob: z.number().min(0).max(1) }))
-    .max(3)
-    .default([]),
-  cropMismatch: z.boolean().optional(),
-  modelVersion: z.string().min(1),
-  latencyMs: z.number().nonnegative().optional(),
-});
+const predictionSchema = z
+  .object({
+    diseaseCode: z.string().min(1).nullable(),
+    uncertain: z.boolean(),
+    confidence: z.number().min(0).max(1).nullable().optional(),
+    top3: z
+      .array(z.object({ code: z.string().min(1), prob: z.number().min(0).max(1) }).strict())
+      .max(3)
+      .default([]),
+    cropMismatch: z.boolean().optional(),
+    modelVersion: z.string().min(1),
+    latencyMs: z.number().nonnegative().optional(),
+  })
+  .strict();
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -128,6 +136,12 @@ export async function predict({
       },
       body: form,
       signal: controller.signal,
+      // The X-Service-Key above is a custom header, and `fetch` replays custom
+      // headers across a cross-origin redirect (only `Authorization` is
+      // stripped). Following a `Location` would hand this service's shared
+      // secret — and a GET — to whatever host it named, link-local metadata
+      // addresses included. /predict never redirects; refusing is free.
+      redirect: 'error',
     });
 
     if (!response.ok) {
@@ -164,6 +178,18 @@ export async function predict({
 }
 
 /**
+ * Canonical form of a class code as the registry stores it.
+ *
+ * Registry disease codes are `uppercase: true` in the schema and are matched
+ * with `===`, while CropHealthLog uppercases `diseaseCode` at save time. An
+ * un-normalised code therefore failed the registry lookup — yielding a
+ * diagnosis with no symptoms, no next steps and no sources — and was then
+ * persisted in the very form that would have matched. Normalising here is what
+ * the AI tier already does to its own codes (aiVision.normalizeAiResult).
+ */
+const canonicalCode = (code) => (typeof code === 'string' ? code.trim().toUpperCase() : null);
+
+/**
  * Service vocabulary → stored vocabulary.
  *
  * `uncertain` is passed through untouched. The one normalisation applied is
@@ -177,12 +203,12 @@ function normalize(prediction) {
   return {
     ok: true,
     uncertain,
-    diseaseCode: uncertain ? null : (prediction.diseaseCode ?? null),
+    diseaseCode: uncertain ? null : canonicalCode(prediction.diseaseCode),
     // A calibrated probability, unlike the AI tiers' band. Kept only when the
     // model stood behind the prediction.
     confidence: uncertain ? null : (prediction.confidence ?? null),
     top3: prediction.top3.map((entry) => ({
-      diseaseCode: entry.code.toUpperCase(),
+      diseaseCode: canonicalCode(entry.code),
       confidence: entry.prob,
     })),
     cropMismatch: prediction.cropMismatch === true,

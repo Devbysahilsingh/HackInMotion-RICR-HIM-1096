@@ -22,7 +22,7 @@
 | NFR-3/4 security/privacy | all ST suites | — | — | ST-01..70 |
 Full per-endpoint rows generated in the living version during implementation (kept in this file).
 
-## Implemented — current totals (2026-08-14): **1,279 backend · 109 web · 90 mobile · 141 ml-service pytest**
+## Implemented — current totals (2026-08-14, after the Phase 7 completion pass): **1,505 backend · 131 web · 110 mobile · 143 ml-service pytest** (1 known pre-existing ml-service failure — manifest drift committed at `29543d1`)
 
 _The per-suite tables below were written at the phase that added them; the counts in their rows are the counts at that time. The totals above are from the most recent full run._
 
@@ -80,22 +80,32 @@ _The per-suite tables below were written at the phase that added them; the count
 
 **Resolved:** the `varietyClass` defect that suite recorded is fixed — `CropRegistry`'s fertilizer sub-schema now declares the field, so TNAU's three rice doses and two cotton doses reach the farmer labelled with the variety class each applies to. The recording test was replaced with a positive end-to-end assertion (knowledge file → seed → wire).
 
-**Suite status.** ST-20 and ST-30 are **implemented** (files above). ST-40 and ST-60 are **partial**:
+**Suite status (updated 2026-08-14, Phase 7 completion pass).** ST-20 and ST-30 are **implemented**. ST-40 and ST-60 were written in full during Phase 7 and are **implemented**; the rows below record what each part now covers. ST-11 (complete IDOR sweep) and ST-41 (outbound request safety) were added in the completion pass.
 
 | Suite | Part | Status |
 |---|---|---|
-| ST-40 | `$`-operator payloads in every string field (sanitizer) | **partial** — the sanitizer is applied globally (`src/middleware/sanitize.js`, mounted ahead of every route) and `security/st-50-api-hygiene.test.js` ST-50.11 asserts a deeply nested `{$ne: null}` body is rejected rather than partly sanitized; there is no per-endpoint sweep over every string field |
+| ST-40 | `$`-operator payloads in every string field (sanitizer) | **covered** — `security/st-40-injection.test.js` (101 tests) sweeps operator payloads across every string body field, every query parameter, arrays-as-`$in`, the Mongoose casting backstop, prototype pollution and multipart field names. Query strings **fail closed** with 422 rather than being silently stripped, which is where the sweep found a real defect |
 | ST-40 | instruction-injection in the health `description` | covered — `integrations/aiVision.test.js` adversarial fixtures: the injected instruction is both quarantined in the untrusted-note block **and** stripped, and the built prompt is asserted against it |
-| ST-40 | XSS payload round-trip (stored text escaped on render — RTL test) | **not covered** — needs the web client |
+| ST-40 | XSS payload round-trip (stored text escaped on render — RTL test) | **covered** — `web/frontend/src/security.test.tsx`: stored-XSS round trip and `javascript:` URL rejection |
 | ST-60 | ml-service `/predict` without key → 401, wrong key → 401 | covered — `ml-service/tests/test_predict_api.py` + `test_security.py` (incl. auth-before-body-parse and fixed-width digest compare). The "+ audit" half is not: ml-service writes no audit record |
 | ST-60 | Gemini key absent from all client bundles (grep `dist`/APK) | **⚠ BLOCKED** — the client apps now exist and the scanner does too: `scripts/scan-apk-strings.mjs` (`npm run scan:apk <file.apk>`, also `--bundle <file>`) reads the archive with Node's zlib, decompresses every text member (`assets/index.android.bundle` above all) and matches credential *shapes* — Google/OpenRouter/OpenAI/Groq keys, a Cloudinary URL, a Mongo SRV URI, AWS ids, private-key blocks — rather than a denylist of this project's keys, so a secret nobody thought to list still matches. A finding reports member + byte offset + **pattern name** and never the matched text. **It has never been run against a real artefact: no APK has been built** (`eas init` not run, no Expo account linked). The web `dist` half is likewise unscanned. What holds by construction meanwhile: the mobile bundle carries exactly one `EXPO_PUBLIC_*` value, the API base URL (`mobile/src/config/env.ts`) |
 | ST-60 | kill-switch flags degrade without auth impact | covered — `utils/httpClient.test.js` (flags are routing-only and inert in production, incl. the Phase-3 providers) + the tier-router matrix rows that assert a `disabled` hop lands in `escalationPath` and the chain still answers |
 
-Not yet implemented: the ST-40 per-endpoint `$`-operator sweep, the ST-40 XSS round-trip, the ST-60 client-bundle key grep (blocked on a built artefact), RES-09..12 (device procedures — see below), and the live RES-04..06 procedure (needs a deployed ml-service).
+**Added in the Phase 7 completion pass (2026-08-14):**
+
+| Suite | File | Covers | Tests |
+|---|---|---|---|
+| ST-11 | `security/st-11-idor.test.js` | the complete IDOR sweep. ST-10 substitutes ids into paths and query strings; three POST routes carry the id they address in the **body** (`/crop-recommendation`, `/crop-health/analyze` as a multipart field, `/crop-health/symptom-check`) and were therefore never swept. Also: cross-collection substitution (a farm id where a crop id belongs, even when the caller owns it), ids used as list *filters*, verbs the route never declared, and ownership claimed through a write body. §11.6 asserts the coverage is total, so a fourth body-id route cannot ship untested | 42 |
+| ST-41 | `security/st-41-ssrf.test.js` | outbound request safety. A **real** 302 between two loopback servers must not be followed — asserting `init.redirect === 'error'` alone would pass even if undici ignored the option. Plus: the refusal degrades rather than throwing, no part of the attacker-chosen `Location` reaches the error surface, farmer-supplied place names stay encoded query *values*, and a source-level parity check requires every outbound client to carry the policy | 7 |
+| Mobile security | `mobile/src/security.test.ts` | credential custody, what logout erases, credential-free logging, URL/deep-link/WebView absence, network configuration, and build configuration (permissions, console strip, cleartext, secrets) | 20 |
+
+**Still not implemented:** the ST-60 client-bundle key grep against a real artefact (blocked on a built APK — `eas init` not run), RES-09..12 (device procedures — see below), and the live RES-04..06 procedure (needs a deployed ml-service and provider credentials).
+
+**OWASP ZAP baseline: run 2026-08-14** against a `NODE_ENV=production` instance — **0 FAIL / 66 PASS / 1 informational** over 8 URLs. It found one real defect (no `Cache-Control` on authenticated responses), now fixed and covered by ST-50.12. ZAP covers the unauthenticated surface; `scripts/security-probe.mjs` (86/86) authenticates and covers what lies behind the token. Details and the exact commands: `docs/security/phase-7-scorecard.md`.
 
 ### Added in P6 — mobile (2026-08-14)
 
-**11 suites / 90 tests, all passing** (`npm --prefix mobile test`, jest-expo); `tsc --noEmit` clean. Web rose to **109 / 109** across 14 files, backend to **1,279 / 1,279** across 255 suites.
+**11 suites / 90 tests, all passing** (`npm --prefix mobile test`, jest-expo); `tsc --noEmit` clean. Web rose to **109 / 109** across 14 files, backend to **1,279 / 1,279** across 255 suites. _Phase 7 has since taken these to 110 mobile (12 suites), 131 web and 1,505 backend._
 
 | Suite | File (`mobile/src/`) | Covers | Tests |
 |---|---|---|---|

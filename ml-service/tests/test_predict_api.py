@@ -2,14 +2,20 @@
 
 from __future__ import annotations
 
+import asyncio
+
 from fastapi.testclient import TestClient
 
 from app.config import Settings
 from tests.conftest import (
+    MULTIPART_BLOCK,
+    MULTIPART_CONTENT_TYPE,
     TEST_SERVICE_KEY,
     ExplodingPredictor,
     FixedPredictor,
     SlowPredictor,
+    chunked_multipart,
+    multipart_prologue,
     logits_favouring,
     logits_tied,
     make_animated_gif,
@@ -146,6 +152,98 @@ def test_request_larger_than_the_body_cap_is_413(client, auth_headers) -> None:
     """Refused by the size middleware, before multipart parsing allocates."""
     response = post(client, b"\xff\xd8\xff" + b"\x00" * (12 * 1024 * 1024), "TOMATO", auth_headers)
     assert response.status_code == 413
+
+
+def test_body_cap_holds_without_a_content_length_header(client, auth_headers) -> None:
+    """A chunked request declares no size, so the cap must not depend on one.
+
+    Regression: the size check read Content-Length only. Omitting the header —
+    which HTTP/1.1 chunked encoding does by definition — skipped it entirely,
+    and Starlette's max_part_size does not bound *file* parts, so the body ran
+    on unchecked.
+    """
+    response = client.post(
+        "/predict",
+        content=chunked_multipart(32 * 1024 * 1024),
+        headers={**auth_headers, "Content-Type": MULTIPART_CONTENT_TYPE},
+    )
+
+    assert response.status_code == 413
+    assert response.json()["error"]["code"] == "IMAGE_TOO_LARGE"
+
+
+def test_oversized_body_stops_being_read_at_the_cap(make_app) -> None:
+    """The cap must bite while the body arrives, not once it is all in hand.
+
+    This is the half that matters for availability: a limit applied after
+    buffering still lets a caller spend the service's memory, and past
+    spool_max_size its disk, before being told no.
+
+    Driven at the ASGI layer deliberately. TestClient materialises a generator
+    body before the app ever runs, so a client-side counter would measure httpx.
+    How many bytes the *application* pulls out of `receive` is the only place
+    the property is observable.
+    """
+    app = make_app()
+    offered = 64 * 1024 * 1024
+    consumed = 0
+
+    async def receive():
+        nonlocal consumed
+        if consumed == 0:
+            chunk = multipart_prologue()
+        elif consumed < offered:
+            chunk = MULTIPART_BLOCK
+        else:  # pragma: no cover - reached only if the cap fails to hold
+            return {"type": "http.request", "body": b"", "more_body": False}
+        consumed += len(chunk)
+        return {"type": "http.request", "body": chunk, "more_body": True}
+
+    messages: list[dict] = []
+
+    async def send(message) -> None:
+        messages.append(message)
+
+    asyncio.run(app(_predict_scope(), receive, send))
+
+    # The resource property first: it is the one that matters, and it is the one
+    # that failed before the cap counted the stream.
+    assert consumed < offered // 2, f"app read {consumed} bytes before refusing"
+
+    start = next(m for m in messages if m["type"] == "http.response.start")
+    assert start["status"] == 413
+
+
+def _predict_scope() -> dict:
+    """A chunked POST /predict scope: authenticated, no content-length."""
+    return {
+        "type": "http",
+        "asgi": {"version": "3.0", "spec_version": "2.3"},
+        "http_version": "1.1",
+        "method": "POST",
+        "scheme": "http",
+        "path": "/predict",
+        "raw_path": b"/predict",
+        "query_string": b"",
+        "root_path": "",
+        "client": ("127.0.0.1", 51234),
+        "server": ("testserver", 80),
+        "headers": [
+            (b"host", b"testserver"),
+            (b"x-service-key", TEST_SERVICE_KEY.encode()),
+            (b"content-type", MULTIPART_CONTENT_TYPE.encode()),
+            (b"transfer-encoding", b"chunked"),
+        ],
+    }
+
+
+def test_malformed_content_length_is_400(client, auth_headers) -> None:
+    response = client.post(
+        "/predict",
+        content=b"whatever",
+        headers={**auth_headers, "Content-Length": "not-a-number"},
+    )
+    assert response.status_code == 400
 
 
 def test_pixel_bomb_is_413(client, auth_headers) -> None:

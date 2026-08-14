@@ -45,6 +45,19 @@ export const REFRESH_COOKIE_PATH = '/api/v1/auth';
 export const PAGE_SIZE_DEFAULT = 20;
 export const PAGE_SIZE_MAX = 50;
 
+/**
+ * Deepest page any paginated read will serve.
+ *
+ * `limit` was always bounded; `page` was not, so `?page=1e300` reached
+ * `.skip()` as a non-safe-integer float. Nothing observably broke — the driver
+ * tolerated it and Mongo returned an empty page — but the request reached the
+ * database carrying a number the API had never agreed to accept, and the value
+ * came back out in `meta.page`. At the documented ceiling of 50 per page this
+ * still addresses half a million rows, which is orders of magnitude past any
+ * farmer's history.
+ */
+export const PAGE_MAX = 10_000;
+
 /** Per-user resource ceilings (docs/api/farms.md, docs/api/crops.md). */
 export const MAX_FARMS_PER_USER = 10;
 export const MAX_ACTIVE_CROPS_PER_FARM = 12;
@@ -220,6 +233,30 @@ export const MARKET_TREND_WINDOW_OBS = 30;
 export const MARKET_SIGNALS = ['RISING', 'FALLING', 'STABLE'];
 /** docs/database/validation.md: "date ranges ≤90d". */
 export const MARKET_QUERY_MAX_DAYS = 90;
+
+/**
+ * Row ceilings for the two market reads.
+ *
+ * `marketPrices` is the one collection with no `userId` and no per-caller
+ * bound: it holds every mandi in every state for `MARKET_RETENTION_DAYS`, and
+ * both reads below used to fetch the whole matching set into memory. A
+ * `days=90` query with no district is a national scan, so the response grew
+ * with the *ingest*, not with anything the caller owned — which is how a read
+ * that looks cheap in a test with 20 rows becomes tens of megabytes on a
+ * populated cluster.
+ *
+ * Both ceilings are applied to a **newest-first** sort, so what a cap discards
+ * is always the oldest data rather than the observations the signal windows are
+ * computed from, and both reads report `truncated` when they hit it (rule 9 —
+ * a shortened series must not present itself as the whole one).
+ *
+ * `SERIES` is sized so a single district can never truncate: 90 days against
+ * the ~20 mandis a district holds is ~1,800 rows. `NEARBY` is larger because it
+ * groups a whole state down to one entry per (mandi, commodity) and needs to
+ * see each pair at least once.
+ */
+export const MARKET_SERIES_SCAN_LIMIT = 2_000;
+export const MARKET_NEARBY_SCAN_LIMIT = 5_000;
 
 // ── Phase 2: feed & dashboard ────────────────────────────────────────────────
 

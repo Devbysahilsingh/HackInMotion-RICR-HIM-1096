@@ -168,4 +168,44 @@ describe('ST-50 · API hygiene', () => {
     assert.ok(res.headers.get('content-security-policy'));
     assert.equal(res.headers.get('x-powered-by'), null);
   });
+
+  // ── ST-50.12 · Nothing personal may be written down by a cache ────────────
+
+  describe('ST-50.12 · cache directives', () => {
+    /**
+     * Found by the ZAP baseline, which flagged "Storable and Cacheable Content".
+     * Express attaches a weak ETag to every JSON response, and a 200 with a
+     * validator but no freshness directive is heuristically cacheable
+     * (RFC 9111 §4.2.2) — so a farmer's dashboard could be written to a browser
+     * disk cache and re-rendered by the next person to use the handset, with no
+     * token involved.
+     */
+    it('marks API responses no-store, whatever the status', async () => {
+      // Includes error and unauthenticated responses: a 401 body is small, but
+      // a cached 401 on a route that should now succeed is its own bug.
+      for (const path of ['/api/v1/no-such-route', '/api/v1/farms', '/api/v1/dashboard']) {
+        const res = await server.request(path);
+        assert.equal(
+          res.headers.get('cache-control'),
+          'no-store',
+          `${path} did not forbid caching (${res.status})`,
+        );
+      }
+    });
+
+    // The blanket rule must not cost the offline story: the crop registry is
+    // prefetched by both clients and is explicitly "1h server ETag + 7d client
+    // cache" (docs/api/crops.md), so it overrides the default. That the
+    // override still wins is asserted in tests/api/registry.test.js, which has
+    // a database — this suite deliberately runs without one, and a registry
+    // read here would 500 before reaching the header.
+
+    it('leaves the liveness probe alone', async () => {
+      // /healthz is infrastructure and sits outside the API prefix, so the
+      // middleware must not reach it — asserted so the mount point stays where
+      // it is meant to be.
+      const res = await server.request('/healthz');
+      assert.equal(res.headers.get('cache-control'), null);
+    });
+  });
 });

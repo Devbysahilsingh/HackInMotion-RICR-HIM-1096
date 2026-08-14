@@ -12,8 +12,13 @@
 import { after, before, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
+import { createApp } from '../../src/app.js';
 import { Recommendation } from '../../src/models/index.js';
-import { addressableRoutes, protectedRoutes } from '../../src/routes/ownership-table.js';
+import {
+  ROUTE_OWNERSHIP,
+  addressableRoutes,
+  protectedRoutes,
+} from '../../src/routes/ownership-table.js';
 import { startTestServer } from '../helpers/app.js';
 import { clearCollections, startTestDatabase, stopTestDatabase } from '../helpers/db.js';
 
@@ -38,6 +43,85 @@ const FARM_BODY = {
 };
 
 const NON_EXISTENT_ID = '0123456789abcdef01234567';
+
+/**
+ * Routes that legitimately live outside the ownership table.
+ *
+ * `/healthz` is the platform liveness probe: infrastructure rather than
+ * product, mounted above the API prefix, auth-free by design and serving no
+ * per-farmer document. Listing it here — rather than pattern-matching it away
+ * — means a *second* unowned root route cannot join it silently.
+ */
+const UNOWNED_INFRASTRUCTURE = new Set(['GET /healthz']);
+
+/**
+ * Every route Express is actually serving, recovered from the live app.
+ *
+ * The ownership table is only a security control if it is COMPLETE. The suite
+ * already proves table → mounted (a row describing a route that does not exist
+ * would make the matrix vacuously pass); this recovers the other direction,
+ * mounted → table, which is the one that hides real holes: a protected
+ * endpoint with no row is not tested by anything above, and nothing else in
+ * the codebase would notice.
+ *
+ * Express 5 does not expose a router's mount path, so it is recovered by
+ * probing each router's own matcher. A matcher for a router mounted at
+ * `/api/v1/market` consumes exactly that much of any input, so the mount is
+ * the single candidate `c` for which `matcher(c).path === c`. Candidates come
+ * from the table itself, which makes the resolution fail *closed*: a router
+ * mounted somewhere the table has never heard of resolves to nothing and is
+ * reported rather than skipped.
+ */
+function mountedRoutes() {
+  const app = createApp();
+  const router = app.router ?? app._router;
+  assert.ok(router?.stack, 'could not introspect the Express router stack');
+
+  const candidates = new Set(['/']);
+  for (const row of ROUTE_OWNERSHIP) {
+    const parts = row.path.split('/').filter(Boolean);
+    for (let i = 1; i <= parts.length; i += 1) {
+      candidates.add(`/${parts.slice(0, i).join('/')}`);
+    }
+  }
+
+  const resolveMount = (layer) => {
+    const hits = [];
+    for (const candidate of candidates) {
+      for (const matcher of layer.matchers ?? []) {
+        const matched = matcher(candidate);
+        if (matched && matched.path === candidate) hits.push(candidate);
+      }
+    }
+    // Longest wins: a router mounted at `/api/v1` also fully matches `/`.
+    return hits.sort((a, b) => b.length - a.length)[0];
+  };
+
+  const found = [];
+  const unresolved = [];
+
+  for (const layer of router.stack) {
+    if (layer.name !== 'router' || !layer.handle?.stack) continue;
+
+    const mount = resolveMount(layer);
+    const leaves = layer.handle.stack.filter((leaf) => leaf.route);
+
+    if (mount === undefined) {
+      unresolved.push(leaves.map((leaf) => leaf.route.path).join(', '));
+      continue;
+    }
+
+    for (const leaf of leaves) {
+      const base = mount === '/' ? '' : mount;
+      const full = `${base}${leaf.route.path}`.replace(/\/$/, '') || '/';
+      for (const [method, enabled] of Object.entries(leaf.route.methods)) {
+        if (enabled) found.push(`${method.toUpperCase()} ${full}`);
+      }
+    }
+  }
+
+  return { found, unresolved };
+}
 
 describe('ST-10 · Authorization matrix', () => {
   let server;
@@ -117,7 +201,15 @@ describe('ST-10 · Authorization matrix', () => {
       recommendation: actor.recommendationId,
     })[resource] ?? actor.cropId;
 
-  const buildPath = (row, id) => row.path.replace(`:${row.param}`, id);
+  /**
+   * Substitutes the addressed id wherever that route carries it. A query-borne
+   * id (`/market/nearby?farmId=…`) is not a lesser kind of addressing than a
+   * path segment, so the matrix builds both the same way.
+   */
+  const buildPath = (row, id) =>
+    row.queryParam
+      ? `${row.path}?${row.queryParam}=${encodeURIComponent(id)}`
+      : row.path.replace(`:${row.param}`, id);
 
   const call = (row, path, options = {}) =>
     server.request(path, {
@@ -130,7 +222,8 @@ describe('ST-10 · Authorization matrix', () => {
 
   for (const row of protectedRoutes()) {
     it(`${row.method} ${row.path} · rejects an anonymous caller with 401`, async () => {
-      const path = row.param ? buildPath(row, idFor(alice, row.resource)) : row.path;
+      const path =
+        row.param || row.queryParam ? buildPath(row, idFor(alice, row.resource)) : row.path;
       const res = await call(row, path);
 
       assert.equal(res.status, 401, `expected 401, got ${res.status}: ${res.text}`);
@@ -248,11 +341,52 @@ describe('ST-10 · Authorization matrix', () => {
     }
   });
 
+  // ── (f) The table is COMPLETE, not merely correct ─────────────────────────
+
+  it('every mounted route appears in the ownership table', () => {
+    const { found, unresolved } = mountedRoutes();
+
+    assert.deepEqual(
+      unresolved,
+      [],
+      `a router is mounted at a prefix the ownership table does not know about, ` +
+        `so its routes cannot be checked at all: ${unresolved.join(' | ')}`,
+    );
+
+    const declared = new Set(ROUTE_OWNERSHIP.map((row) => `${row.method} ${row.path}`));
+    const missing = found.filter(
+      (route) => !declared.has(route) && !UNOWNED_INFRASTRUCTURE.has(route),
+    );
+
+    assert.deepEqual(
+      missing,
+      [],
+      `mounted but absent from src/routes/ownership-table.js — the ST-10 matrix ` +
+        `cannot see these endpoints, so their auth and ownership behaviour is ` +
+        `asserted by nothing: ${missing.join(', ')}`,
+    );
+  });
+
+  it('the table describes no route that is not mounted', () => {
+    // The mirror image, at the table level rather than over HTTP: a stale row
+    // for a deleted endpoint would pad the matrix with tests that prove
+    // nothing about the running app.
+    const { found } = mountedRoutes();
+    const mounted = new Set(found);
+
+    const phantom = ROUTE_OWNERSHIP.map((row) => `${row.method} ${row.path}`).filter(
+      (route) => !mounted.has(route),
+    );
+
+    assert.deepEqual(phantom, [], `declared in the ownership table but not mounted: ${phantom}`);
+  });
+
   it('every protected route in the table is actually mounted', async () => {
     // Guards against a row describing a route that does not exist: such a row
     // would make the rest of this suite vacuously pass.
     for (const row of protectedRoutes()) {
-      const path = row.param ? buildPath(row, idFor(alice, row.resource)) : row.path;
+      const path =
+        row.param || row.queryParam ? buildPath(row, idFor(alice, row.resource)) : row.path;
       const res = await call(row, path, { token: alice.token });
       assert.notEqual(
         res.body?.error?.messageKey,
