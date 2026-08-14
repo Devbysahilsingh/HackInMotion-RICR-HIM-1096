@@ -2,9 +2,39 @@
 .env
 .env.*
 !.env.example
+
+# Key material, by extension. `*.key` carried an exception for
+# `**/public/**` until 2026-08-15; no such file has ever existed, so the
+# negation protected nothing and only punched a hole in the rule — a build
+# that happened to emit a key into a `public/` directory would have been
+# committable. Removed rather than kept "just in case": the safe default for
+# key material is that there is no path where it is allowed.
 *.pem
 *.key
-!**/public/**/*.key
+*.p12
+*.pfx
+*.p8
+*.jks
+*.keystore
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+
+# Android release signing and mobile service configs. `mobile/.gitignore`
+# covers some of these, but only under `mobile/`, and only `mobile/android/`
+# for a keystore — which is ignored because it is a *generated* directory, not
+# because it holds a secret. `expo prebuild` regenerating that tree is exactly
+# when signing material gets dropped somewhere else. This is the highest-value
+# secret an Android project produces; it gets a rule of its own, at the root.
+google-services.json
+GoogleService-Info.plist
+credentials.json
+serviceAccount*.json
+service-account*.json
+
+# npm auth token lives here.
+.npmrc
 
 # ── Dependencies ───────────────────────────────────────────────────
 node_modules/

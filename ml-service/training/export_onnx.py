@@ -31,7 +31,7 @@ import hashlib
 import json
 import sys
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 
 import torch
@@ -179,7 +179,7 @@ def main() -> int:
 
     parity_record = {
         "todo": "P4-6",
-        "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generatedAt": datetime.now(UTC).isoformat(timespec="seconds"),
         "modelVersion": model_version,
         "artifact": str(artifact.relative_to(REPO)).replace("\\", "/"),
         "opset": OPSET,
@@ -231,7 +231,7 @@ def main() -> int:
             "trained": True,
             "calibrated": bool(calibration["calibrated"]),
             "provisional": False,
-            "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "generatedAt": datetime.now(UTC).isoformat(timespec="seconds"),
             "generatedBy": "ml-service/training/export_onnx.py (P4-6)",
             "classOrder": "sorted-ascending-by-code (authoritative: this list)",
             "architecture": state["arch"],

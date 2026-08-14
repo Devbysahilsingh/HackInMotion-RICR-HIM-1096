@@ -24,7 +24,7 @@ import random
 import sys
 import time
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 
 import numpy as np
@@ -261,7 +261,7 @@ def main() -> int:
             _probe_step(bundle, device, attempt, config["train"]["amp"])
             chosen = attempt
             break
-        except Exception as error:  # noqa: BLE001 - re-raised below if not OOM
+        except Exception as error:
             if not is_oom(error):
                 raise
             bundle = None
@@ -577,7 +577,7 @@ def _append_experiment(**fields) -> None:
     numbers; failed runs recorded as failed."
     """
     log = HERE / "experiments.md"
-    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    stamp = datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")
     history = fields["history"]
 
     lines = [

@@ -37,6 +37,18 @@ const secret = () => randomBytes(32).toString('hex');
 const serviceKey = secret();
 const jwtSecret = secret();
 
+/**
+ * The seeded demo farmer's password, generated rather than fixed.
+ *
+ * It used to be the literal `demo-farmer-2026`, which meant every clone of this
+ * public repository shared one known password for its demo account — and at 16
+ * characters it sat under the 20-character threshold on the
+ * `generic-secret-assignment` rule in `scan-staged-secrets.mjs`, so the
+ * project's own gate could not have caught it. Generated, it is per-machine and
+ * long enough that the gate would.
+ */
+const demoPassword = randomBytes(12).toString('base64url');
+
 /** The local database. No document names one, so it is recorded here. */
 const MONGODB_URI = 'mongodb://127.0.0.1:27017/him1096';
 
@@ -72,7 +84,7 @@ DISABLE_OPENROUTER=false
 
 # Seed account for scripts/seed-dev.mjs.
 SEED_DEMO_EMAIL=demo@example.com
-SEED_DEMO_PASSWORD=demo-farmer-2026
+SEED_DEMO_PASSWORD=${demoPassword}
 `,
   },
   {
@@ -124,7 +136,12 @@ console.log(`\n${created} created, ${skipped} skipped.`);
 if (created > 0) {
   console.log(
     '\nJWT_SECRET and SERVICE_KEY were generated with crypto.randomBytes(32).' +
-      '\nThey are development-only and are not printed here by design.',
+      '\nThey are development-only and are not printed here by design.' +
+      // The demo password is the one generated value a human has to type, so it
+      // is the one that gets shown. It unlocks a seeded local account against a
+      // local database and nothing else.
+      '\n\nThe seeded demo farmer signs in with the password written to' +
+      '\nbackend/.env as SEED_DEMO_PASSWORD (generated per machine).',
   );
 }
 

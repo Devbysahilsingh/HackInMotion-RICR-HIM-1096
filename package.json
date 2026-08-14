@@ -8,8 +8,10 @@
   },
   "scripts": {
     "prepare": "git config core.hooksPath .githooks",
+    "setup:env": "node scripts/setup-dev-env.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "lint:py": "ruff check ml-service scripts/ml",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "scan:secrets": "node scripts/scan-staged-secrets.mjs",

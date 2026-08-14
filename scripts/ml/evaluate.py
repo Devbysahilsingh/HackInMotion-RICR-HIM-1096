@@ -30,16 +30,15 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 
 import matplotlib
 
 matplotlib.use("Agg")  # headless: this runs in a terminal, never a GUI session
-import matplotlib.pyplot as plt  # noqa: E402
-import torch  # noqa: E402
-from sklearn.metrics import confusion_matrix, f1_score, precision_recall_fscore_support  # noqa: E402
+import matplotlib.pyplot as plt
+import torch
+from sklearn.metrics import confusion_matrix, f1_score, precision_recall_fscore_support
 
 REPO = Path(__file__).resolve().parents[2]
 TRAINING = REPO / "ml-service" / "training"
@@ -151,7 +150,7 @@ def evaluate_split(bundle: dict, temperature: float, classes: list[str], label: 
 
     return {
         "split": label,
-        "samples": int(len(targets)),
+        "samples": len(targets),
         "classes_present": len(present),
         "classes_total": len(classes),
         "unmasked": {
@@ -292,7 +291,6 @@ def render_confusion(targets, predictions, classes: list[str], path: Path, title
 
 def render_reliability(calibration: dict, path: Path) -> None:
     bins = calibration["reliabilityBins"]
-    centres = [(entry["bin"][0] + entry["bin"][1]) / 2 for entry in bins]
     accuracies = [entry["accuracy"] for entry in bins]
     confidences = [entry["confidence"] for entry in bins]
 
@@ -487,7 +485,7 @@ def main() -> int:
     # ── Persist ──────────────────────────────────────────────────────────────
     payload = {
         "todo": "P4-5",
-        "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generatedAt": datetime.now(UTC).isoformat(timespec="seconds"),
         "checkpoint": str(checkpoint.relative_to(REPO)).replace("\\", "/"),
         "checkpointSha256_16": splits["val"]["checkpoint_sha256_16"],
         "datasetManifestClasses": len(classes),

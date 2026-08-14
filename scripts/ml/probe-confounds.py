@@ -39,7 +39,7 @@ import json
 import os
 import sys
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from itertools import combinations
 from pathlib import Path
 
@@ -108,7 +108,7 @@ def main() -> int:
     args = ap.parse_args()
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001, S110 - best-effort UTF-8 console
         pass
 
     audit = load_audit()
@@ -146,7 +146,7 @@ def main() -> int:
 
     report = {
         "schema_version": 1,
-        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "method": {
             "feature": f"mean and std of the outer {BORDER}px ring of the 64x64 "
             "grayscale thumbnail",

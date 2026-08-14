@@ -223,7 +223,7 @@ def test_mismatch_confidence_is_zero_not_a_guess(manifest) -> None:
 
 def test_a_prediction_is_never_forced(manifest) -> None:
     """Sweep every crop across a range of peaks: uncertain => no diseaseCode."""
-    for crop in list(manifest.crops) + ["WHEAT", "ONION", "SOYBEAN"]:
+    for crop in [*manifest.crops, "WHEAT", "ONION", "SOYBEAN"]:
         members = manifest.crops.get(crop) or manifest.classes
         for code in members:
             for peak in (0.0, 0.5, 1.0, 2.0, 4.0, 8.0, 30.0):

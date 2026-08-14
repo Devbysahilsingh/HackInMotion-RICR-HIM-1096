@@ -38,16 +38,16 @@ import argparse
 import json
 import sys
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 
 import matplotlib
 
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402
-import torch  # noqa: E402
-import torch.nn.functional as F  # noqa: E402
-from PIL import Image  # noqa: E402
+import matplotlib.pyplot as plt
+import torch
+import torch.nn.functional as F
+from PIL import Image
 
 REPO = Path(__file__).resolve().parents[2]
 TRAINING = REPO / "ml-service" / "training"
@@ -243,7 +243,7 @@ def _render_gradcam_grid(panels, path: Path, split: str, crop: str, mean_fractio
 def confusion_clusters(targets, predictions, classes, top: int = 10) -> list[dict]:
     """Item 1 — the most-confused ordered pairs."""
     counts: dict[tuple[int, int], int] = defaultdict(int)
-    for true_index, predicted_index in zip(targets.tolist(), predictions.tolist()):
+    for true_index, predicted_index in zip(targets.tolist(), predictions.tolist(), strict=True):
         if true_index != predicted_index:
             counts[(true_index, predicted_index)] += 1
 
@@ -349,7 +349,7 @@ def main() -> int:
     # 6. Field degradation per class
     def recall_by_class(targets, predictions):
         hits, totals = defaultdict(int), defaultdict(int)
-        for true_index, predicted_index in zip(targets.tolist(), predictions.tolist()):
+        for true_index, predicted_index in zip(targets.tolist(), predictions.tolist(), strict=True):
             totals[true_index] += 1
             if true_index == predicted_index:
                 hits[true_index] += 1
@@ -411,7 +411,7 @@ def main() -> int:
 
     payload = {
         "todo": "P4-8 + error analysis (docs/ml/error-analysis.md)",
-        "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generatedAt": datetime.now(UTC).isoformat(timespec="seconds"),
         "checkpoint": str(checkpoint.relative_to(REPO)).replace("\\", "/"),
         "confusionClusters": clusters,
         "perClassTrainVolume": dict(sorted(train_counts.items())),

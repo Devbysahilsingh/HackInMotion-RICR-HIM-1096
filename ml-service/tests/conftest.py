@@ -11,7 +11,7 @@ import io
 import struct
 import zlib
 from pathlib import Path
-from typing import Callable, Iterator
+from collections.abc import Callable, Iterator
 
 import pytest
 from fastapi.testclient import TestClient

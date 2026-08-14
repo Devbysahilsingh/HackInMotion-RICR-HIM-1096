@@ -21,7 +21,7 @@ import argparse
 import hashlib
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 from typing import Any
 
@@ -67,7 +67,7 @@ def build_manifest(dataset: dict[str, Any], dataset_sha256: str) -> dict[str, An
 
     return {
         "schemaVersion": 1,
-        "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
+        "generatedAt": datetime.now(UTC).isoformat(timespec="seconds").replace("+00:00", "Z"),
         "generatedBy": "ml-service/scripts/generate_model_manifest.py",
         # ── Model identity ────────────────────────────────────────────────
         # No model has been trained. This version string is what /healthz and

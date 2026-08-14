@@ -2,7 +2,16 @@
 
 Root `.env.example` documents every variable (names + placeholders only). Boot-time Zod env validation in the backend and, in ml-service, plain `os.environ` reads validated by a frozen pydantic `BaseModel` (`ml-service/app/config.py`) — **not `pydantic-settings`**, which is not on the locked ml dependency list in docs/security/dependency-security.md and which reading seven variables does not earn. Missing secret ⇒ refuse to start with a clear message, in both services.
 
-**Implemented behaviour (P0-3, `backend/src/config/env.js`):** validation runs before the server binds and reports variable **names and rules only** — values are never echoed. `MONGODB_URI`, `JWT_SECRET` and `SERVICE_KEY` are **required when `NODE_ENV=production`** and optional in development, so a misconfigured deploy fails at boot while local work is not blocked on credentials that do not exist yet. Each becomes unconditionally required once the subsystem consuming it ships. Local development loads `.env` via Node's native `--env-file` (`npm run dev`); production reads host-injected variables (`npm start`, no file needed).
+**Implemented behaviour (`backend/src/config/env.js`):** validation runs before the server binds and reports variable **names and rules only** — values are never echoed. `MONGODB_URI` and `CORS_ORIGINS` are **required when `NODE_ENV=production`** and optional in development, so a misconfigured deploy fails at boot while local work is not blocked on a database that may not be running. `JWT_SECRET` and `SERVICE_KEY` are required in **every** environment (see below). Local development loads `.env` via Node's native `--env-file` (`npm run dev`); production reads host-injected variables (`npm start`, no file needed).
+
+**Signing secrets are required everywhere (changed 2026-08-15).** They were production-only, and when absent outside production `requireSecret` minted a random value **per process**. The reasoning was that no fixed development key can leak and tokens merely stop verifying after a restart — but it meant development and test ran a materially different security configuration from the deploy, silently, and it had two costs that were not worth paying:
+
+- A developer pointing `ML_SERVICE_URL` at a real ml-service authenticated with a random `SERVICE_KEY` got a 401 on every inference call and watched the chain tier down to Gemini as though the *model* had failed. A configuration fault presented as a provider fault.
+- The production branch of the schema was the only branch that required them, and no suite ever ran with `NODE_ENV=production`, so it was never executed. `backend/tests/config/env.test.js` now covers it.
+
+`node scripts/setup-dev-env.mjs` (`npm run setup:env`) writes a real `crypto.randomBytes(32)` value for each into `backend/.env` on first run, so nothing about local onboarding got harder. Nothing in the codebase generates a secret at runtime any more.
+
+**The schema is built from the config under validation**, not from ambient state. `isProduction` was a module-level constant read from `process.env.NODE_ENV` at *import* time, which happened to work in a deploy but meant `loadEnv({ NODE_ENV: 'production', … })` applied the development rules — the production gate could not be exercised by any test.
 
 | Var | Backend | ml-service | Web (public) | Mobile (public) |
 |---|---|---|---|---|
@@ -27,7 +36,7 @@ Dev vs prod: NODE_ENV governs error verbosity in logs (never in responses), fail
 |---|---|---|
 | `MONGODB_URI` | required in production; must start `mongodb://` or `mongodb+srv://` | the previous `url()` check accepted `https://example.com` while its message promised a connection-string check |
 | `CORS_ORIGINS` | **required in production** (was: defaulted to `http://localhost:5173` everywhere) | a deploy that forgot the variable booted "successfully" with a localhost-only allowlist — a silent outage rather than a loud one |
-| `JWT_SECRET`, `SERVICE_KEY` | required in production, ≥32 chars | unchanged |
+| `JWT_SECRET`, `SERVICE_KEY` | **required in every environment**, ≥32 chars (was: production-only, random per-process value minted when absent) | one security configuration, not one per environment; and the production branch was untestable, so it was untested |
 | `LOG_LEVEL` | adds `silent` | keeps test runs readable |
 | `PORT` | injected by Render; defaults to 4000 | — |
 
@@ -55,7 +64,7 @@ All four provider/storage variables stay optional in production for the same rea
 
 **Failure-injection flags as implemented** (`backend/src/config/failureFlags.js`): `FORCE_FAIL_OPENMETEO`, `FORCE_FAIL_OPENWEATHER`, `FORCE_FAIL_DATAGOVIN`, and — added in Phase 3 for RES-04..06 — `FORCE_FAIL_ML`, `FORCE_FAIL_GEMINI`, `FORCE_FAIL_OPENROUTER`, `FORCE_FAIL_CLOUDINARY`; plus the matching `FORCE_SLOW_OPENMETEO` / `FORCE_SLOW_OPENWEATHER` / `FORCE_SLOW_DATAGOVIN` / `FORCE_SLOW_ML` / `FORCE_SLOW_GEMINI` / `FORCE_SLOW_OPENROUTER` / `FORCE_SLOW_CLOUDINARY` (`=<ms>` of injected latency, used to prove a timeout fires). `FORCE_FAIL_WEATHER` is honoured as an alias meaning **both** weather providers — `docs/architecture/resilience.md` uses it in its demo script and it appears in no other registry, and one switch proving RES-02 is the more useful reading. Every read is short-circuited by `isProd`, so a production host carrying one of these still behaves normally; the guard sits in one place rather than at each call site. They are routing-only: no flag weakens auth, ownership, validation or rate limiting (rule 2). `ALL_INJECTION_FLAGS` is exported so the production checklist can assert their absence.
 
-In development a missing `JWT_SECRET` yields a **random per-process** value rather than a fixed fallback: there is no known development key to leak or accidentally trust, and tokens simply stop verifying across restarts. Production never reaches that path — the schema refuses to boot first.
+A missing `JWT_SECRET` or `SERVICE_KEY` now refuses to boot in **every** environment, with a message naming the variable and pointing at `scripts/setup-dev-env.mjs`. Nothing is minted at runtime. `requireSecret` also takes an allowlist of the two names it knows, so `requireSecret('JWT_SECRETT')` raises rather than reading `undefined` off the env object.
 
 ## Staging checklist (Render)
 

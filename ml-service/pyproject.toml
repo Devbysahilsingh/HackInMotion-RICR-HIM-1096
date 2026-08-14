@@ -1,5 +1,6 @@
 # Packaging is not the point here — the service ships as a container, not a
-# wheel. This file exists to give pytest a rootdir and an import path.
+# wheel. This file exists to give pytest a rootdir and an import path, and to
+# configure Ruff.
 
 [tool.pytest.ini_options]
 minversion = "8.0"
@@ -12,3 +13,47 @@ pythonpath = ["."]
 filterwarnings = [
     "error::DeprecationWarning:app.*",
 ]
+
+# ── Ruff ───────────────────────────────────────────────────────────────────
+#
+# The JavaScript side has been linted since the first commit, and
+# `eslint.config.js` has carried the line "Python — linted by ruff when that
+# service lands" for as long as this service has existed. The service landed;
+# the linter did not, so 6,000 lines of Python were the one part of the
+# repository with no static analysis at all.
+#
+# Ruff rather than Flake8 or Pylint: one binary, no plugin matrix, and it
+# already understands the `# noqa: BLE001` / `# noqa: E402` codes the source was
+# annotated with long before any linter ran — the author wrote for this tool.
+[tool.ruff]
+line-length = 120
+# Matches `.python-version` and CI's PYTHON_VERSION, not whatever interpreter a
+# developer's venv happens to be.
+target-version = "py312"
+# Both virtualenvs. `training/.venv` carries the torch stack and is ~2.5 GB.
+extend-exclude = [".venv", "training/.venv"]
+
+[tool.ruff.lint]
+# Ruff's default set (E4/E7/E9 + F) plus:
+#   E501  line length — the reason `line-length` above is stated at all
+#   B     bugbear: mutable default args, loop-variable capture, silent `except`
+#   BLE   blind `except Exception` — already annotated in training/
+#   S     bandit: subprocess, asserts, hardcoded credentials
+#   UP    pyupgrade — the codebase is already PEP 585/604 throughout
+#   RUF   Ruff's own rules, incl. RUF100 for noqa comments that stopped applying
+# BLE and S are selected deliberately rather than skipped: the source already
+# carries `# noqa` for both, so leaving them unselected would make RUF100 report
+# those suppressions as unnecessary and force a choice between two lies.
+select = ["E4", "E7", "E9", "F", "E501", "B", "BLE", "S", "UP", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests assert with `assert` (S101) and carry fabricated credentials and tokens
+# by construction (S105/S106) — that is what a security test is. S603 covers the
+# one test that shells out to this repo's own manifest generator with a fixed
+# argument list and `sys.executable`.
+"tests/**" = ["S101", "S105", "S106", "S603"]
+# The training tree runs as scripts, not as an importable package: sibling
+# imports land after a `sys.path` insert (E402), and it shells out to a pinned
+# interpreter with fixed arguments (S603/S607).
+"training/**" = ["S603", "S607"]
+"scripts/**" = ["S603", "S607"]

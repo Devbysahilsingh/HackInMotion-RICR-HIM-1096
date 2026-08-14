@@ -82,7 +82,7 @@ def main() -> int:
     args = ap.parse_args()
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001, S110 - best-effort UTF-8 console
         pass
 
     if not FIELDTEST_TSV.is_file():

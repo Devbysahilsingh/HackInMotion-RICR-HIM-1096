@@ -38,7 +38,7 @@ import tarfile
 import time
 import zipfile
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -148,7 +148,7 @@ def download_with_curl(url: str, dest: Path) -> None:
         str(part),
         url,
     ]
-    completed = subprocess.run(command, capture_output=True, text=True)  # noqa: S603 - fixed argv, no shell
+    completed = subprocess.run(command, capture_output=True, text=True)
     if completed.returncode != 0:
         raise RuntimeError(f"curl failed (exit {completed.returncode}): {completed.stderr.strip()[:200]}")
     part.replace(dest)
@@ -192,7 +192,7 @@ def download(session: requests.Session, url: str, dest: Path, expected_bytes: in
         except (requests.RequestException, ValueError) as exc:
             if attempt == MAX_RETRIES:
                 raise
-            backoff = 2**attempt + random.random()
+            backoff = 2**attempt + random.random()  # noqa: S311 - retry jitter
             print(f"      retry {attempt}/{MAX_RETRIES} after {backoff:.1f}s ({exc})")
             time.sleep(backoff)
 
@@ -291,7 +291,11 @@ def safe_extract(archive: Path, dest: Path) -> tuple[int, int]:
             for name in names:
                 if Path(name).is_absolute() or ".." in Path(name).parts:
                     raise ValueError(f"unsafe archive entry rejected: {name}")
-            sz.extractall(path=dest)
+            # The traversal guard this rule asks for is the loop directly above:
+            # absolute paths and `..` entries are rejected before anything is
+            # written, and the post-condition below re-verifies that nothing
+            # landed outside `dest`. py7zr exposes no `filter=` parameter.
+            sz.extractall(path=dest)  # noqa: S202
         # Post-condition: nothing may have landed outside the destination.
         for path in dest.rglob("*"):
             if path.is_file() and not is_within(dest, path):
@@ -325,7 +329,7 @@ def extract_nested(root: Path, result: DatasetResult, max_depth: int = 3) -> Non
             try:
                 count, renamed = safe_extract(archive, target)
                 (target / ".extracted").write_text(
-                    datetime.now(timezone.utc).isoformat(), encoding="utf-8"
+                    datetime.now(UTC).isoformat(), encoding="utf-8"
                 )
                 result.renamed_files += renamed
                 result.nested_extracted += 1
@@ -362,7 +366,7 @@ def inventory(root: Path, result: DatasetResult) -> None:
         result.note("no image files found — check archive structure")
         return
 
-    rng = random.Random(42)  # deterministic sample
+    rng = random.Random(42)  # noqa: S311 - deterministic decode sample, not crypto
     sample = rng.sample(images, min(SAMPLE_DECODE_COUNT, len(images)))
     for path in sample:
         try:
@@ -447,7 +451,7 @@ def acquire(source: dict, session: requests.Session, verify_only: bool) -> Datas
                     "url": entry["url"],
                     "bytes": size,
                     "sha256": digest,
-                    "downloaded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                    "downloaded_at": datetime.now(UTC).isoformat(timespec="seconds"),
                 }
             )
             result.note(f"{entry['filename']}: {human(size)} sha256={digest[:16]}…")
@@ -457,7 +461,7 @@ def acquire(source: dict, session: requests.Session, verify_only: bool) -> Datas
                 result.note("already extracted, skipping")
             else:
                 count, renamed = safe_extract(archive_path, dest)
-                marker.write_text(datetime.now(timezone.utc).isoformat(), encoding="utf-8")
+                marker.write_text(datetime.now(UTC).isoformat(), encoding="utf-8")
                 result.renamed_files += renamed
                 result.note(
                     f"extracted {count} entries safely"
@@ -519,7 +523,7 @@ def main() -> int:
     results = [acquire(source, session, args.verify_only) for source in sources]
 
     manifest = {
-        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "generator": "scripts/ml/download_datasets.py",
         "registry_version": registry.get("version"),
         "datasets": [

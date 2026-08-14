@@ -36,7 +36,7 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
-PASS = "PASS"
+PASS = "PASS"  # noqa: S105 — a check-result label, not a credential
 FAIL = "FAIL"
 INFO = "INFO"
 
@@ -164,7 +164,7 @@ def main() -> int:
         record(PASS if path.exists() else FAIL, f"{label} exists", str(path))
 
     sys.path.insert(0, str(HERE))
-    from data import (  # noqa: E402
+    from data import (
         SplitDataset,
         build_loader,
         build_transforms,
@@ -226,7 +226,7 @@ def main() -> int:
     # The eval transform is contractually identical to ml-service preprocessing.
     # A full parity proof is P4-6's golden-image test; this is the cheap check
     # that the constants at least agree.
-    from app_parity import compare_with_service  # noqa: E402
+    from app_parity import compare_with_service
 
     parity = compare_with_service(config["image"])
     record(parity["status"], "eval/service constants agree", parity["detail"])
@@ -266,8 +266,8 @@ def main() -> int:
     # -- 6. Model, forward, loss, checkpoint ----------------------------------
     section("6. model / forward / loss / checkpoint")
 
-    from models import apply_freeze, build_model, head_bias_init  # noqa: E402
-    from torch import nn  # noqa: E402
+    from models import apply_freeze, build_model, head_bias_init
+    from torch import nn
 
     device = torch.device("cuda")
     model = build_model("resnet18", len(classes)).to(device)
@@ -345,7 +345,7 @@ def main() -> int:
     # -- 7. Inference path ----------------------------------------------------
     section("7. inference / evaluation path")
 
-    from engine import evaluate  # noqa: E402
+    from engine import evaluate
 
     eval_subset = SplitDataset(counts["val"][:256], eval_transform)
     eval_loader = build_loader(eval_subset, config["loader"]["batch_size"], config["loader"])

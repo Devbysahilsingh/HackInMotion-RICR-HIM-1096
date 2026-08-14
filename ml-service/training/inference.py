@@ -32,7 +32,6 @@ from data import (  # noqa: E402
     SplitDataset,
     build_loader,
     build_transforms,
-    load_class_order,
     read_split,
 )
 from models import build_model  # noqa: E402
