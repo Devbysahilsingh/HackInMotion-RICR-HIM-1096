@@ -24,6 +24,32 @@ const DEFAULT_API_URL = 'http://10.0.2.2:4000/api/v1';
 
 const apiUrl = process.env.EXPO_PUBLIC_API_URL ?? DEFAULT_API_URL;
 
+/**
+ * The emulator default is a silent trap on a physical phone: `10.0.2.2` is an
+ * alias the Android emulator resolves to the host machine, and on real hardware
+ * it is simply an address that goes nowhere. The app then loads perfectly and
+ * fails every request, which reads as "the server is down" rather than "the
+ * bundle was built pointing at the wrong host".
+ *
+ * Bundling is the last moment this is cheap to notice, so it is said out loud
+ * here rather than left for someone to infer from a network trace.
+ */
+if (!process.env.EXPO_PUBLIC_API_URL) {
+  console.warn(
+    [
+      '',
+      `  EXPO_PUBLIC_API_URL is not set — falling back to ${DEFAULT_API_URL}`,
+      '',
+      '  That address only works on an Android EMULATOR. On a physical phone the',
+      '  app will start and then fail every request.',
+      '',
+      '  For a real device, start with:  npm run lan',
+      '  (detects this laptop’s current LAN address and sets both variables)',
+      '',
+    ].join('\n'),
+  );
+}
+
 const config: ExpoConfig = {
   name: 'Khetri',
   slug: 'him-1096-khetri',

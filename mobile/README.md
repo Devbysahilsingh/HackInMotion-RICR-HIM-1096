@@ -109,6 +109,8 @@ one it may ever have — see *Security* below.
 | Command | What it does |
 |---|---|
 | `npm start` | Metro bundler |
+| **`npm run lan:auto`** | **Detects this laptop's current LAN IP, verifies the API, then starts Metro. Use this for a physical phone.** |
+| `npm run lan:check` | Same detection and diagnosis, starts nothing |
 | `npm run android` | Metro + launch on a connected device/emulator |
 | `npm run tunnel` | Metro over a tunnel, for a phone on another network |
 | `npm run typecheck` | `tsc --noEmit` |
@@ -118,6 +120,70 @@ one it may ever have — see *Security* below.
 From the repo root: `npm run test:mobile`, `npm run typecheck:mobile`,
 `npm run check:i18n`, `npm run check:ui-strings` (scans `mobile/src` too), and
 `npm run scan:apk <file.apk>` for the ST-60 secret scan.
+
+---
+
+## Running on a physical phone
+
+Use `npm run lan:auto`. It resolves the laptop's current LAN address on every
+start, so nothing is pinned to an IP that DHCP will change.
+
+### Why a hardcoded IP fails
+
+The phone needs two things from the laptop, and both are reached by IP:
+
+| | Port | Set by |
+|---|---|---|
+| Metro bundler (the JS) | 8081 | `REACT_NATIVE_PACKAGER_HOSTNAME` |
+| The API (the data) | 4000 | `EXPO_PUBLIC_API_URL` |
+
+Set only one and you get an app that loads but cannot talk, or one that never
+loads. Pin either to a literal address and it works until the laptop's IP
+changes — which happens on joining a different network *and* on an ordinary
+DHCP lease renewal. The symptom is confusing: the app works on a personal
+hotspot and not on the shared network, which looks like a Wi-Fi problem rather
+than a stale address.
+
+### How the address is chosen
+
+A dev laptop typically has several IPv4 addresses and most are useless to a
+phone — WSL's vEthernet, VirtualBox host-only, and `169.254.x.x` link-local on
+an interface with no lease. Picking by adapter name is fragile, so the script
+asks the OS which source address it *would* use to reach the internet (a UDP
+`connect`, which sends no packet), and falls back to filtering the interface
+list. Skipped interfaces are printed with the reason, so a wrong pick is
+visible rather than silent.
+
+### If the phone still cannot connect
+
+Work through these in order.
+
+**1. Confirm from the phone.** On the same Wi-Fi, open
+`http://<laptop-ip>:4000/healthz` in the phone's browser. JSON means the path
+is clear and Expo will work. The script prints this URL.
+
+**2. Windows Firewall.** If the API answers on `127.0.0.1` but not on the LAN
+address, inbound traffic is blocked. Once, from an **admin** PowerShell:
+
+```powershell
+New-NetFirewallRule -DisplayName "Khetri dev API 4000"  -Direction Inbound -Protocol TCP -LocalPort 4000 -Action Allow -Profile Any
+New-NetFirewallRule -DisplayName "Khetri dev Metro 8081" -Direction Inbound -Protocol TCP -LocalPort 8081 -Action Allow -Profile Any
+```
+
+`-Profile Any` matters: Windows classifies most shared and institutional
+networks as **Public**, and a rule scoped to Private alone will not apply
+there. This is the second most common cause after the stale IP.
+
+**3. AP / client isolation.** Many institutional, hotel and guest networks
+block device-to-device traffic outright. **No laptop setting fixes this** — it
+is enforced by the access point, and it is the real reason a personal hotspot
+succeeds where a campus network fails. Use `npm run tunnel`, which routes Metro
+through Expo's servers.
+
+Note that `--tunnel` covers **Metro only**. The API still needs a route the
+phone can reach, so on an isolating network either expose port 4000 through a
+tunnel of its own and pass it as `EXPO_PUBLIC_API_URL`, or fall back to a
+hotspot.
 
 ---
 
