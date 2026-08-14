@@ -42,6 +42,7 @@ import {
   recordIrrigation,
 } from '../services/irrigationService.js';
 import { fertilizerGuidance } from '../services/fertilizerService.js';
+import { yieldEstimate } from '../services/yieldService.js';
 import { sanitizeImage } from '../services/imagePipeline.js';
 import { storeImage } from '../integrations/cloudinary.js';
 import { UPLOAD_REJECTION } from '../config/constants.js';
@@ -392,6 +393,26 @@ cropsRouter.get(
 cropsRouter.get('/crops/:id/fertilizer-guidance', requireAuth, loadCrop, async (req, res, next) => {
   try {
     sendData(res, await fertilizerGuidance(req.crop));
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── Yield estimate (docs/yield/yield-estimation.md) ──────────────────────────
+
+/**
+ * A lookup against published government district statistics and two
+ * multiplications. **Not a prediction and not machine learning** — the response
+ * carries the evidence tier, the years behind the number and the full ladder
+ * walk so a farmer (or a judge) can follow it end to end.
+ *
+ * A crop with no evidence is a 200 with `estimated: false` and a reason, not an
+ * error: "we do not have your district's history for this crop" is an answer,
+ * and a 404 would be indistinguishable from the crop not existing.
+ */
+cropsRouter.get('/crops/:id/yield-estimate', requireAuth, loadCrop, async (req, res, next) => {
+  try {
+    sendData(res, await yieldEstimate(req.crop));
   } catch (err) {
     next(err);
   }

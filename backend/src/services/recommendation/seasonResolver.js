@@ -73,6 +73,40 @@ const CURRENT_BY_MONTH = Object.freeze({
 });
 
 /**
+ * Which season a crop already in the ground was sown into.
+ *
+ * `resolveSeason` answers "what should a farmer plant next?"; this answers
+ * "what is this planting?", which the yield lookup needs in order to pick the
+ * right district×season row. They are different questions and neither table
+ * above answers this one — `UPCOMING_BY_MONTH` looks forward and
+ * `CURRENT_BY_MONTH` describes the calendar rather than a specific sowing.
+ *
+ * The partition is the standard Indian cropping calendar, widened from the
+ * narrow `SEASON_MONTHS` sowing windows to cover every month, because real
+ * sowing spreads well past the textbook fortnight — a Rabi wheat crop goes in
+ * anywhere from late October to December. It carries the same
+ * `basis: 'CALENDAR_MONTH'` caveat as everything else here: it is a national
+ * convention, not a measurement, and not district-specific.
+ *
+ * Getting it wrong is not severe by design: the yield ladder falls through
+ * from district×season to a season-agnostic district figure, so a misread
+ * season costs specificity rather than producing a wrong answer.
+ *
+ * @param {Date} sowingDate
+ * @returns {{season: 'KHARIF'|'RABI'|'ZAID', basis: 'CALENDAR_MONTH'}}
+ */
+export function seasonForSowingDate(sowingDate) {
+  const month = new Date(sowingDate).getMonth() + 1;
+
+  // Kharif Jun–Sep (monsoon), Rabi Oct–Jan (winter), Zaid Feb–May (summer).
+  let season = 'ZAID';
+  if (month >= 6 && month <= 9) season = 'KHARIF';
+  else if (month >= 10 || month === 1) season = 'RABI';
+
+  return { season, basis: 'CALENDAR_MONTH' };
+}
+
+/**
  * @param {{asOf?: Date}} [options]
  * @returns {{
  *   season: 'KHARIF'|'RABI'|'ZAID',

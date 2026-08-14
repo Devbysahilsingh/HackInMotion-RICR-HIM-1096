@@ -32,6 +32,7 @@ import { registryRouter } from './routes/registry.js';
 import { cropHealthRouter } from './routes/cropHealth.js';
 import { communityRouter } from './routes/community.js';
 import { usersRouter } from './routes/users.js';
+import { yieldRouter } from './routes/yield.js';
 
 export const API_PREFIX = '/api/v1';
 
@@ -129,6 +130,7 @@ export function createApp({ extraRouters = [] } = {}) {
   // rejects the empty result.
   app.use(`${API_PREFIX}/crop-health`, cropHealthRouter);
   app.use(`${API_PREFIX}/community`, communityRouter);
+  app.use(`${API_PREFIX}/yield`, yieldRouter);
 
   for (const router of extraRouters) app.use(router);
 
