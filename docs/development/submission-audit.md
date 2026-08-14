@@ -161,7 +161,7 @@ README. The Android suite **was** re-run and is confirmed at 110/110 above.
 | `api-documentation.md` | ✅ **41 routes** (plus `/healthz`), transcribed from the ownership table a test asserts against the live router |
 | `README.md` | ✅ Complete, with third-party APIs + why each was chosen |
 | Repo naming/structure | ✅ `HackInMotion-RICR-HIM-1096` |
-| **`presentation.pptx`** | ⚠️ **File created, not yet committed.** Content source: `docs/product/pitch-deck-content.md` (14 slides) |
+| **`Presentation.pptx`** | ✅ **Committed 2026-08-14** — 14 slides, 316 KB, matching `docs/product/pitch-deck-content.md`. **One gap:** the deck is text-only — it embeds no images, so slide 12's `architecture-diagram.png` has not been inserted yet. |
 | **Deployed application** | ❌ **Nothing is deployed** |
 | Live demo | ⚠️ Runs locally; not from a deployed URL |
 | Product pitch | ⚠️ Content ready, deck not built |
@@ -441,7 +441,7 @@ for the ML owner rather than silently regenerated.
 |---|---|---|---|
 | 1 | Deploy backend + web | hours | The single biggest remaining deliverable gap |
 | 2 | ~~Push **one real leaf photo** through the full chain~~ — **done 2026-08-14 (§3c)** | — | All four tiers verified live; the remaining gap is model accuracy, not wiring |
-| 3 | Commit `presentation.pptx` | minutes | The file exists in the working tree but is not tracked |
+| 3 | ~~Commit `presentation.pptx`~~ — **done 2026-08-14**. Remaining: insert `architecture-diagram.png` into slide 12 | minutes | The deck is tracked but carries no images |
 | 4 | Build an APK, run the device matrix once | hours | Turns "untested on device" into "verified" |
 | 5 | Get a Hindi speaker to read the 408 disease strings | ~2 h | Closes the last honesty gap |
 
