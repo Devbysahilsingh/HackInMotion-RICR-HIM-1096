@@ -1,4 +1,6 @@
-/* eslint-env jest */
+// (No `/* eslint-env jest */` here on purpose: flat config no longer recognises
+// it — ESLint 10 turns it into a hard error — and the jest globals are already
+// supplied by the config, so the comment was redundant rather than load-bearing.)
 /**
  * Test environment.
  *
