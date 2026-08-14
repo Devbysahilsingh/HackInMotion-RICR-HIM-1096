@@ -2,14 +2,22 @@ import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
 
-export type BadgeTone = 'neutral' | 'brand' | 'warning' | 'danger' | 'success';
+export type BadgeTone = 'neutral' | 'brand' | 'warning' | 'danger' | 'success' | 'earth';
 
+/**
+ * The reference's tag family, one tone per meaning: growth (success), ripening
+ * (warning), alarm (danger), the app itself (brand), land and area (earth), and
+ * a quiet default. Each pairs a tint background with a text colour dark enough
+ * to clear 4.5:1 on it — the tint alone is never the signal, because `Badge` is
+ * always given a word and usually an icon too.
+ */
 const TONE: Record<BadgeTone, string> = {
   neutral: 'bg-canvas text-ink-700 border-line',
-  brand: 'bg-brand-50 text-brand-700 border-brand-200',
-  warning: 'bg-priority-medium-soft text-priority-medium border-priority-medium/30',
+  brand: 'bg-brand-50 text-brand-600 border-brand-200',
+  warning: 'bg-harvest-tint text-harvest-700 border-harvest-500/40',
   danger: 'bg-danger-50 text-danger-600 border-danger-600/30',
-  success: 'bg-priority-info-soft text-priority-info border-priority-info/30',
+  success: 'bg-leaf-tint text-leaf-700 border-leaf-500/40',
+  earth: 'bg-earth-100 text-earth-700 border-earth-600/25',
 };
 
 /**

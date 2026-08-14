@@ -7,21 +7,36 @@ import { Spinner } from './Spinner';
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 export type ButtonSize = 'md' | 'lg';
 
+/**
+ * Tones follow the design reference's button family: a solid forest primary, a
+ * white-on-line secondary that warms to leaf on hover, and a text-only ghost.
+ * The secondary's leaf hover is the one deliberate borrowing — it is what keeps
+ * a row of secondary buttons from reading as disabled.
+ */
 const VARIANT: Record<ButtonVariant, string> = {
-  primary: 'bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 border-brand-600',
-  secondary: 'bg-surface text-brand-700 hover:bg-brand-50 border-brand-300',
-  ghost: 'bg-transparent text-ink-700 hover:bg-brand-50 border-transparent',
+  primary: 'bg-brand-600 text-white hover:bg-brand-500 active:bg-brand-800 border-brand-600',
+  secondary: 'bg-surface text-ink-900 border-line hover:border-leaf-500 hover:bg-leaf-tint',
+  ghost: 'bg-transparent text-brand-600 hover:bg-brand-50 border-transparent',
   danger: 'bg-danger-600 text-white hover:brightness-110 border-danger-600',
 };
 
 const SIZE: Record<ButtonSize, string> = {
-  md: 'px-4 py-2.5 text-sm',
-  lg: 'px-5 py-3 text-base',
+  md: 'px-[18px] py-2.5 text-sm',
+  lg: 'px-6 py-3 text-base',
 };
 
+/**
+ * Fully rounded, and in the display face.
+ *
+ * Both come from the reference and both are load-bearing rather than
+ * decorative: the pill is what distinguishes an action from the 14px-radius
+ * cards it sits on, and the heavier display face at 600 is what lets a button
+ * hold its own against headings set at 800. `touch-target` keeps the 44px
+ * minimum regardless of the label's length (accessibility.md).
+ */
 const BASE =
-  'touch-target inline-flex items-center justify-center gap-2 rounded-lg border font-medium ' +
-  'transition-colors disabled:cursor-not-allowed disabled:opacity-60';
+  'touch-target inline-flex items-center justify-center gap-2 rounded-full border font-display ' +
+  'font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40';
 
 interface CommonProps {
   variant?: ButtonVariant;

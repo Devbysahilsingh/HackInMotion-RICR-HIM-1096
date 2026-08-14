@@ -121,13 +121,17 @@
       "note": "UI vocabulary. Reviewed and accepted by the owner. The blanket \"*\" was replaced with the explicit key list on 2026-08-13, when the productization pass added new keys: those additions are machine-translated and are NOT covered by this sign-off. They are listed in unverifiedAdditions below.",
       "unverifiedAdditions": {
         "verifiedBy": "claude",
-        "keys": ["greeting.title", "history.advice"]
+        "keys": ["greeting.title", "history.advice", "state.saved", "unit.landLabel"]
       }
     },
     "auth": {
       "verifiedBy": "owner",
       "verified": ["*"],
-      "note": "UI vocabulary. Reviewed and accepted by the owner."
+      "note": "UI vocabulary. Reviewed and accepted by the owner.",
+      "unverifiedAdditions": {
+        "verifiedBy": "claude",
+        "keys": ["accountHeading"]
+      }
     },
     "farm": {
       "verifiedBy": "owner",
@@ -188,6 +192,10 @@
           "nameOptionalHint",
           "sizeBelowCropArea",
           "sizeUnitLabel",
+          "summaryActiveCrops",
+          "summaryDistricts",
+          "summaryFarms",
+          "summaryLabel",
           "villageLabel",
           "villagePlaceholder"
         ]
@@ -380,13 +388,17 @@
       "note": "UI vocabulary. Reviewed and accepted by the owner. The blanket \"*\" was replaced with the explicit key list on 2026-08-13, when the productization pass added new keys: those additions are machine-translated and are NOT covered by this sign-off. They are listed in unverifiedAdditions below.",
       "unverifiedAdditions": {
         "verifiedBy": "claude",
-        "keys": ["consentOff", "consentOn"]
+        "keys": ["consentHint", "consentLabel", "consentOff", "consentOn"]
       }
     },
     "voice": {
       "verifiedBy": "owner",
       "verified": ["*"],
-      "note": "UI vocabulary. Reviewed and accepted by the owner."
+      "note": "UI vocabulary. Reviewed and accepted by the owner.",
+      "unverifiedAdditions": {
+        "verifiedBy": "claude",
+        "keys": ["enableHint", "enableLabel"]
+      }
     },
     "errors": {
       "verifiedBy": "owner",

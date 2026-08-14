@@ -1,6 +1,8 @@
 {
   "bodyOutbreakHigh": "{{reportCount}} farmers in {{district}} have reported this on {{cropCode}} in the past week. Check your crop now.",
   "bodyOutbreakInfo": "{{reportCount}} farmers in {{district}} have reported this on {{cropCode}} in the past week. Worth checking your crop.",
+  "consentHint": "Your scans are counted with others in your district to warn nearby farmers. Your name, farm and photos are never shared.",
+  "consentLabel": "Share my crop reports",
   "consentOff": "Not sharing",
   "consentOn": "Sharing anonymised reports",
   "districtFilter": "District",

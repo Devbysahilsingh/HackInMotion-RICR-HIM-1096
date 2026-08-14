@@ -11,6 +11,7 @@ import {
   IconCloud,
   IconField,
   IconHome,
+  IconLeaf,
   IconSettings,
   IconUsers,
 } from '@/components/ui/icons';
@@ -57,7 +58,15 @@ export function AppLayout() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar />
-        <main id="main" className="mx-auto w-full max-w-4xl flex-1 px-4 pb-24 pt-4 sm:px-6 md:pb-8">
+        {/*
+          1480px, from the reference. Wider than the old 4xl (896px) because the
+          dashboard now lays out in two and three columns on a desktop — at 896px
+          a "split" layout is really just a narrow column with a gutter.
+        */}
+        <main
+          id="main"
+          className="mx-auto w-full max-w-[92.5rem] flex-1 px-4 pb-24 pt-6 sm:px-6 md:pb-12 lg:px-8"
+        >
           <Outlet />
         </main>
       </div>
@@ -67,15 +76,38 @@ export function AppLayout() {
   );
 }
 
+/**
+ * The dark rail.
+ *
+ * Deep forest with the furrow texture, straight from the design reference. It
+ * does real work beyond looking agricultural: a dark rail against a cream body
+ * separates "where am I in the app" from "what is the app telling me" without
+ * needing a border, which is what lets the content column stay borderless and
+ * calm.
+ *
+ * The active marker is a leaf-coloured left edge plus a tinted fill — two
+ * signals, so it survives both greyscale and a farmer glancing at a sunlit
+ * screen.
+ */
 function Sidebar() {
   const { t } = useTranslation('common');
 
   return (
     <nav
       aria-label={t('nav.primary')}
-      className="sticky top-0 hidden h-dvh w-56 shrink-0 flex-col gap-1 border-r border-line bg-surface px-3 py-4 md:flex"
+      className="furrow sticky top-0 hidden h-dvh w-[15.75rem] shrink-0 flex-col gap-0.5 bg-brand-800 py-4 md:flex"
     >
-      <p className="px-3 pb-3 text-lg font-semibold text-brand-700">{t('app.name')}</p>
+      <p className="flex items-center gap-2.5 px-[18px] pb-4">
+        <span
+          className="grid size-[30px] shrink-0 place-items-center rounded-[9px] bg-leaf-500 text-brand-900"
+          aria-hidden="true"
+        >
+          <IconLeaf size={18} />
+        </span>
+        <span className="font-display text-[17px] font-extrabold tracking-tight text-white">
+          {t('app.name')}
+        </span>
+      </p>
 
       {[...NAV.slice(0, 4), ...NAV_DESKTOP_EXTRA, ...NAV.slice(4)].map(({ to, labelKey, Icon }) => (
         <NavLink key={to} to={to} className={sidebarLinkClass}>
@@ -96,16 +128,28 @@ function Sidebar() {
 
 const sidebarLinkClass = ({ isActive }: { isActive: boolean }) =>
   cn(
-    'touch-target flex items-center gap-3 rounded-lg px-3 text-sm font-medium',
-    isActive ? 'bg-brand-50 text-brand-700' : 'text-ink-700 hover:bg-canvas',
+    'touch-target flex items-center gap-[11px] border-l-[3px] px-[15px] text-sm',
+    isActive
+      ? 'border-leaf-500 bg-leaf-500/15 font-semibold text-white'
+      : 'border-transparent font-medium text-brand-100/75 hover:bg-white/[0.06] hover:text-white',
   );
 
 function TopBar() {
   const { t } = useTranslation('common');
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-line bg-surface/95 px-4 py-2 backdrop-blur sm:px-6">
-      <p className="text-base font-semibold text-brand-700 md:sr-only">{t('app.name')}</p>
+    <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-line bg-surface/95 px-4 py-2.5 backdrop-blur sm:px-6 lg:px-8">
+      <p className="flex items-center gap-2 md:sr-only">
+        <span
+          className="grid size-7 shrink-0 place-items-center rounded-lg bg-brand-600 text-white"
+          aria-hidden="true"
+        >
+          <IconLeaf size={16} />
+        </span>
+        <span className="font-display text-base font-extrabold tracking-tight text-brand-600">
+          {t('app.name')}
+        </span>
+      </p>
       <div className="flex items-center gap-2">
         <LanguageToggle />
         <NavLink
@@ -126,7 +170,7 @@ function BottomTabs() {
   return (
     <nav
       aria-label={t('nav.primary')}
-      className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-surface md:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
     >
       {NAV.map(({ to, labelKey, Icon }) => (
         <NavLink
@@ -134,8 +178,8 @@ function BottomTabs() {
           to={to}
           className={({ isActive }) =>
             cn(
-              'flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-[0.7rem] font-medium',
-              isActive ? 'text-brand-700' : 'text-ink-500',
+              'flex min-h-14 flex-col items-center justify-center gap-1 px-1 py-2 text-[0.7rem] font-semibold',
+              isActive ? 'text-brand-600' : 'text-ink-400',
             )
           }
         >
@@ -153,11 +197,14 @@ function BottomTabs() {
  */
 export function PageHeader({
   title,
+  kicker,
   description,
   actions,
   children,
 }: {
   title: string;
+  /** Small uppercase eyebrow above the title — the reference's `.k` label. */
+  kicker?: ReactNode;
   description?: ReactNode;
   actions?: ReactNode;
   children?: ReactNode;
@@ -178,11 +225,14 @@ export function PageHeader({
   }, [title, location.key, t]);
 
   return (
-    <div className="mb-5 space-y-2">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <h1 ref={headingRef} tabIndex={-1} className="text-xl sm:text-2xl">
-          {title}
-        </h1>
+    <div className="mb-6 space-y-2">
+      <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
+        <div className="min-w-0">
+          {kicker && <p className="kicker mb-1.5">{kicker}</p>}
+          <h1 ref={headingRef} tabIndex={-1} className="text-[1.75rem] sm:text-[2rem]">
+            {title}
+          </h1>
+        </div>
         {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>
       {description && <p className="max-w-prose text-sm text-ink-500">{description}</p>}

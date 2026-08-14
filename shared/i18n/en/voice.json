@@ -1,4 +1,6 @@
 {
+  "enableHint": "Adds a speaker button to advice so you can listen instead of reading.",
+  "enableLabel": "Read advice aloud",
   "heard": "We heard: “{{text}}”",
   "intentDashboard": "Show my home screen",
   "intentIrrigation": "Should I water today?",

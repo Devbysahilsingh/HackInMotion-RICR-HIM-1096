@@ -46,6 +46,15 @@ export interface AuthContextValue {
     language?: Language;
   }) => Promise<User>;
   logout: () => Promise<void>;
+  /**
+   * Adopts a fresh user document after a profile write.
+   *
+   * Settings patches preferences through `PATCH /users/me`, and the response
+   * carries the same projection `/auth/me` returns. Without this the context
+   * would keep serving the pre-write copy until the next full session restore,
+   * so a toggle would appear to snap back.
+   */
+  applyUser: (user: User) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -164,6 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
+      applyUser: setUser,
     }),
     [status, user, login, register, logout],
   );

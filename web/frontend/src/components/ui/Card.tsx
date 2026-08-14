@@ -6,9 +6,18 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
 }
 
+/**
+ * The 14px radius and the two-part shadow both come from the design reference.
+ * The shadow is what makes a white card read as *placed on* the cream canvas
+ * rather than cut out of it: a 1px contact edge plus a wide, high-offset
+ * ambient. A single flat `shadow-sm` on a warm ground looks like a border.
+ */
 export function Card({ className, children, ...rest }: CardProps) {
   return (
-    <div className={cn('rounded-xl border border-line bg-surface shadow-sm', className)} {...rest}>
+    <div
+      className={cn('rounded-card border border-line bg-surface shadow-card', className)}
+      {...rest}
+    >
       {children}
     </div>
   );

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
 import { useLanguage } from '@/i18n/LanguageContext';
+import type { Language } from '@/api/types';
 import { cn } from '@/lib/cn';
 
 /**
@@ -11,7 +12,18 @@ import { cn } from '@/lib/cn';
  * Each option shows its own language's own name, so it is legible to the
  * person who wants it regardless of what is currently active.
  */
-export function LanguageToggle({ className }: { className?: string }) {
+export function LanguageToggle({
+  className,
+  onChange,
+}: {
+  className?: string;
+  /**
+   * Notified after the interface has switched. Settings uses it to persist the
+   * choice to the account; everywhere else the switch is local-only, which is
+   * why this is optional rather than required.
+   */
+  onChange?: (language: Language) => void;
+}) {
   const { t } = useTranslation('common');
   const { language, languages, setLanguage } = useLanguage();
 
@@ -29,7 +41,10 @@ export function LanguageToggle({ className }: { className?: string }) {
             type="button"
             data-testid={`language-${option}`}
             aria-pressed={active}
-            onClick={() => setLanguage(option)}
+            onClick={() => {
+              setLanguage(option);
+              onChange?.(option);
+            }}
             className={cn(
               'touch-target rounded-md px-3 text-sm font-medium',
               active ? 'bg-brand-600 text-white' : 'text-ink-700 hover:bg-brand-50',

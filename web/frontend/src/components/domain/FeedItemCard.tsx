@@ -11,6 +11,7 @@ import { SpeakButton } from '@/components/ui/SpeakButton';
 import { IconCheck } from '@/components/ui/icons';
 import { localizeCropParams, useCropNames } from '@/hooks/useCropNames';
 import { cn } from '@/lib/cn';
+import { feedTarget } from '@/lib/feedTarget';
 import { WhyTrace } from './WhyTrace';
 
 /**
@@ -124,16 +125,4 @@ function isFreshness(value: unknown): value is Freshness {
   return (
     typeof value === 'object' && value !== null && typeof (value as Freshness).status === 'string'
   );
-}
-
-/** Where "view" goes, by feed type. Null when the item has no natural detail page. */
-function feedTarget(item: FeedItem): string | null {
-  if (item.type === 'irrigation' && item.cropId) return `/crops/${item.cropId}?tab=irrigation`;
-  if (item.type === 'weather-risk' && item.farmId) return `/farms/${item.farmId}/weather`;
-  if (item.type === 'market') return '/market';
-  if (item.type === 'fertilizer' && item.cropId) return `/crops/${item.cropId}?tab=fertilizer`;
-  if (item.type === 'health' && item.cropId) return `/crops/${item.cropId}?tab=health`;
-  if (item.type === 'community') return '/community';
-  if (item.type === 'crop-suggestion') return '/crop-recommendation';
-  return null;
 }

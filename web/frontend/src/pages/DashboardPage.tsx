@@ -6,6 +6,8 @@ import { queryKeys, STALE_TIME } from '@/api/queryKeys';
 import type { DashboardResponse, FeedItem } from '@/api/types';
 import { QueryBoundary } from '@/components/QueryBoundary';
 import { CropCardTile } from '@/components/domain/CropCardTile';
+import { DecisionBanner } from '@/components/domain/DecisionBanner';
+import { FarmSummaryStrip } from '@/components/domain/FarmSummaryStrip';
 import { FeedItemCard } from '@/components/domain/FeedItemCard';
 import { PageHeader } from '@/components/layout/AppLayout';
 import { ButtonLink } from '@/components/ui/Button';
@@ -123,24 +125,49 @@ function DashboardContent({ data }: { data: DashboardResponse }) {
 
   const pendingId = acknowledge.isPending ? acknowledge.variables?.id : undefined;
 
+  /*
+   * The feed's first item is the day's decision and gets the banner; the rest
+   * stay as cards beneath it.
+   *
+   * Splitting here rather than in a component keeps the ranking where it
+   * belongs — the API already returns the feed in priority order
+   * (`feedComposer.js`), so "most important" is its judgement, not the UI's.
+   * Reordering client-side would put an agronomic decision in React.
+   */
+  const [lead, ...rest] = data.feed;
+
   return (
     <div className="space-y-8">
       <Section title={t('common:greeting.title')} as="h2">
         {data.feed.length === 0 ? (
           <EmptyState title={t('common:state.empty')} />
         ) : (
-          <div className="space-y-3" data-testid="dashboard-feed">
-            {data.feed.map((item) => (
-              <FeedItemCard
-                key={item.id}
-                item={item}
+          <div className="space-y-4" data-testid="dashboard-feed">
+            {lead && (
+              <DecisionBanner
+                item={lead}
                 onAcknowledge={(entry) => acknowledge.mutate(entry)}
-                isAcknowledging={pendingId === item.id}
+                isAcknowledging={pendingId === lead.id}
               />
-            ))}
+            )}
+
+            {rest.length > 0 && (
+              <div className="grid gap-3 lg:grid-cols-2">
+                {rest.map((item) => (
+                  <FeedItemCard
+                    key={item.id}
+                    item={item}
+                    onAcknowledge={(entry) => acknowledge.mutate(entry)}
+                    isAcknowledging={pendingId === item.id}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </Section>
+
+      <FarmSummaryStrip summary={data.farmSummary} />
 
       <Section
         title={t('farm:cropsHeading')}
@@ -161,7 +188,7 @@ function DashboardContent({ data }: { data: DashboardResponse }) {
             }
           />
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2" data-testid="dashboard-crops">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" data-testid="dashboard-crops">
             {data.cropCards.map((card) => (
               <CropCardTile key={card.cropId} card={card} />
             ))}

@@ -1,6 +1,56 @@
 @import 'tailwindcss';
 
 /*
+ * Typefaces — self-hosted, deliberately.
+ *
+ * The design reference pulls both families from Google Fonts with an `@import`.
+ * Three reasons not to copy that:
+ *
+ *   1. **Privacy.** A font request hands the visitor's IP and User-Agent to a
+ *      third party on every page load. CLAUDE.md rule 12 rules out analytics
+ *      trackers, and a webfont CDN is one in everything but name.
+ *   2. **The field connection.** `@import` inside CSS is the worst-case
+ *      loading pattern: the browser must fetch and parse this file before it
+ *      even discovers the font URL, then open a connection to a second origin.
+ *      On the 2G/3G link this product is designed for that is two round trips
+ *      in front of first paint.
+ *   3. **CSP.** A self-hosted font needs no external origin allowed, so the
+ *      deployed policy stays `font-src 'self'`.
+ *
+ * Both files are the **latin** subsets of the variable fonts, so one file
+ * covers the whole weight range each family is used at. Devanagari is
+ * deliberately not subsetted in: `unicode-range` below confines these faces to
+ * latin, and Hindi text falls through to the next family in the stack — the
+ * platform's own Devanagari face, which is already what shipped before and is
+ * far better hinted for the script than a subset we would be guessing at.
+ *
+ * `font-display: swap` is the honest choice here: text is readable in the
+ * fallback immediately and reflows once, rather than being invisible while a
+ * font downloads over a bad link.
+ */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 700 800;
+  font-display: swap;
+  src: url('/fonts/bricolage-grotesque-latin.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Work Sans';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/fonts/work-sans-latin.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/*
  * Design tokens (docs/frontend/component-map.md, docs/frontend/accessibility.md).
  *
  * Contrast: every foreground/background pair used for text below clears
@@ -15,52 +65,111 @@
  * shipped rather than shipping an unreviewed one.
  */
 @theme {
-  --color-brand-50: #f0f9f2;
-  --color-brand-100: #dcf0e1;
-  --color-brand-200: #bbe1c6;
-  --color-brand-300: #8ecaa2;
-  --color-brand-400: #5aab78;
-  --color-brand-500: #388e5c;
-  --color-brand-600: #277249;
-  --color-brand-700: #1f5a3b;
-  --color-brand-800: #1b4831;
-  --color-brand-900: #163b2a;
+  /*
+   * Brand ramp, keyed to the design reference's `--forest` (#1B5638) at 600 and
+   * `--forest-l` (#2A7A4E) at 500. The lighter steps are the tints the
+   * reference uses for selected nav, hover fills and quiet panels.
+   */
+  --color-brand-50: #f2f7f3;
+  --color-brand-100: #e2eee5;
+  --color-brand-200: #c2ddca;
+  --color-brand-300: #93c1a4;
+  --color-brand-400: #5b9e75;
+  --color-brand-500: #2a7a4e;
+  --color-brand-600: #1b5638;
+  --color-brand-700: #164628;
+  --color-brand-800: #10331f;
+  --color-brand-900: #0b2517;
 
+  /*
+   * Leaf — the reference's second green (`--leaf`), used for *activity* rather
+   * than for chrome: the active nav marker, focus rings, growth indicators.
+   * Deliberately distinct from brand so "this is the app" and "this is live"
+   * never read as the same signal.
+   */
+  --color-leaf-500: #6faf45;
+  --color-leaf-600: #55913a;
+  --color-leaf-700: #356b22;
+  --color-leaf-tint: #edf4e1;
+
+  /* Harvest — ripening, prices, "attention but not alarm". */
+  --color-harvest-500: #d9a441;
+  --color-harvest-700: #8a5b0a;
+  --color-harvest-tint: #fbf0d9;
+
+  /* Earth — soil, land, area. */
   --color-earth-50: #faf7f2;
-  --color-earth-100: #f2ebdf;
+  --color-earth-100: #f1e7dc;
   --color-earth-200: #e4d6c0;
-  --color-earth-600: #8a6c43;
+  --color-earth-600: #8b5e3c;
+  --color-earth-700: #6b4426;
   --color-earth-800: #4b3a24;
 
-  /* Feed priority. Ranked, and each has ≥4.5:1 text contrast on its own tint. */
-  --color-priority-critical: #b3261e;
-  --color-priority-critical-soft: #fdeceb;
-  --color-priority-high: #9a4a06;
-  --color-priority-high-soft: #fdf0e4;
-  --color-priority-medium: #7a5a00;
-  --color-priority-medium-soft: #fbf5e0;
-  --color-priority-info: #1f5a3b;
-  --color-priority-info-soft: #eef6f1;
+  /* Sky — water, rain, irrigation. */
+  --color-sky-tint: #dceef2;
+  --color-sky-700: #276073;
+
+  /*
+   * Feed priority. Ranked, and each has ≥4.5:1 text contrast on its own tint.
+   * The tints are the reference's `-t` family so a priority chip sits in the
+   * same warm world as the cards around it.
+   */
+  --color-priority-critical: #b93f2e;
+  --color-priority-critical-soft: #faeae6;
+  --color-priority-high: #8a5b0a;
+  --color-priority-high-soft: #fbf0d9;
+  --color-priority-medium: #6b4426;
+  --color-priority-medium-soft: #f1e7dc;
+  --color-priority-info: #276073;
+  --color-priority-info-soft: #dceef2;
 
   /* Freshness. Same four values the API's `freshness.status` can carry. */
-  --color-fresh-live: #277249;
-  --color-fresh-cached: #8a5a00;
-  --color-fresh-historical: #5b5f6b;
-  --color-fresh-pending: #6b7280;
+  --color-fresh-live: #356b22;
+  --color-fresh-cached: #8a5b0a;
+  --color-fresh-historical: #6b4426;
+  --color-fresh-pending: #606b63;
 
-  --color-danger-600: #b3261e;
-  --color-danger-50: #fdeceb;
+  --color-danger-600: #b93f2e;
+  --color-danger-50: #faeae6;
 
-  --color-ink-900: #16211c;
-  --color-ink-700: #33403a;
-  --color-ink-500: #5a6a62;
-  --color-line: #d8e0da;
+  /*
+   * Ink and ground. The canvas is a warm cream (`--bg`), not a cool grey: the
+   * reference's whole premise is paper and soil rather than dashboard chrome,
+   * and a white card only reads as raised because the ground behind it is warm.
+   */
+  --color-ink-900: #1b241e;
+  --color-ink-700: #3a453d;
+  --color-ink-500: #606b63;
+  --color-ink-400: #8a938b;
+  --color-line: #e6e0ce;
+  --color-line-strong: #d6cfb8;
   --color-surface: #ffffff;
-  --color-canvas: #f6f8f6;
+  --color-canvas: #f7f4ea;
 
-  --font-sans:
-    'Noto Sans', 'Noto Sans Devanagari', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+  /*
+   * Two families, as the reference specifies: a tight grotesque for headings
+   * and a humanist sans for reading. Both are self-hosted-by-fallback — the
+   * stack degrades to system UI rather than blocking first paint on a webfont
+   * over a 2G connection, which is the stated field condition.
+   */
+  --font-display:
+    'Bricolage Grotesque', 'Work Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
     sans-serif;
+  --font-sans:
+    'Work Sans', 'Noto Sans', 'Noto Sans Devanagari', ui-sans-serif, system-ui, -apple-system,
+    'Segoe UI', sans-serif;
+
+  /* Radii, from the reference: 14px cards, 10px controls, pill for actions. */
+  --radius-card: 14px;
+  --radius-control: 10px;
+
+  /*
+   * One elevation, used everywhere. The reference's shadow is two-part: a
+   * 1px contact edge plus a wide, high-offset ambient — which is what makes a
+   * card look placed on the canvas rather than glued to it.
+   */
+  --shadow-card: 0 1px 2px rgba(27, 36, 30, 0.05), 0 8px 24px -12px rgba(27, 36, 30, 0.18);
+  --shadow-raised: 0 2px 4px rgba(27, 36, 30, 0.06), 0 16px 40px -16px rgba(27, 36, 30, 0.24);
 }
 
 @layer base {
@@ -81,8 +190,13 @@
    * keyboard walk always shows where it is (accessibility.md: "visible focus
    * rings", "full tab traversal").
    */
+  /*
+   * Leaf rather than brand: the ring has to be visible on the dark forest
+   * sidebar and on the decision banner as well as on the cream canvas, and
+   * brand-600 against forest-800 is very nearly invisible.
+   */
   :focus-visible {
-    outline: 3px solid var(--color-brand-600);
+    outline: 3px solid var(--color-leaf-500);
     outline-offset: 2px;
     border-radius: 0.25rem;
   }
@@ -91,7 +205,17 @@
   h2,
   h3,
   h4 {
-    @apply font-semibold text-ink-900;
+    @apply text-ink-900;
+    font-family: var(--font-display);
+    /*
+     * 800 with negative tracking is the reference's headline voice. It is what
+     * makes "Skip irrigation today" read as a verdict rather than as a label —
+     * the whole dashboard hierarchy rests on headings being genuinely heavier
+     * than everything around them.
+     */
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.08;
     text-wrap: balance;
   }
 
@@ -110,6 +234,51 @@
   .touch-target {
     min-height: 2.75rem;
     min-width: 2.75rem;
+  }
+
+  /*
+   * Furrow — the design reference's signature texture: fine vertical lines at a
+   * 14px pitch, like a ploughed field seen from above. It appears only on the
+   * dark forest surfaces (the sidebar, the decision banner), where it turns a
+   * flat block of colour into something with a material.
+   *
+   * Deliberately a gradient rather than an image: it costs no request, scales
+   * to any size, and disappears cleanly under `forced-colors`.
+   */
+  .furrow {
+    background-image: repeating-linear-gradient(
+      90deg,
+      rgb(255 255 255 / 0.06) 0 1px,
+      transparent 1px 14px
+    );
+  }
+
+  /*
+   * Kicker — the small uppercase label above a heading. Used for section
+   * eyebrows and card categories; it is what lets a card have a category and a
+   * title without needing two font sizes of heading.
+   */
+  .kicker {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--color-ink-400);
+  }
+
+  /*
+   * Soil strata — a thin banded bar drawn from the palette's earth tones.
+   * Used as a horizon rule under hero surfaces; purely decorative, so it is
+   * always `aria-hidden` at the call site.
+   */
+  .strata {
+    display: flex;
+    height: 6px;
+    overflow: hidden;
+  }
+
+  .strata > i {
+    flex: 1;
   }
 }
 

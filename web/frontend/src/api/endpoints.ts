@@ -3,9 +3,8 @@
  *
  * Grouped by resource, in the order `backend/src/app.js` mounts them. Nothing
  * here invents a path or a payload: every signature below corresponds to a
- * handler in `backend/src/routes/`, and routes that do not exist (there is no
- * `PATCH /users/me`, no community write API, no `/market/compare`) are absent
- * rather than stubbed.
+ * handler in `backend/src/routes/`, and routes that do not exist (no community
+ * write API, no `/market/compare`) are absent rather than stubbed.
  */
 import {
   apiDelete,
@@ -30,6 +29,7 @@ import type {
   HealthLogSummary,
   IrrigationAdvice,
   IrrigationLogEntry,
+  LandUnit,
   Language,
   MyCropSignal,
   NearbyMandisResponse,
@@ -64,6 +64,25 @@ export const authApi = {
   logout: () => apiPostNoContent('/auth/logout', {}, authRequest()),
 
   me: () => apiGet<{ user: User }>('/auth/me'),
+};
+
+// ── /users ──────────────────────────────────────────────────────────────────
+
+/**
+ * Account preferences.
+ *
+ * The body is preferences only, and `.strict()` server-side: `name`, `email`,
+ * `id` and `passwordHash` are rejected rather than stripped, so there is no
+ * shape here that could quietly fail. `units` is patched as a whole object
+ * because that is how the API models it.
+ */
+export const usersApi = {
+  updateMe: (payload: {
+    language?: Language;
+    units?: { land: LandUnit };
+    voiceEnabled?: boolean;
+    communityConsent?: boolean;
+  }) => apiPatch<{ user: User }>('/users/me', payload),
 };
 
 // ── /farms ──────────────────────────────────────────────────────────────────

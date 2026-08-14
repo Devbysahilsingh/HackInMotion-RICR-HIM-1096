@@ -32,15 +32,21 @@ test.describe('farmer loop', () => {
   test('dashboard shows engine verdicts with their numbers', async ({ page }) => {
     await openApp(page);
 
-    const feedItems = page.getByTestId('feed-item');
-    await expect(feedItems.first()).toBeVisible();
+    /*
+     * The highest-priority item renders as the decision banner rather than as a
+     * card — the dashboard leads with one verdict and keeps the rest as cards
+     * beneath it. So the lead assertions target the banner, and an account with
+     * a single recommendation legitimately has no `feed-item` at all.
+     */
+    const lead = page.getByTestId('decision-banner');
+    await expect(lead).toBeVisible();
 
-    // Priority is chipped with icon + text, never colour alone.
-    await expect(feedItems.first().getByTestId('priority-chip')).toBeVisible();
+    // Priority is carried as a word, never colour alone.
+    await expect(lead).toHaveAttribute('data-priority', /CRITICAL|HIGH|MEDIUM|INFO/);
 
     // The explainability promise (R12), inline and carrying real numbers.
-    await feedItems.first().getByTestId('why-toggle').click();
-    const trace = feedItems.first().getByTestId('why-trace');
+    await lead.getByTestId('why-toggle').click();
+    const trace = lead.getByTestId('why-trace');
     await expect(trace).toBeVisible();
     await expect(trace).toContainText(/[0-9]/);
 
@@ -89,7 +95,7 @@ test.describe('farmer loop', () => {
     await expect(page.getByTestId('community-privacy')).toBeVisible();
 
     await navigateTo(page, '/dashboard');
-    await expect(page.getByTestId('feed-item').first()).toBeVisible();
+    await expect(page.getByTestId('decision-banner')).toBeVisible();
   });
 
   test('runs the crop-recommendation wizard end to end', async ({ page }) => {
@@ -116,13 +122,17 @@ test.describe('farmer loop', () => {
   test('switches the whole shell between English and Hindi', async ({ page }) => {
     await openApp(page);
 
+    // The banner heading is the largest piece of engine-authored text on the
+    // page, so it is the clearest evidence that the whole shell switched.
+    const heading = page.getByTestId('decision-banner').getByRole('heading');
+
     await page.getByTestId('language-hi').first().click();
     await expect(page.locator('html')).toHaveAttribute('lang', 'hi');
-    await expect(page.getByTestId('priority-chip').first()).toContainText(/[ऀ-ॿ]/);
+    await expect(heading).toContainText(/[ऀ-ॿ]/);
 
     await page.getByTestId('language-en').first().click();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
-    await expect(page.getByTestId('priority-chip').first()).not.toContainText(/[ऀ-ॿ]/);
+    await expect(heading).not.toContainText(/[ऀ-ॿ]/);
   });
 
   test('acknowledging an item removes it, and it stays gone after a reload', async ({ page }) => {

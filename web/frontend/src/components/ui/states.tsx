@@ -26,7 +26,7 @@ export function EmptyState({
     <div
       data-testid="empty-state"
       className={cn(
-        'flex flex-col items-center gap-3 rounded-xl border border-dashed border-line bg-surface px-6 py-10 text-center',
+        'flex flex-col items-center gap-3 rounded-card border border-dashed border-line-strong bg-surface px-6 py-10 text-center',
         className,
       )}
     >
@@ -63,7 +63,7 @@ export function ErrorState({
       data-testid="error-state"
       role="alert"
       className={cn(
-        'flex flex-col items-start gap-3 rounded-xl border border-danger-600/30 bg-danger-50 px-5 py-5',
+        'flex flex-col items-start gap-3 rounded-card border border-danger-600/30 bg-danger-50 px-5 py-5',
         className,
       )}
     >
@@ -84,8 +84,8 @@ export function ErrorState({
 export type NoticeTone = 'info' | 'warning' | 'danger';
 
 const NOTICE_TONE: Record<NoticeTone, string> = {
-  info: 'border-brand-200 bg-brand-50 text-brand-800',
-  warning: 'border-priority-medium/30 bg-priority-medium-soft text-priority-medium',
+  info: 'border-sky-700/25 bg-sky-tint text-sky-700',
+  warning: 'border-harvest-500/40 bg-harvest-tint text-harvest-700',
   danger: 'border-danger-600/30 bg-danger-50 text-danger-600',
 };
 
@@ -111,7 +111,7 @@ export function Notice({
       data-testid="notice"
       data-tone={tone}
       className={cn(
-        'flex items-start gap-2.5 rounded-lg border px-4 py-3 text-sm',
+        'flex items-start gap-2.5 rounded-control border px-4 py-3 text-sm',
         NOTICE_TONE[tone],
         className,
       )}
