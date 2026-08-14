@@ -93,15 +93,21 @@ Rotating refresh tokens with reuse detection. Uploads: magic-byte sniff → bomb
 guard → full re-encode (**EXIF and GPS stripped**). No admin surface, no demo bypass.
 → `docs/security/phase-7-scorecard.md`
 
-**10 · Bilingual, farmer-first UX.** 1,489 keys, **0 missing in Hindi**, parity
+**10 · Bilingual, farmer-first UX.** 1,493 keys, **0 missing in Hindi**, parity
 gated. **Zero hardcoded user-facing strings**, enforced by a repo script.
 → `scripts/check-i18n.mjs`, `scripts/check-ui-strings.mjs`
 
 **11 · Web + native Android on one REST contract.** No duplicated business logic —
 engines stay server-side, translations and wire types come from `shared/`.
 
-**12 · Offline read resilience.** Cached reads survive a dead connection and are
-**labelled as cached**, never passed off as fresh.
+**12 · Offline resilience, reads *and* the field write.** Cached reads survive a
+dead connection and are **labelled as cached**, never passed off as fresh. The
+one write a farmer makes standing in a field — a watering — is **queued locally
+and replayed on reconnect**, safely: each carries a `clientRequestId` the server
+dedupes on, so a re-delivery collapses to one row while two genuine waterings on
+the same day both persist. Queued entries render **dashed and labelled pending**,
+never merged into accepted history.
+→ `shared/client/irrigationOutbox.ts`
 
 **13 · Community aggregation that cannot be gamed.** District-aggregated,
 consent-gated, structurally PII-free — and there is **no write API**. Only a
@@ -215,7 +221,7 @@ See `docs/development/team-plan.md` — real ownership per member; commit histor
 Strategy + requirement-mapped matrix: `docs/testing/`. Blocking gates: engine math (FAO-56 vectors), authorization matrix, upload security, resilience failure-injection (12 scenarios), i18n parity, E2E farmer journey incl. all-APIs-down.
 
 ## Future scope
-`docs/product/future-scope.md` — yield estimator (spec complete), on-device ML (TFLite path), more crops (SoyNet identified), offline write-sync, voice v2, community v2, iOS.
+`docs/product/future-scope.md` — yield estimator (spec complete), on-device ML (TFLite path), more crops (SoyNet identified), offline write-sync for photo drafts, voice v2, community v2, iOS.
 
 ## HackInMotion context
 Requirement coverage — every must-have and all six challenge capabilities — is traced line-by-line in `docs/requirements-traceability.md`.

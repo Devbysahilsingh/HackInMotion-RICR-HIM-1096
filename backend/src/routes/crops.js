@@ -299,6 +299,20 @@ const irrigationLogSchema = z
     date: z.coerce.date(),
     /** validation.md: "amountMm ∈ (0,200]" — absent means "refilled fully". */
     amountMm: z.number().gt(0).max(200).optional(),
+    /**
+     * Optional idempotency key for the offline sync queue
+     * (docs/offline/offline-strategy.md). Length-bounded and charset-bounded
+     * because it is client-supplied text that reaches an index: a UUIDv4 is 36
+     * characters, and nothing legitimate needs punctuation beyond a hyphen.
+     * Absent for ordinary online writes, which behave exactly as before.
+     */
+    clientRequestId: z
+      .string()
+      .trim()
+      .min(8)
+      .max(64)
+      .regex(/^[A-Za-z0-9-]+$/)
+      .optional(),
   })
   .strict();
 
@@ -315,11 +329,12 @@ cropsRouter.post(
       // userId comes from the token and cropId from the already-authorized
       // document — neither is readable from the body, so no request shape can
       // write a log into another account's ledger.
-      const log = await recordIrrigation({
+      const { log, replayed } = await recordIrrigation({
         crop: req.crop,
         userId: req.auth.userId,
         date: req.body.date,
         amountMm: req.body.amountMm,
+        clientRequestId: req.body.clientRequestId,
       });
 
       sendData(
@@ -331,8 +346,14 @@ cropsRouter.post(
             amountMm: log.amountMm ?? null,
             source: log.source,
           },
+          /**
+           * True when this exact submission had already been recorded, so a
+           * flushing queue can drop the item knowing it landed — and so the
+           * status code stops claiming a creation that did not happen.
+           */
+          replayed,
         },
-        { status: 201 },
+        { status: replayed ? 200 : 201 },
       );
     } catch (err) {
       next(err);

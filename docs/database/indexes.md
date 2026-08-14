@@ -17,6 +17,7 @@
 | cropHealthLogs | sharedToCommunity, createdAt | `shared_createdAt` | partial (shared=true) | community aggregation scan |
 | irrigationLogs | cropId, date desc | `cropId_date` | compound | water-balance ledger |
 | irrigationLogs | userId, date desc | `userId_date` | compound | user-scoped history + cascade on account delete (the cropId-prefixed index cannot serve it) |
+| irrigationLogs | userId, clientRequestId | `userId_clientRequestId_unique` | unique partial (`clientRequestId` is a string) | offline write-sync idempotency — collapses a replayed submission. Partial because rows written online carry no id and a plain unique index would treat every missing value as a collision. Scoped to `userId` so one account's id cannot collide with another's |
 | weatherSnapshots | locationKey, source | `locationKey_source_unique` | unique compound | upsert target |
 | weatherSnapshots | expiresAt | `expiresAt` | std | refresh job selection |
 | marketPrices | commodityCode, market, date | `commodity_market_date_unique` | unique compound | idempotent ingest |

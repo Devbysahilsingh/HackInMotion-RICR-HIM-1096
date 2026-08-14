@@ -437,6 +437,24 @@ export interface IrrigationLogEntry {
   source: string;
 }
 
+/** Body of `POST /crops/:id/irrigation-log`. */
+export interface IrrigationLogPayload {
+  date: string;
+  amountMm?: number;
+  /**
+   * Idempotency key for the offline outbox (`shared/client/irrigationOutbox`).
+   * Omitted on ordinary online writes; when present, re-sending the same id
+   * returns the original record instead of watering the ledger twice.
+   */
+  clientRequestId?: string;
+}
+
+export interface IrrigationLogResponse {
+  log: IrrigationLogEntry;
+  /** True when this submission had already been recorded (HTTP 200, not 201). */
+  replayed: boolean;
+}
+
 // ── Fertilizer ──────────────────────────────────────────────────────────────
 
 /**

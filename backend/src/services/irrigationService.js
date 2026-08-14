@@ -15,6 +15,9 @@ import { CropRegistry, IrrigationLog } from '../models/index.js';
 import { validationError } from '../utils/errors.js';
 import { freshnessOf, latestSnapshot } from './weatherService.js';
 
+/** MongoDB duplicate-key error code — the signal a replay was collapsed. */
+const DUPLICATE_KEY = 11000;
+
 /**
  * Runs the engine for one crop.
  *
@@ -103,15 +106,34 @@ export function assertLogDateInRange(date, crop, asOf = new Date()) {
 /**
  * Records an irrigation event.
  *
- * **Not idempotent, deliberately.** No document specifies write-side dedupe,
- * and a farmer genuinely can irrigate twice in one day — a unique
- * `(cropId, date)` index would reject the second event as a duplicate and
- * under-count the water applied, which is the more dangerous error. Repeated
- * identical submissions are instead bounded by the 10/day per-user limiter.
- * Recorded as a decision rather than left implicit.
+ * **Not idempotent on the event, deliberately.** A farmer genuinely can
+ * irrigate twice in one day — a unique `(cropId, date)` index would reject the
+ * second event as a duplicate and under-count the water applied, which is the
+ * more dangerous error. That decision is unchanged.
+ *
+ * **Idempotent on the submission, when the client asks for it.** The offline
+ * queue (docs/offline/offline-strategy.md) may replay a write it never saw
+ * acknowledged — the request left the phone, the response did not come back.
+ * Without dedupe that replay double-waters the ledger and shifts the verdict.
+ * A `clientRequestId` distinguishes the two cases precisely: two waterings on
+ * one day carry two different ids and both persist; one watering delivered
+ * twice carries the same id and lands once.
+ *
+ * **Two mechanisms, because one is not enough.** The unique partial index is
+ * the race-proof authority: two concurrent flushes both pass a read-then-write
+ * check, and only the index can stop the second write. But an index exists only
+ * once `npm run indexes:build` has been run against that database, and a
+ * deployment that skipped it would degrade *silently* — every replay writing a
+ * second row and over-counting the water applied. So the lookup below runs
+ * first as well. The index handles the concurrent case, the lookup handles the
+ * un-migrated case, and neither alone covers both.
+ *
+ * @returns {Promise<{log: object, replayed: boolean}>} `replayed` is true when
+ *   the id had already been recorded, so the route can answer 200 rather than
+ *   claim a 201 it did not perform.
  */
-export async function recordIrrigation({ crop, userId, date, amountMm }) {
-  return IrrigationLog.create({
+export async function recordIrrigation({ crop, userId, date, amountMm, clientRequestId }) {
+  const doc = {
     userId,
     cropId: crop._id,
     date,
@@ -120,7 +142,31 @@ export async function recordIrrigation({ crop, userId, date, amountMm }) {
     // engine treats as a full reset — so it is recorded as an assumption, not
     // as a farmer-stated quantity.
     source: amountMm === undefined ? 'assumed' : 'farmer',
-  });
+    ...(clientRequestId ? { clientRequestId } : {}),
+  };
+
+  if (!clientRequestId) {
+    return { log: await IrrigationLog.create(doc), replayed: false };
+  }
+
+  // Scoped by userId as well as the id, here and below: the lookup can only
+  // ever return this farmer's own row, so a guessed id cannot surface — or
+  // probe for — another account's ledger.
+  const alreadyRecorded = await IrrigationLog.findOne({ userId, clientRequestId });
+  if (alreadyRecorded) return { log: alreadyRecorded, replayed: true };
+
+  try {
+    return { log: await IrrigationLog.create(doc), replayed: false };
+  } catch (err) {
+    if (err?.code !== DUPLICATE_KEY) throw err;
+
+    // Lost the race to a concurrent flush of the same queued item. The index
+    // did its job; the row that won is the answer.
+    const existing = await IrrigationLog.findOne({ userId, clientRequestId });
+    if (!existing) throw err;
+
+    return { log: existing, replayed: true };
+  }
 }
 
 /** Ledger history for the trace UI (docs/api/irrigation.md). */

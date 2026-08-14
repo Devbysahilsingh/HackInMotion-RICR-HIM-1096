@@ -40,6 +40,12 @@ const EXPECTED = {
   IrrigationLog: [
     { name: 'cropId_date', key: { cropId: 1, date: -1 } },
     { name: 'userId_date', key: { userId: 1, date: -1 } },
+    {
+      name: 'userId_clientRequestId_unique',
+      key: { userId: 1, clientRequestId: 1 },
+      unique: true,
+      partialFilterExpression: { clientRequestId: { $type: 'string' } },
+    },
   ],
   WeatherSnapshot: [
     { name: 'locationKey_source_unique', key: { locationKey: 1, source: 1 }, unique: true },

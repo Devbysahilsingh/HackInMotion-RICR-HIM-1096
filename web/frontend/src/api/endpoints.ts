@@ -31,6 +31,8 @@ import type {
   HealthLogSummary,
   IrrigationAdvice,
   IrrigationLogEntry,
+  IrrigationLogPayload,
+  IrrigationLogResponse,
   LandUnit,
   Language,
   MyCropSignal,
@@ -194,8 +196,8 @@ export const cropsApi = {
   irrigation: (cropId: string) => apiGet<IrrigationAdvice>(`/crops/${cropId}/irrigation`),
 
   /** `amountMm` omitted means "refilled fully" (engine rule R8). */
-  logIrrigation: (cropId: string, payload: { date: string; amountMm?: number }) =>
-    apiPost<{ log: IrrigationLogEntry }>(`/crops/${cropId}/irrigation-log`, payload),
+  logIrrigation: (cropId: string, payload: IrrigationLogPayload) =>
+    apiPost<IrrigationLogResponse>(`/crops/${cropId}/irrigation-log`, payload),
 
   irrigationLedger: (cropId: string, params: { page?: number; limit?: number } = {}) =>
     apiGetPaged<{ logs: IrrigationLogEntry[] }>(`/crops/${cropId}/irrigation-log`, { params }),

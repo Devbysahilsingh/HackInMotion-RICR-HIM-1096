@@ -221,7 +221,7 @@ A full adversarial audit, run against a **live instance** with real HTTP.
 
 ## Slide 11 — Built for the farmer, not the judge
 
-- **Hindi and English**: **1,489 keys, 0 missing**, parity gated in CI. Zero
+- **Hindi and English**: **1,493 keys, 0 missing**, parity gated in CI. Zero
   hardcoded strings — enforced by a repo script.
 - **≤ 2 taps to a verdict.** Icon + colour + text, never colour alone.
 - **Voice readout** on seven surfaces.
@@ -286,7 +286,7 @@ are. In their language. On a bad connection.
 - Yield estimator *(specified, not built — we will not ship a number we cannot source)*
 - On-device TFLite for offline diagnosis
 - More crops — SoyNet identified for soybean
-- Offline write-sync, voice v2, iOS
+- Offline photo-draft sync (waterings already sync today), voice v2, iOS
 
 **The principle we will not trade away:** never show a farmer a number we cannot
 stand behind.

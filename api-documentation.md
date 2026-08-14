@@ -129,7 +129,7 @@ Four ownership shapes appear in the table below:
 | DELETE | `/crops/:id/photo` | required | nested | 204 |
 | GET | `/crops/:id/irrigation` | required | nested | FAO-56 verdict — see §4 |
 | GET | `/crops/:id/irrigation-log` | required | nested | Paginated watering ledger |
-| POST | `/crops/:id/irrigation-log` | required | nested | Omitting `amountMm` means "refilled fully" (rule R8) |
+| POST | `/crops/:id/irrigation-log` | required | nested | Omitting `amountMm` means "refilled fully" (rule R8). Optional `clientRequestId` makes the write idempotent for the offline queue — a replay returns **200 + `replayed: true`** with the original row instead of **201**. See §4b |
 | GET | `/crops/:id/fertilizer-guidance` | required | nested | Sourced schedule; never an AI-authored dose |
 
 ### Crop health — `/crop-health`
@@ -219,6 +219,41 @@ scoring engine**.
 - **Market availability is a hard eligibility gate.** A crop no reachable mandi has priced is excluded with a stated reason rather than ranked with an empty market column.
 - Scoring uses the four documented weights — season 0.30, soil 0.25, water 0.30, temp 0.15 — and **a factor with no evidence is dropped, never guessed at**. `evidenceRatio` reports how much of the weight was actually backed by data.
 - `GET …/:cropCode` re-runs the identical pipeline and *selects* a crop from its result, so a card and the page it opens cannot disagree about the score.
+
+---
+
+## 4b. Offline write-sync — `clientRequestId`
+
+The one write a farmer makes with no signal is a watering. Both clients queue
+it locally and replay it on reconnect, which is only safe because the server can
+tell a *re-delivery* from a *second event*.
+
+**Request.** `POST /crops/:id/irrigation-log` accepts an optional
+`clientRequestId`: 8–64 characters, `[A-Za-z0-9-]` only (a UUIDv4 is 36).
+Anything else is a `422 VALIDATION_ERROR` — it is client-supplied text that
+reaches an index, so it is bounded before it gets there.
+
+| Case | Status | `replayed` | Rows written |
+|---|---|---|---|
+| First delivery | `201` | `false` | 1 |
+| Same `clientRequestId` again | `200` | `true` | 0 — the original row is returned |
+| Different id, same day | `201` | `false` | 1 — a genuine second watering |
+| No id (ordinary online write) | `201` | `false` | 1 — unchanged behaviour |
+
+**The id identifies a submission, never a day.** A farmer can genuinely irrigate
+twice in one day, so `(cropId, date)` remains deliberately non-unique;
+collapsing on it would under-count applied water, which is the more dangerous
+error.
+
+**Scoped per account.** Uniqueness is `(userId, clientRequestId)`, so the same
+id from another account is a separate submission — a guessed id can neither
+collide with nor probe for someone else's ledger.
+
+**Enforced twice, on purpose.** A unique *partial* index is the race-proof
+authority (two concurrent flushes both pass any read-then-write check), and a
+lookup runs first so the guarantee still holds on a database where
+`npm run indexes:build` has not been run. The index is partial so the many rows
+written online with no id are not indexed at all.
 
 ---
 

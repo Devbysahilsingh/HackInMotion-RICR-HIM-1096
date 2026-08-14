@@ -25,7 +25,7 @@ stated without softening. The last section is the one worth reading twice.
 
 ---
 
-## 2 · Challenge capabilities (5 of 6 complete, 1 partial, 1 missing)
+## 2 · Challenge capabilities (4 of 6 complete, 1 partial, 1 missing)
 
 | Challenge | Status | Reality |
 |---|---|---|
@@ -33,7 +33,7 @@ stated without softening. The last section is the one worth reading twice.
 | **Fertilizer & resource planning** | ✅ **Done** | Sourced ICAR/TNAU/PAU schedules by growth stage. **No AI-authored dose, ever** — every figure carries its citation |
 | **Community outbreak alerts** | ✅ **Done** | District-aggregated, consent-gated, structurally PII-free. **No write API** — only a scheduled job counting ≥3 distinct farmers can raise an alert, so it cannot be gamed from a browser |
 | **Voice interface** | ⚠️ **Partial** | **Web:** speech-to-text *and* text-to-speech + intent buttons. **Mobile: TTS only** — `RECORD_AUDIO` is deliberately blocked, because the dev-build path would forfeit the Expo Go demo route. Decision recorded in `docs/mobile/technology-decision.md` |
-| **Offline-first support** | ⚠️ **Partial** | **Reads** are cached and work offline with honest labels. **Writes are not queued** — the brief's "syncing when connection is available" is not implemented. In the P3 backlog |
+| **Offline-first support** | ✅ **Done for reads and the field write** | **Reads** are cached and work offline with honest labels. **Writes: the irrigation log is now queued and replayed on reconnect** on both clients, verified live 2026-08-14 (§3d) — the brief's "syncing when connection is available". Photo drafts remain queued-by-design-only, stated as such rather than claimed |
 | **Yield prediction** | ❌ **Not built** | `YieldEstimate` model exists; **there is no endpoint and no estimator**. Specified in `docs/yield/`, deliberately deferred rather than shipped as a guess |
 
 ---
@@ -166,6 +166,42 @@ accurate.
 
 ---
 
+## 3d · Offline irrigation write-sync — live verification, 2026-08-14
+
+The remaining half of the offline-first challenge. Reads already survived a dead
+connection; the write a farmer actually makes in a field did not.
+
+**Verified against a running server and a real database**, not from the source:
+
+| Case | Result |
+|---|---|
+| First delivery | `201`, `replayed: false`, 1 row |
+| Same `clientRequestId` re-delivered | **`200`, `replayed: true`, same row id, still 1 row** |
+| Different id, same day | `201` — a genuine second watering, both persist |
+| Malformed id (`"bad id!"`) | `422 VALIDATION_ERROR`, 0 rows |
+| Engine after sync | `WAIT_RAIN_EXPECTED`, mode `full` — the ledger was re-read |
+
+Targeted suites: **7/7** new idempotency tests, **17/17** index assertions,
+**16/16** crops, **23/23** farms, **138/138** ST-10 authorization, **42/42**
+ST-11 IDOR. Both clients `tsc` clean; lint 0 errors; i18n parity 1493 keys / 0
+missing; 0 hardcoded strings.
+
+**One defect this verification caught, which the tests did not.** The first live
+run wrote **3 rows where 2 were correct** — the replay did not collapse. The
+unique index existed in the test database (tests build indexes) but not in the
+dev database, and the implementation relied on the duplicate-key error alone. A
+deployment that skipped `npm run indexes:build` would therefore have
+double-counted applied water *silently*. Fixed by adding a pre-write lookup
+alongside the index: the index handles concurrent flushes, the lookup handles an
+un-migrated database, and a test now covers the concurrent case explicitly. This
+is the exact class of bug that only a live run finds.
+
+**Scope, stated plainly:** irrigation logs only. Photo drafts and crop/farm
+creation are **not** queued — the first is a multi-megabyte binary problem, the
+second happens at setup on wifi. Neither is claimed as done.
+
+---
+
 ## 4 · What is genuinely strong
 
 **1 · The honesty architecture.** This is the real differentiator, not a feature.
@@ -196,7 +232,7 @@ security, resilience injection.
 web **and** a native Android app on one REST contract, with no duplicated
 business logic.
 
-**7 · Genuine bilingual support.** 1,489 keys, 0 missing in Hindi, parity gated
+**7 · Genuine bilingual support.** 1,493 keys, 0 missing in Hindi, parity gated
 in CI, **zero hardcoded strings** enforced by a repo script.
 
 ---
@@ -277,7 +313,10 @@ submission". Items 4–5 are the difference between "finished" and "trustworthy"
 ## 7 · Verdict
 
 **Against the must-haves: 9 / 9 complete.**
-**Against the challenges: 5 complete, 1 partial (offline writes), 1 missing (yield).**
+**Against the challenges: 4 complete, 1 partial (mobile voice input), 1 missing (yield).**
+*(Offline moved to complete on 2026-08-14 — §3d. The earlier line read "5 complete,
+1 partial, 1 missing", which totals seven against six challenges; the count was
+wrong before this correction, not merely out of date.)*
 **Against the deliverables: 4 / 7 — the deployment and the deck are the gaps.**
 
 The engineering is stronger than the submission package. The product does more

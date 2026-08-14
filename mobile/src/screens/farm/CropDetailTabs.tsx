@@ -20,11 +20,17 @@ import { useTranslation } from 'react-i18next';
 import { useNavigation, type NavigationProp } from '@react-navigation/native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { isApiError } from '@shared/client/errors';
 import { formatDate, formatDayMonth, formatNumber, localizedName } from '@shared/client/format';
 import { queryKeys, STALE_TIME } from '@shared/client/queryKeys';
 import type { CropWithStage, HealthLogSummary, SeverityLevel } from '@shared/types/api';
 
 import { cropsApi, healthApi, marketApi } from '../../api/endpoints';
+import {
+  newIrrigationRequestId,
+  queueIrrigation,
+  useIrrigationOutbox,
+} from '../../api/irrigationOutbox';
 import { QueryBoundary } from '../../components/QueryBoundary';
 import { FertilizerGuidanceView } from '../../components/domain/FertilizerGuidanceView';
 import { IrrigationVerdictCard } from '../../components/domain/IrrigationVerdictCard';
@@ -227,17 +233,47 @@ function IrrigationLogForm({ cropId, onDone }: { cropId: string; onDone: () => v
     parsedAmount !== undefined &&
     (!Number.isFinite(parsedAmount) || parsedAmount <= 0 || parsedAmount > 200);
 
+  const [queuedOffline, setQueuedOffline] = useState(false);
+
+  const invalidateLedger = () => {
+    void queryClient.invalidateQueries({ queryKey: queryKeys.crops.irrigation(cropId) });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.crops.all() });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.dashboard() });
+  };
+
+  const { pending, refresh: refreshPending } = useIrrigationOutbox(cropId, invalidateLedger);
+
   const log = useMutation({
-    mutationFn: () =>
+    mutationFn: (clientRequestId: string) =>
       cropsApi.logIrrigation(cropId, {
         date,
         ...(parsedAmount !== undefined ? { amountMm: parsedAmount } : {}),
+        clientRequestId,
       }),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.crops.irrigation(cropId) });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.crops.all() });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.dashboard() });
+      invalidateLedger();
       onDone();
+    },
+    /**
+     * Offline, or a server fault: the request may have landed, so it is queued
+     * rather than lost. Safe to replay because the `clientRequestId` travelled
+     * with the first attempt — the server collapses the duplicate instead of
+     * watering the ledger twice.
+     *
+     * A refused 4xx is shown, not queued: the server answered, and retrying it
+     * would produce the same refusal forever.
+     */
+    onError: async (error, clientRequestId) => {
+      if (isApiError(error) && !error.isRetryable) return;
+
+      await queueIrrigation({
+        clientRequestId,
+        cropId,
+        date,
+        ...(parsedAmount !== undefined ? { amountMm: parsedAmount } : {}),
+      });
+      await refreshPending();
+      setQueuedOffline(true);
     },
   });
 
@@ -266,7 +302,7 @@ function IrrigationLogForm({ cropId, onDone }: { cropId: string; onDone: () => v
           testID="irrigation-log-amount"
         />
 
-        {log.isError ? (
+        {log.isError && !queuedOffline ? (
           <Notice tone="danger">
             <Text variant="small" color="ink700">
               {toMessage(log.error)}
@@ -274,12 +310,31 @@ function IrrigationLogForm({ cropId, onDone }: { cropId: string; onDone: () => v
           </Notice>
         ) : null}
 
+        {queuedOffline ? (
+          <Notice tone="info" testID="irrigation-log-queued">
+            <Text variant="small" color="ink700">
+              {t('irrigation:logQueuedBody')}
+            </Text>
+          </Notice>
+        ) : null}
+
+        {pending.length > 0 ? (
+          <Text variant="caption" color="ink700" testID="irrigation-pending-count">
+            {`${t('irrigation:logPendingBadge')} · ${pending.length}`}
+          </Text>
+        ) : null}
+
         <View style={styles.formActions}>
           <Button variant="ghost" onPress={onDone} style={styles.formButton}>
             {t('common:action.cancel')}
           </Button>
           <Button
-            onPress={() => log.mutate()}
+            onPress={() => {
+              setQueuedOffline(false);
+              // Created before the attempt so the id that dedupes a replay is
+              // the same one the first request carried.
+              log.mutate(newIrrigationRequestId());
+            }}
             loading={log.isPending}
             disabled={amountInvalid}
             style={styles.formButton}
