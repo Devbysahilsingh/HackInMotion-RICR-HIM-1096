@@ -19,6 +19,100 @@
 
 *"A farmer's biggest risk isn't hard work — it's making the wrong decision at the wrong time."*
 
+## Evaluator quick overview
+
+*Thirteen lines, then the detail. Every claim below is checkable in this repository.*
+
+| | |
+|---|---|
+| **Problem** | A farmer makes five high-stakes decisions a season — plant what, irrigate when, react to weather, is the crop sick, sell when. The data exists; it is scattered, wrong-language, wrong-moment. |
+| **Solution** | One field profile drives every answer. Open the app → *"what do I act on today?"* |
+| **Core innovation** | **Evidence-aware decision support.** When a factor has no data behind it the system **drops it and says so** rather than substituting a neutral value — and reports `evidenceRatio`, the share of the intended weight actually backed by data. |
+| **Architecture** | React (web) + React Native/Expo (Android) → Node 20/Express → MongoDB → FastAPI+ONNX. **8 pure engines** with no I/O, each returning its own `trace`. |
+| **AI/ML** | EfficientNet-B0 trained on our own GPU, 39,960 images / 36 classes, temperature-calibrated. Four-tier fallback: local ONNX → Gemini → OpenRouter → symptom rules. **The model never authors advice** — it returns a code; the text comes from a sourced KB. |
+| **Impact** | Personalization is structural, not cosmetic: change the soil type and the irrigation verdict changes, because soil water-holding is an input to the FAO-56 balance. |
+| **Security** | 15 real vulnerabilities found and fixed, **each with a regression test that fails against the pre-fix code**. ZAP baseline 0 FAIL / 66 PASS. Ownership is a query filter — another farmer's field is a **404, not a 403**. |
+| **Evidence** | ~1,950 tests: backend **1,566** · web **131** · Android **110** · ml-service **143**. |
+| **Limitations** | **Not deployed.** No APK built, no phone has run the app. Field-domain model accuracy is **0.1257** (we measured it and publish it). Full honest list: [`docs/development/submission-audit.md`](docs/development/submission-audit.md). |
+
+**Start here:** [`docs/development/submission-audit.md`](docs/development/submission-audit.md) — our own audit against the brief, including what we did *not* finish.
+
+---
+
+## Why Khetri is different
+
+Thirteen things this system does that a weekend CRUD app does not. Each names the
+file that implements it, so none of this has to be taken on trust.
+
+**1 · Evidence-aware scoring — the one to look at first.**
+The crop recommender weights four factors (season 0.30 · soil 0.25 · water 0.30 ·
+temp 0.15). When a factor has no published data for that farm, it is **excluded
+and the remaining weights renormalised** — never filled with a neutral 0.5. The
+response carries `evidenceRatio` so a crop ranked on two factors is not silently
+presented as equal to one ranked on four.
+→ `backend/src/engines/cropRec/cropRecommendation.js`
+
+**2 · Farm-scoped recommendations.** *What:* ranked for the actual field.
+*Why:* generic advice ignores free land, standing crops and reachable buyers.
+*How:* `FarmContext → SeasonResolver → LandAvailability → MarketEligibility → scoring`.
+*Evidence:* the detail screen re-runs the identical pipeline and **selects** a crop
+from its result, so a card and the page it opens cannot disagree about the score.
+→ `backend/src/services/recommendation/`
+
+**3 · Market eligibility as a hard gate.** A crop no reachable mandi has priced is
+**excluded with a stated reason**, never ranked with an empty price column — a
+recommendation you cannot price is one you cannot act on.
+→ `backend/src/services/recommendation/marketEligibility.js`
+
+**4 · FAO-56 irrigation, not "it might rain".** ET₀ × crop coefficient for the
+derived growth stage, against soil available-water and stage-adjusted root depth,
+replayed over the logged ledger and projected across the forecast.
+→ `backend/src/engines/irrigation/computeIrrigation.js`
+
+**5 · Freshness on every data-bearing surface.** `live` · `cached` · `historical` ·
+`pending`. A farm whose grid cell has never been fetched returns a **designed
+pending state**, not a 500.
+→ `web/frontend/src/components/ui/FreshnessDot.tsx`
+
+**6 · Transparent decision traces.** Every engine returns the numbers behind its
+verdict, and the UI shows them **on the page** rather than behind a disclosure
+nobody opens.
+→ `web/frontend/src/components/domain/IrrigationWorking.tsx`
+
+**7 · Crop-health fallback chain.** local ONNX → Gemini → OpenRouter → symptom
+rules. Every tier that declines is recorded in `escalationPath` **with its reason**
+and shown to the farmer. The terminal tier is local, so the chain always answers.
+→ `backend/src/services/cropHealthService.js`
+
+**8 · The model never writes advice.** It returns a disease code and a confidence.
+Farmer-facing text comes from a sourced TNAU/ICAR knowledge base by i18n key.
+**No AI-authored dosage exists anywhere in this product.**
+
+**9 · Security-first backend.** Ownership applied **inside the query**, never after.
+Rotating refresh tokens with reuse detection. Uploads: magic-byte sniff → bomb
+guard → full re-encode (**EXIF and GPS stripped**). No admin surface, no demo bypass.
+→ `docs/security/phase-7-scorecard.md`
+
+**10 · Bilingual, farmer-first UX.** 1,489 keys, **0 missing in Hindi**, parity
+gated. **Zero hardcoded user-facing strings**, enforced by a repo script.
+→ `scripts/check-i18n.mjs`, `scripts/check-ui-strings.mjs`
+
+**11 · Web + native Android on one REST contract.** No duplicated business logic —
+engines stay server-side, translations and wire types come from `shared/`.
+
+**12 · Offline read resilience.** Cached reads survive a dead connection and are
+**labelled as cached**, never passed off as fresh.
+
+**13 · Community aggregation that cannot be gamed.** District-aggregated,
+consent-gated, structurally PII-free — and there is **no write API**. Only a
+scheduled job counting ≥3 distinct farmers can raise an alert.
+→ `docs/community/community-alerts.md`
+
+**What ties these together:** every one is a refusal to show a farmer a number we
+cannot stand behind. That is the product.
+
+---
+
 ## The problem
 Indian small and mid-sized farmers make five recurring, high-stakes decisions — what to plant, when to irrigate, how to respond to weather, whether a crop is diseased, and when to sell — with fragmented information and no tool that turns data into personalized, timely, explainable guidance in their language.
 
