@@ -25,9 +25,9 @@ const DEFAULT_API_URL = 'http://10.0.2.2:4000/api/v1';
 const apiUrl = process.env.EXPO_PUBLIC_API_URL ?? DEFAULT_API_URL;
 
 const config: ExpoConfig = {
-  name: 'KrishiSaarthi',
-  slug: 'him-1096-krishisaarthi',
-  scheme: 'krishisaarthi',
+  name: 'Khetri',
+  slug: 'him-1096-khetri',
+  scheme: 'khetri',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/icon.png',
@@ -38,7 +38,7 @@ const config: ExpoConfig = {
   primaryColor: '#277249',
   assetBundlePatterns: ['**/*'],
   android: {
-    package: 'in.him1096.krishisaarthi',
+    package: 'in.him1096.khetri',
     versionCode: 1,
     adaptiveIcon: {
       backgroundColor: '#dcf0e1',
@@ -83,7 +83,7 @@ const config: ExpoConfig = {
     [
       'expo-camera',
       {
-        cameraPermission: 'KrishiSaarthi uses the camera to photograph your crop leaves.',
+        cameraPermission: 'Khetri uses the camera to photograph your crop leaves.',
         /**
          * The plugin adds `RECORD_AUDIO` by default so video capture can carry
          * sound. This app photographs leaves and never records, so the
@@ -97,14 +97,14 @@ const config: ExpoConfig = {
     [
       'expo-image-picker',
       {
-        photosPermission: 'KrishiSaarthi opens your gallery so you can pick a photo of your crop.',
+        photosPermission: 'Khetri opens your gallery so you can pick a photo of your crop.',
       },
     ],
     [
       'expo-location',
       {
         locationAlwaysAndWhenInUsePermission:
-          'KrishiSaarthi uses your location once, to place your farm on the map. You can type the district instead.',
+          'Khetri uses your location once, to place your farm on the map. You can type the district instead.',
       },
     ],
   ],

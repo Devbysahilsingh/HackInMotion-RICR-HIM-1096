@@ -1,11 +1,21 @@
-# 🌾 KrishiSaarthi — Smart Farm Decision Support System
+# 🌾 Khetri — Smart Farm Decision Support System
 
-> *Working name (final name pending — OD-4). HackInMotion 2026 · Team HIM-1096.*
-> **STATUS: IMPLEMENTATION IN PROGRESS.** Backend, ML training, web client and the Android app are built and tested; **nothing is deployed and no phone has run the app.** Sections marked ⏳ are still owed. No placeholder claims are made below.
+> *HackInMotion 2026 · Team HIM-1096.*
+> **STATUS: FEATURE-COMPLETE ACROSS WEB + ANDROID. NOT DEPLOYED.** Every must-have and all six challenge capabilities are built and tested on both clients. **Phase 8 (deploy & seed) is deliberately left open until the qualifier result is announced** — provisioning Render/Vercel/Atlas/HF-Spaces accounts and burning their free-tier windows before we know we have qualified is waste, not progress. Everything Phase 8 needs is committed and locally verified: `render.yaml` with every secret `sync: false`, the environment checklist, and a smoke suite that passes 18/18 against a local `NODE_ENV=production` server on a real database.
 >
-> **Built and verified (2026-08-14):** backend API (**1,279 / 1,279 tests**) · React web client (**109 / 109**) · Expo Android client (**90 / 90**) · ml-service FastAPI + ONNX (**140 / 141 pytest** — one known failure, below) · trained EfficientNet-B0 with calibrated thresholds. **Not done:** deployment (Render / Vercel / HF Spaces), the APK build, and every device- and demo-day verification that depends on them.
+> **Verified 2026-08-14, from real runs:**
 >
-> The one failing test is `test_generator_reports_the_committed_manifest_as_current`: `ml-service/model/model-manifest.json` records a `datasetManifest.sha256` that does not match the committed `datasets/manifest.json`. Both files are unchanged since the Phase-4 commit `29543d1`, so the drift was committed there — it is not a regression, and it is deliberately left for the ML owner rather than silently regenerated, because regenerating a model manifest rewrites recorded metrics.
+> | Suite | Result |
+> |---|---|
+> | Backend API | **1,566 / 1,566** |
+> | React web client | **131 / 131** |
+> | Expo Android client | **110 / 110** |
+> | ml-service (FastAPI + ONNX) | **143 pass / 1 known pre-existing failure** |
+> | Gates | lint 0 errors · both typechecks clean · i18n parity (0 missing in hi) · 0 hardcoded user-facing strings · Gitleaks clean · production build green |
+>
+> **Still owed, and not claimed:** the Render/Vercel deploy, the EAS APK build, and every device- and demo-day verification that depends on them. The 17-row manual device matrix in `docs/mobile/testing.md` has zero executed rows — no phone has run the app.
+>
+> The one failing ml-service test is `test_generator_reports_the_committed_manifest_as_current`: `ml-service/model/model-manifest.json` records a `datasetManifest.sha256` that does not match the committed `datasets/manifest.json`. Both files are unchanged since the Phase-4 commit `29543d1`, so the drift was committed there — it is not a regression, and it is deliberately left for the ML owner rather than silently regenerated, because regenerating a model manifest rewrites recorded metrics.
 
 *"A farmer's biggest risk isn't hard work — it's making the wrong decision at the wrong time."*
 
@@ -25,7 +35,13 @@ A web + Android platform where a farmer sets up their farm (location, size, soil
 Personalization is structural (change your soil type and watch the irrigation verdict change); every recommendation shows its "why" with real numbers; every data card shows freshness (● Live / ● Cached / ● Historical / ● Local AI / ● AI-assisted). Trust through transparency, built for low digital literacy (≤2 taps to a verdict, icon+color+text, big targets, voice).
 
 ## Architecture
-See `docs/architecture/overview.md` (+ `architecture-diagram.png` ⏳ rendered at implementation).
+![Architecture](architecture-diagram.png)
+
+`architecture-diagram.png` is rendered from `architecture-diagram.mmd` (kept as source so the diagram is reviewable in a diff):
+```bash
+npx --yes @mermaid-js/mermaid-cli -i architecture-diagram.mmd -o architecture-diagram.png -b white -w 2400
+```
+Narrative: `docs/architecture/overview.md`.
 React (Vercel) + React Native/Expo (Android) → Express API (Render; JWT + refresh rotation, ownership enforcement, rate limits) → MongoDB Atlas → FastAPI + ONNX ml-service (internal). Jobs ingest weather (Open-Meteo→OpenWeatherMap) and mandi prices (data.gov.in→cache→seed) with validate-then-cache; engines are pure, tested functions.
 
 ## Custom ML (honest summary)
@@ -87,7 +103,7 @@ npm run verify                     # lint · format · i18n parity · UI strings
 ```
 
 ## API documentation
-Complete endpoint specs: `docs/api/` (summarized into `api-documentation.md` ⏳ at submission).
+**[`api-documentation.md`](api-documentation.md)** — single-page reference for all 38 routes: envelope, error codes, auth/ownership model, the four decision engines, the honesty contract, rate limits and the upload pipeline. Per-resource field detail stays in `docs/api/`.
 
 ## Database
 Schema, indexes, lifecycle: `docs/database/`.

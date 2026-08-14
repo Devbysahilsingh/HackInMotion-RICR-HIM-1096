@@ -860,7 +860,7 @@ Tooling changed to serve two clients rather than one: `scripts/check-ui-strings.
 ### Not done, deliberately
 
 - **No Detox, no on-device E2E.** Unchanged from the scope `docs/mobile/testing.md` commits to.
-- **No deep linking.** `NavigationContainer` is mounted with no `linking` prop, so the plan's "whitelisted screens only, no token-bearing links" holds by construction — there is no surface to whitelist and no parameter to validate. The `krishisaarthi` scheme is reserved in `app.config.ts`; the whitelist requirement returns with the feature.
+- **No deep linking.** `NavigationContainer` is mounted with no `linking` prop, so the plan's "whitelisted screens only, no token-bearing links" holds by construction — there is no surface to whitelist and no parameter to validate. The `khetri` scheme is reserved in `app.config.ts`; the whitelist requirement returns with the feature.
 - **No offline write queue.** Writes are blocked and explained, never queued and silently replayed. Still the P3 backlog item it always was.
 - **No community write surface on mobile.** The alerts screen is read-only because there is no write route, and a "report this" button that posted nowhere would be worse than its absence.
 - **No `name` field on `PATCH /users/me`.** No client edits it, and each of `name`/`email` would need its own verification story. Password change and account deletion stay the separate endpoints `docs/api/users.md` describes.
@@ -948,3 +948,77 @@ SDK 54 is behind current, and the project carries that gap for as long as the pi
 ### Files
 
 Changed: `mobile/package.json` (+ `package-lock.json`), `mobile/README.md`, `docs/mobile/technology-decision.md`, `docs/mobile/architecture.md`, `docs/development/MASTER-TODO.md`, this file, and the root `README.md`. Nothing under `mobile/src/`.
+
+---
+
+## Phase 9 (partial) — repo deliverables, product name, status honesty — 2026-08-14
+
+The repo-artefact half of Phase 9. What needs the team in a room — rehearsal, the deck,
+the viva walkthroughs — is untouched and still open.
+
+### P9-1 · Repo deliverables
+
+**`architecture-diagram.png`** rendered at 2400px with `@mermaid-js/mermaid-cli` from a
+committed **`architecture-diagram.mmd`**. The source is kept beside the binary
+deliberately: a PNG cannot be reviewed in a diff, so a diagram-only artefact drifts from
+the system it claims to depict and nobody notices. The diagram shows the two clients over
+one REST contract, the middleware chain, the eight pure engines separated from the
+services that do the I/O, the scheduled ingestion jobs, and the external providers with
+their fallback pairs.
+
+**`api-documentation.md`** at the repo root — the single-page reference the submission
+asks for. All **38 routes**, transcribed from `backend/src/routes/ownership-table.js`
+rather than from prose. That matters: a test asserts that table against the live Express
+router, so this document cannot drift from the mounted routes without the suite failing.
+It also carries the envelope, the closed error-code set, the four ownership shapes, the
+four decision engines, the `freshness`/`trace` honesty contract, the rate limits and the
+five-step upload pipeline. Per-resource field detail stays in `docs/api/` — this indexes
+it, it does not replace it.
+
+**`README.md`** rewritten against real run output only: 1,566 backend · 131 web · 110
+mobile · 143 ml-service (+1 known pre-existing manifest-hash failure, unchanged since
+`29543d1` and left for the ML owner rather than silently regenerated).
+
+### P9-2 · The product is Khetri (closes OD-4)
+
+`KrishiSaarthi` was a placeholder from the plan document and had leaked into 12 files.
+Renamed across all of them — display strings *and* the Android identifiers:
+`package` → `in.him1096.khetri`, `slug` → `him-1096-khetri`, deep-link `scheme` → `khetri`.
+
+Renaming the package is only cheap because **no APK has ever been built**. After a first
+install, an Android package rename is a different application: no upgrade path, and every
+tester reinstalls from scratch. This was the last moment it costs nothing.
+
+Verified: mobile `tsc --noEmit` clean and `mobile/src/security.test.ts` **20/20** — that
+suite asserts the declared scheme and the absence of a deep-link router, so a half-finished
+rename would have failed it rather than passing quietly.
+
+### P9-3 · Status honesty pass
+
+Phase headers, the README status block and the deliverables list now match what the suites
+actually print. The substantive change is stating the **deferred-vs-blocked** distinction
+for Phase 8 rather than leaving a reader to infer it from an unticked box.
+
+**Phase 8 is deferred by decision, not blocked by a dependency.** Every free tier this
+project runs on — Render's spin-down window, Atlas M0, HF Spaces, Vercel, an Expo account
+and its EAS build quota — begins consuming a finite allowance the moment it is
+provisioned. Spending those windows before the qualifier result is known spends them on
+nobody. Everything that can be prepared without an account is committed and locally
+verified: `render.yaml` with every secret `sync: false`, the environment checklist, and
+`backend/scripts/smoke.mjs` passing **18/18** against a local `NODE_ENV=production` server
+on a real database. On qualification the deploy is an execution step measured in hours.
+
+### Still true, unchanged
+
+**Nothing is deployed, no APK exists, and no physical device has launched this app.** The
+17-row matrix in `docs/mobile/testing.md` has zero executed rows; RES-09..12 are unpassed;
+the CI workflow in `.github/workflows/ci.yml` has never run. None of that is claimed
+anywhere in this repository.
+
+### Files
+
+Added: `architecture-diagram.mmd`, `architecture-diagram.png`, `api-documentation.md`.
+Changed: `README.md`, `CLAUDE.md` (OD-4 closed), `docs/development/MASTER-TODO.md`,
+`mobile/README.md`, `mobile/app.config.ts`, `mobile/src/security.test.ts`,
+`web/frontend/index.html`, `docs/product/product-spec.md`, `docs/mobile/navigation.md`,
+`docs/mobile/deployment.md`, `docs/security/phase-7-scorecard.md`, and this file.

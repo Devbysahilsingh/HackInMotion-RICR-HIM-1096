@@ -87,7 +87,7 @@ token reaches no persistent store; no module outside `api/session.ts` touches
 SecureStore; no `console` call anywhere names a credential and only the error
 boundary calls `console.error` (the one call the production strip keeps); there
 is no `Linking.openURL`, no React Navigation `linking` config behind the
-declared `krishisaarthi` scheme, and no WebView; no API host is hard-coded
+declared `khetri` scheme, and no WebView; no API host is hard-coded
 outside `config/env.ts`; `RECORD_AUDIO` is declined at the plugin *and* blocked;
 cleartext HTTP is not re-enabled for release builds.
 

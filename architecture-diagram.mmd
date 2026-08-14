@@ -1,0 +1,79 @@
+%% Khetri — Smart Farm Decision Support System (HIM-1096)
+%% Source for architecture-diagram.png. Render with:
+%%   npx --yes @mermaid-js/mermaid-cli -i architecture-diagram.mmd -o architecture-diagram.png -b white -w 2400
+%% Kept as source rather than only as a binary so the diagram is reviewable in a
+%% diff — a PNG that nobody can diff drifts from the system it claims to show.
+
+flowchart TB
+    subgraph clients["Clients — one REST contract"]
+        web["React + Vite · Tailwind<br/>web/frontend<br/>en/hi · responsive"]
+        mob["React Native + Expo SDK 54<br/>mobile<br/>offline-cached reads"]
+    end
+
+    subgraph api["Node 20 · Express — backend/src"]
+        direction TB
+        mw["Middleware<br/>helmet · CORS · Zod validate<br/>JWT auth · loadOwned ownership<br/>rate limits · safe errors"]
+
+        subgraph engines["Pure engines — no I/O, deterministic, traced"]
+            irr["Irrigation<br/>FAO-56 water balance"]
+            wrisk["Weather risk<br/>crop sensitivity thresholds"]
+            health["Health conductor<br/>tier walk + confidence gating"]
+            sev["Severity"]
+            msig["Market signal"]
+            croprec["Crop recommendation<br/>season · soil · water · temp"]
+            feed["Feed composer<br/>ranks the day's decisions"]
+            stage["Growth stage"]
+        end
+
+        subgraph svc["Services — the only I/O layer"]
+            recsvc["recommendation/<br/>farmContext → season →<br/>land → market eligibility"]
+            imgpipe["imagePipeline<br/>magic bytes · bomb guard<br/>decode/re-encode · EXIF strip"]
+            mktsvc["marketService"]
+            wxsvc["weatherService"]
+        end
+
+        jobs["Scheduled jobs<br/>weather ingest · mandi refresh<br/>feed rebuild · community aggregate<br/>validate-then-cache"]
+    end
+
+    db[("MongoDB Atlas<br/>14 collections<br/>every owned doc carries userId")]
+    ml["FastAPI + ONNX ml-service<br/>EfficientNet-B0 · internal only<br/>X-Service-Key"]
+
+    subgraph ext["External — free tier, cache-first"]
+        wx["Open-Meteo → OpenWeatherMap"]
+        mandi["data.gov.in Agmarknet → seed"]
+        gem["Gemini Vision → OpenRouter"]
+        cloud["Cloudinary"]
+    end
+
+    kb[["Sourced knowledge base<br/>ICAR · TNAU · PAU · FAO-56<br/>every figure carries a citation"]]
+
+    web -->|"HTTPS /api/v1<br/>JWT + refresh rotation"| mw
+    mob -->|"HTTPS /api/v1<br/>token in SecureStore"| mw
+
+    mw --> engines
+    mw --> svc
+    svc --> engines
+    svc --> db
+    engines -.->|"reads only"| kb
+
+    health -->|"tier 1"| ml
+    health -->|"tier 2 / 3"| gem
+    imgpipe --> cloud
+
+    jobs --> wx
+    jobs --> mandi
+    jobs --> db
+
+    mktsvc --> db
+    wxsvc --> db
+    recsvc --> mktsvc
+
+    classDef pure fill:#e2eee5,stroke:#1b5638,stroke-width:1px,color:#10331f
+    classDef store fill:#f1e7dc,stroke:#8b5e3c,color:#4b3a24
+    classDef outside fill:#dceef2,stroke:#276073,color:#276073
+    classDef client fill:#edf4e1,stroke:#356b22,color:#10331f
+
+    class irr,wrisk,health,sev,msig,croprec,feed,stage pure
+    class db,kb store
+    class wx,mandi,gem,cloud,ml outside
+    class web,mob client

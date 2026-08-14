@@ -1,4 +1,4 @@
-# KrishiSaarthi — Android app (Phase 6)
+# Khetri — Android app (Phase 6)
 
 The farmer-facing Android client. It consumes the **same `/api/v1` contract as
 the web app** and duplicates none of its business logic: engines stay on the

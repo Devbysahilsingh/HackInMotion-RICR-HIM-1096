@@ -255,7 +255,7 @@ describe('URL handling', () => {
 
   it('registers no deep-link router for the declared scheme', () => {
     /**
-     * `app.config.ts` declares `scheme: 'krishisaarthi'`, so Android registers
+     * `app.config.ts` declares `scheme: 'khetri'`, so Android registers
      * an intent filter and any installed app can launch this one. That is only
      * a *routing* surface if React Navigation is given a `linking` config —
      * without one, an incoming URL opens the app and is otherwise inert, and no

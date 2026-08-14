@@ -1,6 +1,6 @@
 # Product Specification
 
-**Product:** Smart Farm Decision Support System (working name: KrishiSaarthi — OD-4)
+**Product:** Smart Farm Decision Support System (working name: Khetri — OD-4)
 **Surfaces:** Web (React) + Android mobile (React Native/Expo) · **Languages:** Hindi + English
 
 ## One-line definition

@@ -71,3 +71,16 @@ Thumbs.db
 .expo/
 *.apk
 *.aab
+
+# ── AI / planning working files (not product source) ───────────────
+# Context-handoff prompts written to brief a fresh Claude session. Working
+# scaffolding for how the project was built, not documentation of what it is —
+# docs/ai/prompt-strategy.md (the Gemini vision prompt design) is a real design
+# record and stays tracked, as do CLAUDE.md, MASTER-TODO.md and the
+# implementation log.
+docs/promt
+
+# Per-machine Claude Code settings (allow-lists, local overrides). Previously
+# ignored only by this machine's *global* git ignore, so a teammate cloning the
+# repo would have committed theirs. The shared .claude/settings.json is tracked.
+.claude/settings.local.json

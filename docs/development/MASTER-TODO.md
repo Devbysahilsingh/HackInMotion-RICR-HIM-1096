@@ -2,7 +2,12 @@
 
 Legend: [P0..P3] priority · (owner: A=Dev A, B=Dev B, C=Claude; solo-mode: B→A/C) · «dep» dependency · ✔=verification. Phases map dependencies, not calendar; hour targets in 72-HOUR ROADMAP below.
 
-**Implementation status:** in progress — controlled one-TODO-at-a-time mode. Completed work is recorded in `docs/development/implementation-log.md` (authoritative record of what actually runs). TODO IDs (P0-1, P1-3, …) are assigned in reading order within each phase.
+**Implementation status (2026-08-14): Phases 0–7 closed; Phase 8 deferred by decision until the qualifier result; Phase 9 in progress.**
+The product is **feature-complete on both clients** — every HackInMotion must-have and all six challenge capabilities are built and tested on web *and* Android. Suites at this point: **backend 1,566 · web 131 · mobile 110 · ml-service 143 (+1 known pre-existing failure)**, lint 0 errors, both typechecks clean, i18n parity 0 missing in `hi`, 0 hardcoded user-facing strings, Gitleaks clean.
+
+What is **not** done, stated plainly so no row below has to be read twice: **nothing is deployed, no APK exists, and no physical device has ever launched the app.** Those are Phase 8 and the device matrix, and they are held deliberately (see Phase 8).
+
+Completed work is recorded in `docs/development/implementation-log.md` (authoritative record of what actually runs). TODO IDs (P0-1, P1-3, …) are assigned in reading order within each phase.
 
 ## PHASE 0 — Accounts, data, scaffold (blocks everything)
 - [ ] [P0](A) Create accounts/keys: data.gov.in (FIRST — approval lag), Google AI Studio, MongoDB Atlas, Cloudinary, OpenWeatherMap, Render, Vercel, HF, cron-job.org, UptimeRobot; store in local .env ✔ each key smoke-tested by script
@@ -87,7 +92,9 @@ _All items P2-1..P2-9 implemented and tested. **930 backend tests passing** (was
 3. **RICE_NORMAL ↔ RICE_BROWN_SPOT separated perfectly (1.0/1.0, zero confusion)** across a source-disjoint pair separable at 0.96 by background alone — the shortcut signature, not evidence of skill.
 4. **Cotton still cannot ship bilingually** — disease-KB Hindi remains 0/408 (ADR-021 §1).
 
-## PHASE 5 — Web frontend
+## PHASE 5 — Web frontend — **✅ COMPLETE 2026-08-14**
+_Beyond the original brief, a farmer-facing rebuild landed on 2026-08-14: farm & crop detail screens, the weather and irrigation screens, the market intelligence rebuild, the crop-health scan flow, and the farm-scoped what-to-plant architecture. **131/131 web tests.** Detail in `docs/development/implementation-log.md`._
+
 - [x] [P0](C→B pass) Vite scaffold + Tailwind + router + Query + axios interceptors + i18n init + QueryBoundary ✔ auth bootstrap flow works
 - [x] [P0](C/B) ui/ primitives (list in component-map) ✔ RTL chip/dot tests
 - [x] [P0](C/B) Auth pages + guards ✔ E2E segment
@@ -136,17 +143,70 @@ _A full-repository audit, run in two passes: the first was cut short when five p
 
 **Outstanding — the complete list.** RES-09..12 (physical device). The RES-04..06 live procedure (deployed ml-service + provider credentials). The CI workflow's first green run. Everything else in the Phase 7 brief that can be verified locally has been.
 
-## PHASE 8 — Deploy & seed
-- [ ] [P0](A+C) Deploy sequence per docs/deployment/architecture.md ✔ production-checklist.md fully ticked
-- [ ] [P0](C) Demo farmer seed (rich 30-day history: health logs, ledger, price context) ✔ demo dashboard rich on login
-- [ ] [P0](A) Keep-alive + monitors ✔ uptime evidence collecting
+## PHASE 8 — Deploy & seed — **⏸ DEFERRED BY DECISION (2026-08-14), NOT BLOCKED**
 
-## PHASE 9 — Demo, docs, submission
-- [ ] [P0](B/A) Demo script (docs/product + FINAL-PLAN-SPEC §37) + rehearsal ×2 incl. failure toggle + backup video ✔ timed ≤12min
-- [ ] [P0](C) architecture-diagram.png (render mermaid), api-documentation.md (from docs/api), README final (real metrics from artifacts only), screenshots ✔ repo deliverables complete
-- [ ] [P0](B) presentation.pptx ✔ team review
-- [ ] [P0](all) Viva walkthrough sessions ×2 ✔ each member explains each subsystem
-- [ ] [P0](A) Submission: repo naming/structure check vs general instructions, tags, final push ✔ checklist
+_Held until the qualifier result is announced. This is a scheduling decision, not an
+unfinished dependency: every free tier this project runs on (Render's spin-down window,
+Atlas M0, HF Spaces, Vercel, an Expo account, an EAS build quota) starts consuming a
+finite allowance the moment it is provisioned, and burning those windows before we know
+we have qualified spends them on nobody. **Everything that can be prepared without an
+account is committed and locally verified**, so the deploy is an execution step measured
+in hours, not a build step._
+
+**Ready and proven locally:**
+- `render.yaml` — every secret `sync: false`, no value in git.
+- `docs/deployment/environment.md` — the full staging env checklist.
+- `backend/scripts/smoke.mjs` — **18/18 checks pass** against a local `NODE_ENV=production`
+  server backed by a real database (`npm run smoke -- <url>`).
+- `ml-service/Dockerfile` — non-root uid, no secret in any layer, docs disabled outside development.
+- `.github/workflows/ci.yml` — actions pinned to full commit SHAs. ⏳ never executed.
+- `mobile/eas.json` — three profiles; `production` deliberately carries **no**
+  `EXPO_PUBLIC_API_URL` because the staging host does not exist yet, and defaulting it
+  would ship an APK that talks to a stranger.
+
+- [ ] [P0](A+C) **DEFERRED** — Deploy sequence per docs/deployment/architecture.md ✔ production-checklist.md fully ticked
+- [ ] [P0](C) **DEFERRED** — Demo farmer seed (rich 30-day history: health logs, ledger, price context) ✔ demo dashboard rich on login
+- [ ] [P0](A) **DEFERRED** — Keep-alive + monitors ✔ uptime evidence collecting
+- [ ] [P0](A) **DEFERRED** — EAS APK build + demo-phone install (carried from P6; blocked on the same accounts)
+
+**Unblocks on qualification.** Owner A creates the Render/Vercel/Atlas/Expo accounts;
+the sequence in `docs/deployment/architecture.md` runs top to bottom; `npm run smoke -- <staging-url>`
+is the acceptance gate. The 17-row device matrix in `docs/mobile/testing.md` and RES-09..12
+follow the APK install.
+
+## PHASE 9 — Demo, docs, submission — **▶ IN PROGRESS (started 2026-08-14)**
+
+_The repo-artefact half is done. The rehearsal/deck/viva half needs the team in a room
+and is not something code can close._
+
+- [x] **P9-1** [P0](C) **✔ COMPLETE 2026-08-14** — **Repo deliverables.**
+  `architecture-diagram.png` rendered (2400px, mermaid-cli) from a committed
+  `architecture-diagram.mmd` — the source is kept alongside the binary so the diagram is
+  reviewable in a diff rather than drifting silently from the system it depicts.
+  `api-documentation.md` written at the repo root: all **38 routes** transcribed from
+  `routes/ownership-table.js` (which a test asserts against the live Express router, so
+  this file cannot drift undetected), plus the envelope, the closed error-code set, the
+  auth/ownership model, the four decision engines, the honesty contract, rate limits and
+  the upload pipeline. `README.md` rewritten against **real run output only**.
+- [x] **P9-2** [P0](C) **✔ COMPLETE 2026-08-14** — **Product name resolved (closes OD-4).**
+  `KrishiSaarthi` → **Khetri** across 12 files, display names *and* Android identifiers
+  (`package` `in.him1096.khetri`, `slug`, deep-link `scheme`). Renaming identifiers is
+  safe precisely because **no APK has ever been built** — after the first install a
+  package rename breaks upgrades, so this was the last cheap moment to do it.
+  ✔ verified: mobile `tsc --noEmit` clean, `src/security.test.ts` **20/20** (it asserts
+  the declared scheme, so a partial rename would have failed it).
+- [x] **P9-3** [P0](C) **✔ COMPLETE 2026-08-14** — **Status honesty pass.** Every phase
+  header, the README status block and the deliverables list now match what the suites
+  actually print; the deferred-vs-blocked distinction in Phase 8 is stated rather than
+  left for a reader to infer.
+- [ ] [P0](B/A) **⏳ TEAM** — Demo script (docs/product + FINAL-PLAN-SPEC §37) + rehearsal ×2 incl. failure toggle + backup video ✔ timed ≤12min
+- [ ] [P0](B) **⏳ TEAM** — presentation.pptx ✔ team review
+- [ ] [P0](all) **⏳ TEAM** — Viva walkthrough sessions ×2 ✔ each member explains each subsystem
+- [ ] [P0](C) **⏸ AFTER DEPLOY** — Screenshots of the live app (the design references in `Design-refrences/` are not screenshots of a running system and are not presented as such)
+- [ ] [P0](A) **⏳** — Submission: repo naming/structure check vs general instructions, tags, final push ✔ checklist
+
+**Why the open rows are open.** Three need people, not commits (rehearsal, deck, viva).
+One needs the Phase-8 deploy it depends on (live screenshots). None is blocked on code.
 
 ## P3 backlog (architected, deferred)
 Yield estimator implementation (lookup ingestion + endpoint) · offline write queue · password recovery/OTP · push notifications · on-device TFLite · SoyNet soybean model · account deletion endpoint · Marathi voice.

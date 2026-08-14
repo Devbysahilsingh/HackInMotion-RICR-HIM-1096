@@ -33,7 +33,7 @@ Tab order rationale: Home = today's verdicts (primary loop); Scan = hero flow on
 
 `NavigationContainer` in `mobile/src/App.tsx` is rendered with **no `linking` prop**: no prefixes, no route map, no whitelist. `expo-linking` is a dependency but is never imported in `mobile/src`; the only `Linking` usage is React Native's own `Linking.openSettings()` from the camera and farm-form permission branches.
 
-The earlier plan called for "whitelisted screens only (no token-bearing links)". As built the stronger property holds by construction: there is **no deep-link surface at all**, so there is nothing to whitelist and no parameter to validate. If linking is added later, the whitelist requirement returns with it — and the `scheme` is already reserved in `app.config.ts` (`krishisaarthi`).
+The earlier plan called for "whitelisted screens only (no token-bearing links)". As built the stronger property holds by construction: there is **no deep-link surface at all**, so there is nothing to whitelist and no parameter to validate. If linking is added later, the whitelist requirement returns with it — and the `scheme` is already reserved in `app.config.ts` (`khetri`).
 
 ## Status
 
