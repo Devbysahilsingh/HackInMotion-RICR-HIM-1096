@@ -62,6 +62,34 @@ export ENV=development
 .venv/Scripts/python -m uvicorn app.main:create_app --factory --port 7860
 ```
 
+**To serve the trained model to a local backend, two things change** — miss
+either and the service still starts, which is what makes them easy to lose:
+
+```bash
+export MODEL_PATH=model/model-v1.0.onnx   # without this you get StubPredictor, not model-v1.0
+export SERVICE_KEY=<the backend's own SERVICE_KEY>   # must MATCH backend/.env, not be freshly generated
+export ENV=development
+.venv/Scripts/python -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 7860
+```
+
+The `openssl rand` line above is for a standalone run. A *fresh* key here and a
+different one in `backend/.env` is not a startup error — the service comes up
+healthy and every backend call is rejected `401 SERVICE_KEY_INVALID`, which the
+crop-health chain correctly reads as "tier down to Gemini". The symptom is a
+working app that quietly never uses your model.
+
+Confirm you got both right before trusting a result:
+
+```bash
+curl -s http://127.0.0.1:7860/healthz
+# {"status":"ok",...}  → predictor loaded.  "degraded" → MODEL_PATH is wrong/missing.
+```
+
+The boot log is the other half of the check — it prints
+`"predictor": "OnnxPredictor"` (not `StubPredictor`), `"modelTrained": true` and
+`"thresholdsCalibrated": true`. `/healthz` deliberately exposes none of that, so
+the log is the only place to see which predictor is actually serving.
+
 Tests:
 
 ```bash

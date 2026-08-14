@@ -83,6 +83,89 @@ after responding — verified 0 → 2 real decisions. See commit `b4a33b0`.
 
 ---
 
+## 3c · Crop-health chain — live end-to-end verification, 2026-08-14
+
+The last unproven path in §5.2, closed. **One real field photograph**
+(`datasets/audit/fieldtest-review/TOMATO_EARLY_BLIGHT__00.jpg`, 327,821 bytes)
+pushed through the production chain against live services — no mock image, no
+mocked provider, no substituted diagnosis.
+
+**Tier 1 — our own trained ONNX model, executing.** ml-service booted with
+`MODEL_PATH=model/model-v1.0.onnx`, reporting `predictor: OnnxPredictor`,
+`modelTrained: true`, `thresholdsCalibrated: true`, 35 classes. `X-Service-Key`
+enforced: a missing key and a wrong key both answered **401
+`SERVICE_KEY_INVALID`**.
+
+| Step | Evidence |
+|---|---|
+| `POST /crop-health/analyze` | **201 in 2.91 s** |
+| Cloudinary | real URL persisted, `…/him1096/development/2beed827-….jpg` |
+| Tier reached | `source: ml` — **no tier-down**, `escalationPath: []` |
+| Prediction | `TOMATO_TARGET_SPOT`, confidence **0.813053**, `modelVersion: model-v1.0` |
+| Confidence semantics | `confidenceKind: CALIBRATED` (a real probability, unlike the AI band) |
+| Top-3 | target spot 0.813 · early blight 0.087 · leaf mold 0.078 |
+| Persistence | `GET /crop-health/logs` → 1 · `GET /crop-health/logs/:id` → identical code/confidence/model |
+| Contract | `analysis`, `recommendation`, `freshness`, `severityFollowUp`, `coverageNoticeKey`, `sharedToCommunity`, `status` |
+| Labels | `sourceLabelKey: health.sourceLocalAi`, `severityAssessment: NOT_ASSESSED` |
+| Advice | i18n keys only, with real citations (UF/IFAS PP351, NIPHM/DPPQS) — no model-authored text |
+| **IDOR** | second account reading the log → **404** |
+
+**The ONNX model demonstrably executed** — 78.74 ms inference on a direct
+`/predict` probe, and the backend's own 0.813053 differs from that probe's
+0.811518 precisely because the upload pipeline re-encodes the JPEG before
+inference, which is the sanitization step doing its job.
+
+**Read the prediction honestly: the model got it wrong.** Ground truth is early
+blight; the model ranked it **second at 0.087** and answered target spot at
+0.813 — a confident miss. This is exactly the field-domain weakness the ship
+gates already measured (**PlantDoc accuracy 0.1257** vs 0.9632 in-domain), and
+it is the reason the Gemini tier is load-bearing rather than decorative. On this
+photograph **both AI tiers were right where our own model was wrong.**
+
+**Tiers 2–4, each verified live** via the routing-only `FORCE_FAIL_*` flags on
+throwaway instances (ports 4001–4003; the production config was never modified):
+
+| Injected failure | Answered by | Result | Elapsed |
+|---|---|---|---|
+| — | Tier 1 ONNX | `TOMATO_TARGET_SPOT` @ 0.813 calibrated | 2.9 s |
+| `ML` | Tier 2 **Gemini** | **`TOMATO_EARLY_BLIGHT`** @ 0.85 band, `health.sourceAiAssisted` | 7.6 s |
+| `ML` + `GEMINI` | Tier 3 **OpenRouter** | **`TOMATO_EARLY_BLIGHT`**, `health.sourceAiAssisted` | 10.7 s |
+| `ML` + `GEMINI` + `OPENROUTER` | Tier 4 rules | **`UNKNOWN`**, confidence `null`, `health.sourceGuided` | 2.4 s |
+
+Every hop that declined is recorded in `escalationPath` with its reason, and
+**no tier invented a disease** — the terminal case returns `UNKNOWN` with a null
+confidence rather than a guess. All four runs finished inside the 15 s E2E budget.
+
+Provider-level confirmation, measured directly rather than inferred: Gemini
+**200 in 5.87 s** (`finishReason: STOP`) and OpenRouter **200 in 6.02 s, cost 0**
+through the backend's own `openRouter.analyze()`, both returning schema-valid
+JSON naming early blight.
+
+**Two findings worth carrying forward, neither a defect today:**
+
+1. `gemini-flash-latest` is a rolling alias and now resolves to
+   **`gemini-3.7-flash`**, a *thinking* model whose reasoning tokens count
+   against `maxOutputTokens`. At the production setting (1024) the real request
+   used 187 thought + 113 output tokens — comfortable headroom — but a thinking
+   spike would hit `MAX_TOKENS` and return empty content. That degrades to
+   `EMPTY_RESPONSE` → next tier, which is honest, not wrong. Worth watching, not
+   worth changing without evidence.
+2. A transient OpenRouter **`http_status`** appeared on one run and did not
+   reproduce; the free tier rate-limits, and a direct probe had fired seconds
+   earlier. The chain handled it correctly by falling through to `UNKNOWN`.
+
+**Naming caveat, so nobody misreads a log:** `source: "gemini"` identifies the
+*AI-assisted tier*, not the provider — when OpenRouter answers, `source` is
+still `gemini` and `provider` carries `openrouter`. The farmer-facing label is
+the generic `health.sourceAiAssisted` either way, so the displayed claim stays
+accurate.
+
+**Still not verified:** no cross-crop sweep (one photograph, one crop), and
+`severityAssessment` stays `NOT_ASSESSED` until the farmer answers the follow-up
+— by design, but it means the severity engine's photo path is unexercised here.
+
+---
+
 ## 4 · What is genuinely strong
 
 **1 · The honesty architecture.** This is the real differentiator, not a feature.
@@ -127,12 +210,19 @@ they are provisioned, and everything needed is committed and locally proven
 (`render.yaml`, env checklist, smoke suite 18/18) — but a judge sees a localhost
 demo where others show a URL. **Be ready to say this in one sentence and move on.**
 
-**2 · ~~The crop-health chain has never made a real external call.~~ RESOLVED 2026-08-14.**
-All four tiers now report `configured: true` from `/healthz` — `ml`, `gemini`,
-`openrouter` and `storage` — and `systemStatus.ml` reports **`live`**. The
-remaining gap is narrower and worth stating precisely: **the tiers are wired and
-reachable; a real leaf photograph has not been pushed through the full chain
-end-to-end on this machine.** Do that once before the demo.
+**2 · ~~The crop-health chain has never made a real external call.~~
+~~A real leaf photograph has not been pushed through the full chain.~~ FULLY
+RESOLVED 2026-08-14 — see §3c.**
+A real field photograph now runs the complete production chain end to end, and
+**all four tiers are individually verified live**: our own ONNX model answered in
+78 ms, Gemini and OpenRouter each returned schema-valid diagnoses, and the
+terminal rules tier returns `UNKNOWN` rather than a guess. What survives is not a
+plumbing gap but a **model-quality** one, and it is the honest headline: on this
+photograph the local model was **confidently wrong** (target spot @ 0.813; the
+correct early blight ranked second @ 0.087), while both AI tiers were right.
+That is the measured field-domain weakness (PlantDoc **0.1257**) showing up in
+practice — the architecture handled it correctly, which is the point, but do not
+claim the model is accurate on field photos. Also unswept: one crop, one image.
 
 **3 · The recommender scores on far less evidence than designed.**
 Of four documented factors, **temperature can never score** (the district climate
@@ -171,7 +261,7 @@ for the ML owner rather than silently regenerated.
 | # | Action | Effort | Why |
 |---|---|---|---|
 | 1 | Deploy backend + web | hours | The single biggest remaining deliverable gap |
-| 2 | Push **one real leaf photo** through the full chain | minutes | Tiers are configured and reachable; the end-to-end path is the last unproven step |
+| 2 | ~~Push **one real leaf photo** through the full chain~~ — **done 2026-08-14 (§3c)** | — | All four tiers verified live; the remaining gap is model accuracy, not wiring |
 | 3 | Commit `presentation.pptx` | minutes | The file exists in the working tree but is not tracked |
 | 4 | Build an APK, run the device matrix once | hours | Turns "untested on device" into "verified" |
 | 5 | Get a Hindi speaker to read the 408 disease strings | ~2 h | Closes the last honesty gap |

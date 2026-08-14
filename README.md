@@ -119,7 +119,7 @@ Indian small and mid-sized farmers make five recurring, high-stakes decisions �
 ## The solution
 A web + Android platform where a farmer sets up their farm (location, size, soil, crops) and gets one prioritized answer to *"what do I act on today?"* — powered by:
 - **FAO-56 water-balance irrigation engine** — real agronomy (ET₀ × crop coefficient × soil water holding), not "it might rain."
-- **Custom-trained crop-disease vision model** (EfficientNet-B0, trained on our own GPU; rice model trained on real Indian field photos) with calibrated confidence — and an honest three-tier fallback: local model → Gemini Vision → guided symptom assessment.
+- **Custom-trained crop-disease vision model** (EfficientNet-B0, trained on our own GPU; rice model trained on real Indian field photos) with calibrated confidence — and an honest four-tier fallback: local model → Gemini Vision → OpenRouter → guided symptom assessment. All four verified live on a real field photograph on 2026-08-14 (`docs/development/submission-audit.md` §3c), including the case that matters most: when every tier fails the app answers `UNKNOWN`, never a guess.
 - **Mandi price intelligence** from government Agmarknet data — trends and signals, never fake predictions.
 - **Crop recommendation + fertilizer guidance** from source-cited ICAR/TNAU/PAU knowledge — every number carries its source; no AI-invented dosages, ever.
 - **Full Hindi + English**, voice readout, community outbreak alerts (privacy-first), offline-cached reads.
@@ -161,7 +161,7 @@ That last row is the number most projects omit. A model at 0.96 in-domain scores
 | Open-Meteo | weather + FAO ET₀ | free, keyless, only free source with ET₀ (powers the irrigation engine) | docs/weather/ · ADR-007 |
 | OpenWeatherMap | weather fallback | ubiquitous free tier | 〃 |
 | data.gov.in (Agmarknet) | mandi prices | official govt source, GODL license | docs/market/ |
-| Gemini 2.5 Flash | vision second-opinion / general-crop analysis | best free multimodal tier (1,500 req/day, no card) | docs/ai/ |
+| Gemini Flash (`gemini-flash-latest`) | vision second-opinion / general-crop analysis | best free multimodal tier (1,500 req/day, no card) | docs/ai/ |
 | OpenRouter free models | vision tertiary fallback | free chain depth | 〃 |
 | Cloudinary | image storage | free tier, re-encoded uploads only | docs/security/image-upload-security.md |
 | MongoDB Atlas M0 / Render / Vercel / HF Spaces / Expo | hosting | zero-cost, documented trade-offs | docs/deployment/ · ADR-011 |

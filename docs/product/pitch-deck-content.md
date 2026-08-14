@@ -127,7 +127,17 @@ We measured it — which is precisely *why* the Gemini tier is load-bearing rath
 than decorative, and why a farmer sees "AI-assisted" instead of a confident
 wrong answer.
 
-*Speaker note:* If you take one thing from this deck, take this slide.
+**And then we watched it happen.** On 2026-08-14 we pushed one real field
+photograph of tomato early blight through the live chain. Our model answered
+**target spot at 0.813** — confident, and wrong; the correct answer sat second at
+0.087. Force the model offline and **Gemini gets it right**; force Gemini offline
+too and **OpenRouter gets it right**; force all three offline and the app says
+**UNKNOWN** rather than guessing. That is row four of this table, reproduced on
+demand, and it is the entire argument for the architecture.
+
+*Speaker note:* If you take one thing from this deck, take this slide. If a judge
+asks "did your model actually work?" — the honest answer is "it ran in 78 ms and
+it was wrong, and that is why there are four tiers." Say it exactly like that.
 
 ---
 
