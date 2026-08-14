@@ -195,6 +195,12 @@ function main() {
   const args = parseArgs(process.argv.slice(2));
 
   if (!existsSync(args.file)) {
+    // `--check` still has work to do without the source, and CI is the case
+    // that matters: the 56MB export is gitignored, so a fresh checkout has no
+    // raw file and a hard failure there would only teach people to ignore the
+    // gate. It verifies what it can and says plainly what it could not.
+    if (args.check) return verifyArtefactsOnly();
+
     console.error(
       [
         '',
@@ -217,6 +223,74 @@ function main() {
   }
 
   return run(args);
+}
+
+/**
+ * Source-free integrity verification, used by `--check` when the raw export is
+ * absent.
+ *
+ * It CANNOT prove the committed lookup is what the pipeline produces — that
+ * needs the source — and it does not pretend to. What it does prove is that the
+ * three committed artefacts still agree with each other: the lookup was built
+ * from the file the manifest records, and the quality report's counts still
+ * describe the lookup sitting next to it. A hand-edit to any one of them breaks
+ * that agreement.
+ *
+ * The stronger guarantee in CI is `tests/services/yieldLookupArtifact.test.js`,
+ * which asserts the lookup against real Indian yields and runs under `npm test`.
+ */
+function verifyArtefactsOnly() {
+  const problems = [];
+  const require = (condition, message) => {
+    if (!condition) problems.push(message);
+  };
+
+  for (const path of [DEFAULT_OUT, QUALITY_REPORT, SOURCE_MANIFEST]) {
+    if (!existsSync(path)) problems.push(`missing artefact: ${path}`);
+  }
+  if (problems.length) {
+    console.error('yield lookup --check FAILED:\n  ' + problems.join('\n  '));
+    process.exitCode = 1;
+    return;
+  }
+
+  const lookup = JSON.parse(readFileSync(DEFAULT_OUT, 'utf8'));
+  const quality = JSON.parse(readFileSync(QUALITY_REPORT, 'utf8'));
+  const manifest = JSON.parse(readFileSync(SOURCE_MANIFEST, 'utf8'));
+  const declared = manifest.sources?.find((s) => s.id === 'idp-apy');
+
+  require(declared, 'source-manifest.json has no idp-apy source');
+  require(lookup.source?.sha256 ===
+    declared?.sha256, `lookup was built from ${lookup.source?.sha256} but the manifest records ${declared?.sha256}`);
+  require(quality.source?.sha256 ===
+    declared?.sha256, `quality report was built from ${quality.source?.sha256} but the manifest records ${declared?.sha256}`);
+  require(JSON.stringify(quality.lookup?.crops) ===
+    JSON.stringify(lookup.crops), 'quality report and lookup disagree on the crop list');
+
+  for (const [tier, entries] of Object.entries(lookup.tiers ?? {})) {
+    const claimed = quality.lookup?.entriesPerTier?.[tier];
+    const actual = Object.keys(entries).length;
+    require(claimed ===
+      actual, `${tier}: report claims ${claimed} entries, lookup holds ${actual}`);
+  }
+
+  if (problems.length) {
+    console.error('yield lookup --check FAILED:\n  ' + problems.join('\n  '));
+    process.exitCode = 1;
+    return;
+  }
+
+  console.log(
+    [
+      'yield lookup --check: committed artefacts are mutually consistent ✔',
+      `  built from sha256 ${declared.sha256}`,
+      `  crops ${lookup.crops.join(', ')}`,
+      '',
+      '  NOTE: the raw export is absent, so this did NOT rebuild and compare.',
+      '  Run with the source present for the full comparison. The value-level',
+      '  guarantee in CI is tests/services/yieldLookupArtifact.test.js.',
+    ].join('\n'),
+  );
 }
 
 async function run(args) {
