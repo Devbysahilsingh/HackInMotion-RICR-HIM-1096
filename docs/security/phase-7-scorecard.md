@@ -67,7 +67,7 @@ recording it as "fixed" would be dishonest in the other direction.
 | **Verb tampering, cross-collection ids, list filters** | The manual "change the id, then change the verb" pass | No route serves an undeclared verb; an id of the wrong kind is never a key to the right kind, even when the caller owns it; a list filtered by another farmer's `cropId` returns an empty list rather than their rows, because the userId scope is in the query and not applied afterwards (AU-4) |
 | **`scripts/` command injection** | ST-40 asserted that `backend/src` reaches no shell; `scripts/` was never scanned | One process execution exists: `execFileSync('git', [...])` in `scan-staged-secrets.mjs` — argv form, literal binary, no shell. Now asserted, along with the absence of `exec`/`execSync`/`shell: true`/`eval` across the directory |
 | **Upload — markup payloads** | SVG and HTML were covered in effect (neither has magic bytes, so both fail the sniff) but never tested. SVG is the classic stored-XSS carrier | All four variants refused, including a JPEG-signature-prefixed SVG, which fails one step later at the decode. No fragment of the payload is echoed back |
-| **CI/CD** | The repository had **no CI configuration at all** — every gate in `docs/testing/strategy.md` was reachable only by a human remembering to run it | `.github/workflows/ci.yml` added: `permissions: contents: read`, `pull_request` (never `pull_request_target`), every third-party action pinned to a full commit SHA, `npm ci` throughout. ⚠ **It has never executed** — GitHub Actions has no run history for this repository. See "Not verified" below |
+| **CI/CD** | The repository had **no CI configuration at all** — every gate in `docs/testing/strategy.md` was reachable only by a human remembering to run it | `.github/workflows/ci.yml` added: `permissions: contents: read`, `pull_request` (never `pull_request_target`), every third-party action pinned to a full commit SHA, `npm ci` throughout. ✅ **It has now executed.** Its first run failed two jobs, both genuinely: `ml-service tests` on the manifest drift recorded below, and `Backend tests` on ST-60.5, which fails closed when no client bundle exists and had only ever been run on a developer machine where `web/frontend/dist` happened to be present. The workflow now builds the web client before the backend suite. ⚠ ST-60.5 covers the **web bundle only** — `mobile/` has no export script, so the Hermes bundle stays unscanned in CI |
 
 ## Verified secure (attacks that failed because the code is correct)
 
@@ -145,7 +145,8 @@ the code rather than over the wire.
 
 | Item | Why | Owner |
 |---|---|---|
-| The CI workflow has never run | GitHub Actions has no run history for this repository. The YAML parses, every referenced npm script exists, and no `pull_request_target` appears — but a green pipeline has not been observed, so it is not claimed | A |
+| A fully green CI pipeline | The workflow has now run. Five jobs pass; the two that failed were fixed at the root (client build for ST-60.5, dataset-hash drift for the manifest check) and both were reproduced and re-run green in a clean checkout of the pushed commit. The *corrected* pipeline has not yet been observed green on GitHub's own runners, so that is not claimed | A |
+| ST-60.5 against the mobile bundle | CI builds `web/frontend/dist` only. `mobile/` exposes no export script, so `mobile/dist` is never produced and the Hermes bundle is not grepped for provider keys. `scripts/scan-apk-strings.mjs` exists for this and needs an `expo export` step to feed it | A |
 | RES-04..06 live procedure | Toggling `FORCE_FAIL_ML` / `_GEMINI` / `_OPENROUTER` against a running deployment and watching the UI. Needs a deployed ml-service and provider credentials; all four are unset. The *behaviour* is covered by the 8-combination tier-router matrix | A |
 | Hindi agronomic strings | 568/1152 human-verified; the disease KB is 0/408. A key-set parity check proves both languages have every key and proves nothing about correctness | Human reviewer |
 
@@ -153,10 +154,13 @@ the code rather than over the wire.
 
 ```bash
 npm run lint && npm run format:check && npm run check:i18n && npm run check:ui-strings
+# ST-60.5 greps the built client bundle and fails closed if there is none, so
+# the web build is a prerequisite of the backend suite on a clean checkout.
+npm --prefix web/frontend ci && npm --prefix web/frontend exec vite build
 npm --prefix backend test          # 1505
 npm --prefix web/frontend test     # 131
 npm --prefix mobile test           # 110
-cd ml-service && ./.venv/Scripts/python -m pytest   # 143 pass, 1 known failure
+cd ml-service && ./.venv/Scripts/python -m pytest   # 144
 
 gitleaks detect --no-banner --redact --log-opts="--all --full-history"
 npm --prefix backend audit --omit=dev

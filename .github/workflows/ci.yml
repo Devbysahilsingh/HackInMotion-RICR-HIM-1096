@@ -74,9 +74,32 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: backend/package-lock.json
+          cache-dependency-path: |
+            backend/package-lock.json
+            web/frontend/package-lock.json
       - run: npm ci
         working-directory: backend
+
+      # ST-60.5 greps the *built* client for provider credentials
+      # (docs/security/security-testing.md: "grep dist/APK"), and it fails
+      # closed when no bundle exists rather than reporting a missing artifact
+      # as a pass. `dist/` is gitignored, so on a fresh checkout there is
+      # nothing to scan and the gate cannot run — which is exactly what the
+      # first execution of this workflow caught.
+      #
+      # `vite build` rather than `npm run build`: the package script prefixes
+      # `tsc --noEmit`, and type-checking the web client is the web job's
+      # business. This step exists solely to produce the artifact the security
+      # scan reads, so a type error should fail *that* job, under its own name.
+      #
+      # KNOWN GAP: this covers web/frontend/dist only. `mobile/` has no export
+      # script, so mobile/dist is never built here and the Hermes bundle stays
+      # unscanned in CI — ST-60.5 passes on the web bundle alone. Closing it
+      # means an `expo export` step (see docs/security/phase-7-scorecard.md).
+      - name: Build web client (artifact scanned by ST-60.5)
+        run: npm ci && npx vite build
+        working-directory: web/frontend
+
       # Includes the whole ST-01..70 security battery and the RES matrix.
       - run: npm test
         working-directory: backend
