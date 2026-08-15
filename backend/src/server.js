@@ -5,15 +5,22 @@
  */
 import { createApp } from './app.js';
 import { connectDatabase, disconnectDatabase } from './config/db.js';
-import { env } from './config/env.js';
+import { env, isProd } from './config/env.js';
 import { scheduler } from './jobs/index.js';
 import { logger } from './utils/logger.js';
 
 // The database is required before the port opens: a listening service that
 // cannot read its own data would answer health checks while failing every
 // request (docs/backend/architecture.md — "no half-configured prod").
+let databaseConnected = false;
 if (env.MONGODB_URI) {
-  await connectDatabase(env.MONGODB_URI);
+  try {
+    await connectDatabase(env.MONGODB_URI);
+    databaseConnected = true;
+  } catch (err) {
+    if (isProd) throw err;
+    logger.warn({ err }, 'mongo unavailable — starting without a database (development only)');
+  }
 } else {
   logger.warn('MONGODB_URI not set — starting without a database (development only)');
 }
@@ -38,7 +45,7 @@ const server = createApp().listen(env.PORT, () => {
  * so an unnecessary run costs one provider call, never a duplicate row.
  */
 let stopScheduler = () => {};
-if (env.MONGODB_URI) {
+if (databaseConnected) {
   stopScheduler = scheduler.start();
   logger.info({ jobs: scheduler.jobNames() }, 'scheduler started');
 }
