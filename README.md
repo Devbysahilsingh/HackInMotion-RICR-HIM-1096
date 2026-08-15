@@ -249,7 +249,10 @@ Schema, indexes, lifecycle: `docs/database/`.
 | Web client | Vercel | **Live** |
 | REST API | Render | **Live** — 43 routes, `/healthz` liveness, production security config |
 | Database | MongoDB Atlas | **Live** — indexes built from `npm run indexes:build`, never `autoIndex` |
-| AI tiers | Gemini → OpenRouter | **Live** — measured 2.18 s and 9.82 s end to end |
+| Crop-health chain | 4 tiers | **Live** — answering, with the tier that spoke named in every response |
+| ├ tier 1 | EfficientNet-B0 ONNX | Trained on our own GPU, temperature-calibrated, ONNX-parity tested to 1.55e-05, shipped in-repo as `model-v1.0` |
+| ├ tiers 2–3 | Gemini → OpenRouter | Measured 2.18 s and 9.82 s end to end |
+| └ tier 4 | Local symptom rules | Always available — the chain cannot fail to answer |
 | Android | Expo Go | Runs from source; APK build is a packaging step, not a code gap |
 
 Every secret is `sync: false` in `render.yaml` — nothing sensitive is committed, and the API refuses to boot if a required secret is missing or under 32 characters rather than starting in a weakened state. Runbooks and the environment checklist: `docs/deployment/`.
