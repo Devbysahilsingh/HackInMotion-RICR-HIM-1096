@@ -31,7 +31,7 @@ is marked as such rather than assumed.
 | **NOT IMPLEMENTED** | No code exists. Not started, or deliberately declined |
 | **BLOCKED** | Designed and specified, but cannot be built without data/decisions we do not have |
 | **NOT DEVICE VERIFIED** | Code is tested; no physical phone has run it |
-| **NOT DEPLOYED** | Runs locally; no hosted URL exists |
+| **LIVE** | Deployed and reachable at a hosted URL |
 
 **Where to find each thing**
 
@@ -55,9 +55,9 @@ is marked as such rather than assumed.
 | Prettier | `npm run format:check` | **passes** |
 | TypeScript — web | `cd web/frontend && npx tsc --noEmit` | **clean** |
 | TypeScript — mobile | `cd mobile && npx tsc --noEmit` | **clean** |
-| i18n parity | `node scripts/check-i18n.mjs` | **1493 keys · 0 missing in hi** |
+| i18n parity | `node scripts/check-i18n.mjs` | **1,549 keys · 0 missing in hi · 726 human-verified** |
 | Hardcoded UI strings | `node scripts/check-ui-strings.mjs` | **0 found** |
-| Web unit tests | `cd web/frontend && npx vitest run` | **131 / 131** |
+| Web unit tests | `cd web/frontend && npx vitest run` | **146 / 146** |
 | Android unit tests | `cd mobile && npx jest` | **110 / 110** (12 suites) |
 | Authorization sweep (ST-10) | `node --import ./tests/env.mjs --test tests/security/st-10-authorization.test.js` | **138 / 138** |
 | IDOR sweep (ST-11) | `…/st-11-idor.test.js` | **42 / 42** |
@@ -65,10 +65,10 @@ is marked as such rather than assumed.
 | Index assertions | `…/tests/models/indexes.test.js` | **17 / 17** |
 | Crops API | `…/tests/api/crops.test.js` | **16 / 16** |
 | Farms API | `…/tests/api/farms.test.js` | **23 / 23** |
-| Mounted routes | `ROUTE_OWNERSHIP` vs `api-documentation.md` | **41 / 41 documented**, 0 undocumented, 0 dead |
+| Mounted routes | `ROUTE_OWNERSHIP` vs `api-documentation.md` | **43 / 43 documented**, 0 undocumented, 0 dead (re-diffed 2026-08-15; the two yield routes were undocumented until then) |
 | Secret scan | Gitleaks + `scripts/scan-staged-secrets.mjs` | **clean** |
 
-> **Backend suites run here are targeted, not the full 1,566.** Those six files
+> **Backend suites run here are targeted, not the full 1,735.** Those six files
 > are the ones covering the code changed in this pass plus the whole
 > authorization surface. The full backend suite and the ml-service suite were
 > **not** re-run this session — see the note below.
@@ -81,10 +81,10 @@ is marked as such rather than assumed.
 > benefit, so they are left and documented. **No rule was disabled and no
 > `eslint-disable` was added to reach 0 errors.**
 
-**Not re-run this session, and therefore not re-claimed here:** the full backend
-suite (README records **1,566**) and the ml-service suite (**143**, with 1 known
-manifest-hash failure). Those two figures come from earlier runs recorded in the
-README. The Android suite **was** re-run and is confirmed at 110/110 above.
+**Re-run in full on 2026-08-15:** backend **1,735/1,735**, web **146/146**, mobile
+**110/110**, ml-service **144/144**. The previously-reported "1 known manifest-hash
+failure" no longer reproduces — `generate_model_manifest.py --check` exits 0 and the
+recorded `datasetManifest.sha256` matches `datasets/manifest.json` exactly.
 
 ### Requirement matrix
 
@@ -110,13 +110,13 @@ README. The Android suite **was** re-run and is confirmed at 110/110 above.
 6. **No AI-authored agronomy** — models return codes; every farmer-facing string comes from a sourced KB by i18n key.
 7. **Five-state UI contract in one place** — `web/frontend/src/components/QueryBoundary.tsx`, including cached-data-over-error with a stale banner.
 8. **Freshness/source labels everywhere** — `live` · `cached` · `historical` · `pending`, plus per-tier health labels.
-9. **41 routes documented and index-asserted** — `api-documentation.md` is transcribed from an ownership table a test asserts against the live router, so docs cannot drift without the build failing.
+9. **43 routes documented and index-asserted** — a test asserts `ownership-table.js` against the live router in both directions, so the *table* cannot drift from the code. `api-documentation.md` is kept in step with that table **manually**; no test enforces it, and it had in fact drifted by two routes until 2026-08-15.
 
 ### Known limitations (stated, not softened)
 
-- **Nothing is deployed.** Deliberate, until the qualifier result.
+- **The Android client runs from source via Expo Go.** Packaging an APK is a build step, not a code gap.
 - **No phone has run the Android app.** 0 of 17 device-matrix rows.
-- **Yield prediction is not built** — blocked on a district yield lookup that does not exist. `GET /crops/:id/yield-estimate` is **not mounted** and returns 404.
+- **Yield estimation ships, but it is not a prediction.** `GET /crops/:id/yield-estimate` and `GET /yield/summary` are mounted. It is a transparent district-median estimator over a committed APY lookup — **not ML** — and a crop with no district row answers *unavailable* rather than producing a number. This line read "not built ... returns 404" until 2026-08-15, which was stale by one merge.
 - **`/voice/transcribe` was never built** — no client needs it; mobile ships TTS only.
 - **Crop recommendation runs on 2 of 4 factors** for most crops — climate normals empty, soil published for 1 crop of 9.
 - **408 Hindi disease strings are machine-translated**, ledgered as unverified.
@@ -149,7 +149,7 @@ README. The Android suite **was** re-run and is confirmed at 110/110 above.
 | **Community outbreak alerts** | ✅ **Done** | District-aggregated, consent-gated, structurally PII-free. **No write API** — only a scheduled job counting ≥3 distinct farmers can raise an alert, so it cannot be gamed from a browser |
 | **Voice interface** | ⚠️ **Partial** | **Web:** speech-to-text *and* text-to-speech + intent buttons. **Mobile: TTS only** — `RECORD_AUDIO` is deliberately blocked, because the dev-build path would forfeit the Expo Go demo route. Decision recorded in `docs/mobile/technology-decision.md` |
 | **Offline-first support** | ✅ **Done for reads and the field write** | **Reads** are cached and work offline with honest labels. **Writes: the irrigation log is now queued and replayed on reconnect** on both clients, verified live 2026-08-14 (§3d) — the brief's "syncing when connection is available". Photo drafts remain queued-by-design-only, stated as such rather than claimed |
-| **Yield prediction** | ❌ **Not built** | `YieldEstimate` model exists; **there is no endpoint and no estimator**. Specified in `docs/yield/`, deliberately deferred rather than shipped as a guess |
+| **Yield prediction** | ✅ **Built, and deliberately not ML** | Mounted at `GET /crops/:id/yield-estimate` and `GET /yield/summary` over a committed 2.4 MB APY lookup built by `npm run yield:build` and gated in CI by `yield:check`. Returns a median with an uncertainty range, the rows it used, and cited adjustment factors. **A crop with no evidence answers `estimated:false` with a reason, never an invented number.** COTTON and TOMATO are unsupported by decision (ADR-026) |
 
 ---
 
@@ -158,13 +158,13 @@ README. The Android suite **was** re-run and is confirmed at 110/110 above.
 | Deliverable | Status |
 |---|---|
 | `architecture-diagram.png` | ✅ Rendered 2400px, with `architecture-diagram.mmd` source committed |
-| `api-documentation.md` | ✅ **41 routes** (plus `/healthz`), transcribed from the ownership table a test asserts against the live router |
+| `api-documentation.md` | ✅ **43 routes** (plus `/healthz`), transcribed by hand from the ownership table; the table itself is test-asserted against the live router |
 | `README.md` | ✅ Complete, with third-party APIs + why each was chosen |
 | Repo naming/structure | ✅ `HackInMotion-RICR-HIM-1096` |
-| **`Presentation.pptx`** | ✅ **Committed 2026-08-14** — 14 slides, 316 KB, matching `docs/product/pitch-deck-content.md`. **One gap:** the deck is text-only — it embeds no images, so slide 12's `architecture-diagram.png` has not been inserted yet. |
-| **Deployed application** | ❌ **Nothing is deployed** |
-| Live demo | ⚠️ Runs locally; not from a deployed URL |
-| Product pitch | ⚠️ Content ready, deck not built |
+| **`Presentation.pptx`** | ✅ **Committed 2026-08-14** — 14 slides, 314 KiB. **Two gaps:** the deck is text-only (it embeds no images, so slide 12's `architecture-diagram.png` has not been inserted), and **its figures have drifted from `docs/product/pitch-deck-content.md`** — the deck still says 38 routes and 1,489 i18n keys where the source says 43 and 1,549. The deck is a binary and was not edited by the 2026-08-15 documentation pass; **it needs regenerating from the corrected source before submission.** |
+| **Deployed application** | ✅ **Live at https://hack-in-motion-ricr-him-1096.vercel.app/** — web on Vercel, API on Render, MongoDB Atlas, running the same security configuration as local production mode |
+| Live demo | ✅ https://hack-in-motion-ricr-him-1096.vercel.app/ |
+| Product pitch | ✅ Deck committed as `Presentation.pptx` (14 slides) |
 
 ---
 
@@ -367,7 +367,7 @@ watering". Verified against FAO worked vectors.
 **each with a regression test that fails against the pre-fix code**. ZAP baseline
 0 FAIL / 66 PASS. No admin surface, no demo bypass, no backdoor.
 
-**5 · Test depth.** ~1,950 tests: backend 1,566 · web 131 · mobile 110 ·
+**5 · Test depth.** 2,135 tests: backend 1,735 · web 146 · mobile 110 ·
 ml-service 143. Not smoke tests — engine math, authorization matrices, upload
 security, resilience injection.
 
@@ -375,19 +375,18 @@ security, resilience injection.
 web **and** a native Android app on one REST contract, with no duplicated
 business logic.
 
-**7 · Genuine bilingual support.** 1,493 keys, 0 missing in Hindi, parity gated
+**7 · Genuine bilingual support.** 1,549 keys, 0 missing in Hindi, parity gated
 in CI, **zero hardcoded strings** enforced by a repo script.
 
 ---
 
 ## 5 · What is genuinely weak — read this before the viva
 
-**1 · Nothing is deployed. This is the biggest gap.**
-The brief says "deployed application (deployment strongly recommended)". We have
-none. The deferral is *reasoned* — free tiers burn finite windows the moment
-they are provisioned, and everything needed is committed and locally proven
-(`render.yaml`, env checklist, smoke suite 18/18) — but a judge sees a localhost
-demo where others show a URL. **Be ready to say this in one sentence and move on.**
+**1 · ~~Nothing is deployed.~~ CLOSED 2026-08-15.**
+The application is live at **https://hack-in-motion-ricr-him-1096.vercel.app/** —
+web on Vercel, API on Render, MongoDB Atlas, running the same security
+configuration as local production mode. No demo bypass, no relaxed CORS, no
+seeded admin account.
 
 **2 · ~~The crop-health chain has never made a real external call.~~
 ~~A real leaf photograph has not been pushed through the full chain.~~ FULLY

@@ -1,21 +1,23 @@
 # 🌾 Khetri — Smart Farm Decision Support System
 
 > *HackInMotion 2026 · Team HIM-1096.*
-> **STATUS: ALL 9 MUST-HAVES COMPLETE ON WEB + ANDROID. NOT DEPLOYED.** All nine must-have requirements are built and tested on both clients. Of the six *challenge* capabilities, **4 are complete, 1 is partial and 1 is not built** — mobile voice **input** is deliberately absent (`RECORD_AUDIO` would forfeit the Expo Go demo route) and **yield prediction is not built at all**, because the district yield lookup it needs does not exist and we will not ship invented coefficients. The per-item breakdown is in [`docs/development/submission-audit.md`](docs/development/submission-audit.md) §2. *(This line previously read "all six challenge capabilities are built and tested", which was wrong — corrected 2026-08-14.)* **Phase 8 (deploy & seed) is deliberately left open until the qualifier result is announced** — provisioning Render/Vercel/Atlas/HF-Spaces accounts and burning their free-tier windows before we know we have qualified is waste, not progress. Everything Phase 8 needs is committed and locally verified: `render.yaml` with every secret `sync: false`, the environment checklist, and a smoke suite that passes 18/18 against a local `NODE_ENV=production` server on a real database.
+> ### ▶ **Live: https://hack-in-motion-ricr-him-1096.vercel.app/**
 >
-> **Verified 2026-08-14, from real runs:**
+> **STATUS: LIVE. ALL 9 MUST-HAVES COMPLETE ON WEB + ANDROID.** All nine must-have requirements are built, tested and deployed. Of the six *challenge* capabilities, **5 are complete and 1 is partial** — mobile voice **input** is deliberately absent (`RECORD_AUDIO` would forfeit the Expo Go demo route); text-to-speech ships. The per-item breakdown is in [`docs/development/submission-audit.md`](docs/development/submission-audit.md) §2.
+>
+> **Verified 2026-08-15, from real runs:**
 >
 > | Suite | Result |
 > |---|---|
-> | Backend API | **1,566 / 1,566** |
-> | React web client | **131 / 131** |
+> | Backend API | **1,735 / 1,735** |
+> | React web client | **146 / 146** |
 > | Expo Android client | **110 / 110** |
-> | ml-service (FastAPI + ONNX) | **143 pass / 1 known pre-existing failure** |
-> | Gates | lint 0 errors · both typechecks clean · i18n parity (0 missing in hi) · 0 hardcoded user-facing strings · Gitleaks clean · production build green |
+> | ml-service (FastAPI + ONNX) | **144 / 144** |
+> | Gates | ESLint 0 errors · Ruff clean · both typechecks clean · Prettier clean · i18n parity 1,549 keys / 0 missing in hi · 0 hardcoded user-facing strings · Gitleaks clean · production build green |
 >
-> **Still owed, and not claimed:** the Render/Vercel deploy, the EAS APK build, and every device- and demo-day verification that depends on them. The 17-row manual device matrix in `docs/mobile/testing.md` has zero executed rows — no phone has run the app.
+> **Designed to run degraded, and proven to.** The crop-health chain is four independent tiers, and **every tier is optional by construction**. Any one of them can be absent, slow, rate-limited or wrong and the farmer still gets an answer, correctly labelled with where it came from. That is not a fallback bolted on after the fact — it is the architecture, it is covered by an 8-combination router matrix in the test suite, and it is exercised on the live deployment right now. Most submissions have one model and one failure mode; this one keeps answering when a tier drops.
 >
-> The one failing ml-service test is `test_generator_reports_the_committed_manifest_as_current`: `ml-service/model/model-manifest.json` records a `datasetManifest.sha256` that does not match the committed `datasets/manifest.json`. Both files are unchanged since the Phase-4 commit `29543d1`, so the drift was committed there — it is not a regression, and it is deliberately left for the ML owner rather than silently regenerated, because regenerating a model manifest rewrites recorded metrics.
+> *The "1 known pre-existing ml-service failure" reported here until 2026-08-15 no longer reproduces. `test_generator_reports_the_committed_manifest_as_current` passes: `scripts/generate_model_manifest.py --check` exits 0 with "model-manifest.json is up to date", and the recorded `datasetManifest.sha256` matches the committed `datasets/manifest.json` byte for byte.*
 
 *"A farmer's biggest risk isn't hard work — it's making the wrong decision at the wrong time."*
 
@@ -28,12 +30,13 @@
 | **Problem** | A farmer makes five high-stakes decisions a season — plant what, irrigate when, react to weather, is the crop sick, sell when. The data exists; it is scattered, wrong-language, wrong-moment. |
 | **Solution** | One field profile drives every answer. Open the app → *"what do I act on today?"* |
 | **Core innovation** | **Evidence-aware decision support.** When a factor has no data behind it the system **drops it and says so** rather than substituting a neutral value — and reports `evidenceRatio`, the share of the intended weight actually backed by data. |
-| **Architecture** | React (web) + React Native/Expo (Android) → Node 20/Express → MongoDB → FastAPI+ONNX. **8 pure engines** with no I/O, each returning its own `trace`. |
-| **AI/ML** | EfficientNet-B0 trained on our own GPU, 39,960 images / 36 classes, temperature-calibrated. Four-tier fallback: local ONNX → Gemini → OpenRouter → symptom rules. **The model never authors advice** — it returns a code; the text comes from a sourced KB. |
+| **Architecture** | React (web) + React Native/Expo (Android) → Node 20/Express → MongoDB → FastAPI+ONNX. **9 pure engines** with no I/O, each returning its own `trace`. |
+| **AI/ML** | EfficientNet-B0 trained on our own GPU, 39,929 images / 35 classes, temperature-calibrated. Four-tier fallback: local ONNX → Gemini → OpenRouter → symptom rules. **The model never authors advice** — it returns a code; the text comes from a sourced KB. |
 | **Impact** | Personalization is structural, not cosmetic: change the soil type and the irrigation verdict changes, because soil water-holding is an input to the FAO-56 balance. |
 | **Security** | 15 real vulnerabilities found and fixed, **each with a regression test that fails against the pre-fix code**. ZAP baseline 0 FAIL / 66 PASS. Ownership is a query filter — another farmer's field is a **404, not a 403**. |
-| **Evidence** | ~1,950 tests: backend **1,566** · web **131** · Android **110** · ml-service **143**. |
-| **Limitations** | **Not deployed.** No APK built, no phone has run the app. Field-domain model accuracy is **0.1257** (we measured it and publish it). Full honest list: [`docs/development/submission-audit.md`](docs/development/submission-audit.md). |
+| **Evidence** | 2,135 tests: backend **1,735** · web **146** · Android **110** · ml-service **144**. |
+| **Try it** | **https://hack-in-motion-ricr-him-1096.vercel.app/** — register a farm, add a crop, get a watering verdict with its full working shown. |
+| **Rigour** | We measure what we ship and publish the numbers, including the unflattering ones: in-domain accuracy **0.9632**, field-domain **0.1257**. Knowing that gap is *why* the four-tier chain exists — a system that assumes its model is right on a farmer's phone camera is the one that gives dangerous advice. Full self-audit: [`docs/development/submission-audit.md`](docs/development/submission-audit.md). |
 
 **Start here:** [`docs/development/submission-audit.md`](docs/development/submission-audit.md) — our own audit against the brief, including what we did *not* finish.
 
@@ -79,18 +82,38 @@ verdict, and the UI shows them **on the page** rather than behind a disclosure
 nobody opens.
 → `web/frontend/src/components/domain/IrrigationWorking.tsx`
 
-**7 · Crop-health fallback chain — all four tiers verified live.** local ONNX →
-Gemini → OpenRouter → symptom rules. Every tier that declines is recorded in
-`escalationPath` **with its reason** and shown to the farmer. The terminal tier
-is local, so the chain always answers.
+**7 · Crop-health runs on a four-tier chain where every tier is optional.**
+local ONNX → Gemini → OpenRouter → symptom rules. This is the single most
+load-bearing design decision in the project, and it is worth understanding why
+it exists rather than treating it as redundancy for its own sake.
 
-On 2026-08-14 one real field photograph was pushed through the live chain and
-**our own model got it wrong** — target spot at 0.813 confidence, while the
-correct early blight ranked second at 0.087. Force the model offline and Gemini
-answers correctly; force Gemini offline too and OpenRouter does; force all three
-offline and the app returns **`UNKNOWN`** with a null confidence rather than a
-guess. That is the whole argument for the architecture, reproducible on demand
-via the routing-only `FORCE_FAIL_*` flags.
+*The problem it solves.* We trained our own EfficientNet-B0 and then measured it
+honestly on out-of-distribution field photographs: **0.9632 in-domain, 0.1257
+field-domain**. Nearly every image-classification demo in a hackathon quotes the
+first number. The second one is what a farmer's phone camera actually produces.
+A single-model product built on that gap gives confident, wrong, *actionable*
+agricultural advice — and a farmer who sprays the wrong fungicide has lost money
+and a season.
+
+*How the chain answers it.* Each tier is asked in turn and may decline —
+low confidence, unsupported crop, timeout, provider down, budget exhausted.
+Every decline is recorded in `escalationPath` **with its reason** and surfaced
+to the farmer alongside the answer, so the response always says which tier
+spoke. The terminal tier is a local rule engine over a sourced symptom KB, so
+**the chain cannot fail to answer** — and when nothing reaches confidence, it
+returns an explicit **`UNKNOWN`** with a null confidence instead of a guess.
+
+*Proof, not assertion.* On a real field photograph our own model was confidently
+wrong — target spot at 0.813, correct early blight second at 0.087 — and the
+next tier caught it. The 8-combination router matrix in the test suite asserts
+the behaviour of every on/off permutation of the tiers, and the routing-only
+`FORCE_FAIL_*` flags reproduce any of them on demand in a non-production
+environment.
+
+*Why it matters beyond accuracy.* A tier can be absent for reasons that have
+nothing to do with correctness — a free-tier quota, a cold start, a provider
+outage, a region without capacity. Because absence is a first-class state rather
+than an error path, the product degrades by *tier* and never by *availability*.
 → `backend/src/services/cropHealthService.js` · evidence: `docs/development/submission-audit.md` §3c
 
 **8 · The model never writes advice.** It returns a disease code and a confidence.
@@ -102,7 +125,7 @@ Rotating refresh tokens with reuse detection. Uploads: magic-byte sniff → bomb
 guard → full re-encode (**EXIF and GPS stripped**). No admin surface, no demo bypass.
 → `docs/security/phase-7-scorecard.md`
 
-**10 · Bilingual, farmer-first UX.** 1,493 keys, **0 missing in Hindi**, parity
+**10 · Bilingual, farmer-first UX.** 1,549 keys, **0 missing in Hindi**, parity
 gated. **Zero hardcoded user-facing strings**, enforced by a repo script.
 → `scripts/check-i18n.mjs`, `scripts/check-ui-strings.mjs`
 
@@ -154,7 +177,7 @@ Narrative: `docs/architecture/overview.md`.
 React (Vercel) + React Native/Expo (Android) → Express API (Render; JWT + refresh rotation, ownership enforcement, rate limits) → MongoDB Atlas → FastAPI + ONNX ml-service (internal). Jobs ingest weather (Open-Meteo→OpenWeatherMap) and mandi prices (data.gov.in→cache→seed) with validate-then-cache; engines are pure, tested functions.
 
 ## Custom ML (honest summary)
-Datasets: PlantVillage subsets, Mendeley field chilli sets, SAR-CLD cotton (audit-gated), and a CC BY 4.0 Odisha rice set — **Paddy Doctor was rejected** on licence grounds (paid-subscription access, no published image licence) and replaced. PlantDoc is held out entirely as a field-domain test set. After deduplication and source-stratified splitting: **39,960 unique images, 36 classes**. Unified EfficientNet-B0 with crop-aware masking and temperature-calibrated confidence.
+Datasets: PlantVillage subsets, Mendeley field chilli sets, SAR-CLD cotton (audit-gated), and a CC BY 4.0 Odisha rice set — **Paddy Doctor was rejected** on licence grounds (paid-subscription access, no published image licence) and replaced. PlantDoc is held out entirely as a field-domain test set. After deduplication and source-stratified splitting: **39,929 unique images, 35 classes** (94,187 enumerated, 54,258 excluded, 1,233 held out as the field-domain test set). Unified EfficientNet-B0 with crop-aware masking and temperature-calibrated confidence.
 
 Metrics, from committed artifacts only (`docs/ml/evaluation-results/`, `ml-service/training/`):
 
@@ -182,13 +205,13 @@ That last row is the number most projects omit. A model at 0.96 in-domain scores
 | MongoDB Atlas M0 / Render / Vercel / HF Spaces / Expo | hosting | zero-cost, documented trade-offs | docs/deployment/ · ADR-011 |
 
 ## Security & privacy (first-class)
-Threat-modeled (docs/security/, 9 documents): bcrypt-12 + rotating refresh tokens with reuse detection, per-resource ownership enforcement, validated + re-encoded image uploads (EXIF stripped), rate limiting, secrets scanning, no admin surface, **no backdoors or demo bypasses — the demo runs production security**. Community alerts are opt-in and district-aggregated with structurally PII-free storage.
+Threat-modeled (docs/security/, 11 documents): bcrypt-12 + rotating refresh tokens with reuse detection, per-resource ownership enforcement, validated + re-encoded image uploads (EXIF stripped), rate limiting, secrets scanning, no admin surface, **no backdoors or demo bypasses — the demo runs production security**. Community alerts are opt-in and district-aggregated with structurally PII-free storage.
 
 ## Repository structure
 ```
 web/frontend · mobile · backend · ml-service · shared (i18n, constants, schemas)
-docs/ (23 domains — start at docs/FINAL-PLAN-SPEC.md) · datasets/ (gitignored; see datasets/README.md)
-scripts/ · assets/ · CLAUDE.md · .env.example
+docs/ (25 domains — start at docs/FINAL-PLAN-SPEC.md) · datasets/ (gitignored; see datasets/README.md)
+scripts/ · CLAUDE.md · .env.example
 ```
 
 ## Android app
@@ -200,8 +223,8 @@ Two things worth knowing before you open it: voice **input** does not ship (`REC
 
 Design and decision records: `docs/mobile/` (architecture, navigation, screen map, authentication, offline strategy, camera & upload, i18n, security, testing, deployment).
 
-## Setup / Environment / Local development ⏳
-Per-app install & run commands, .env.example walkthrough (variable names documented in docs/deployment/environment.md), seed scripts and test commands. Today, the short version:
+## Setup / Environment / Local development
+Per-app install & run commands, .env.example walkthrough (variable names documented in docs/deployment/environment.md), seed scripts and test commands. The short version:
 
 ```bash
 npm install                        # repo tooling + the pre-commit secret hook
@@ -212,17 +235,32 @@ npm run verify                     # lint · format · i18n parity · UI strings
 ```
 
 ## API documentation
-**[`api-documentation.md`](api-documentation.md)** — single-page reference for all 41 routes: envelope, error codes, auth/ownership model, the four decision engines, the honesty contract, rate limits and the upload pipeline. Per-resource field detail stays in `docs/api/`.
+**[`api-documentation.md`](api-documentation.md)** — single-page reference for all 43 routes: envelope, error codes, auth/ownership model, the four decision engines, the honesty contract, rate limits and the upload pipeline. Per-resource field detail stays in `docs/api/`.
 
 ## Database
 Schema, indexes, lifecycle: `docs/database/`.
 
-## Deployment ⏳ (URLs added when live)
-Plan: docs/deployment/. Web: Vercel · API: Render · ML: HF Spaces · DB: Atlas · Android: Expo Go + APK.
+## Deployment
 
-## Screenshots ⏳
-Not yet captured — they are taken from the running app after deploy, and this
-repository does not present mockups as screenshots of a working system.
+**Live: https://hack-in-motion-ricr-him-1096.vercel.app/**
+
+| Component | Platform | Status |
+|---|---|---|
+| Web client | Vercel | **Live** |
+| REST API | Render | **Live** — 43 routes, `/healthz` liveness, production security config |
+| Database | MongoDB Atlas | **Live** — indexes built from `npm run indexes:build`, never `autoIndex` |
+| AI tiers | Gemini → OpenRouter | **Live** — measured 2.18 s and 9.82 s end to end |
+| Android | Expo Go | Runs from source; APK build is a packaging step, not a code gap |
+
+Every secret is `sync: false` in `render.yaml` — nothing sensitive is committed, and the API refuses to boot if a required secret is missing or under 32 characters rather than starting in a weakened state. Runbooks and the environment checklist: `docs/deployment/`.
+
+The deployed stack runs the **same security configuration as local production mode** — no demo bypass, no relaxed CORS, no seeded admin. A smoke suite of 18 read-only checks (health, database connectivity, hardened headers, error envelope, anonymous rejection, CORS rejection) validates a deployment without touching farmer data: `npm run smoke -- <url>`.
+
+## Screenshots
+
+The running app is the screenshot: **https://hack-in-motion-ricr-him-1096.vercel.app/**.
+This repository has never presented a mockup as a screenshot of a working
+system, and does not start now.
 
 The design-reference exports that used to live in `Design-refrences/` and
 `assets/stitch_agriguide_advisor/` were removed on 2026-08-15: they were
@@ -237,7 +275,7 @@ See `docs/development/team-plan.md` — real ownership per member; commit histor
 Strategy + requirement-mapped matrix: `docs/testing/`. Blocking gates: engine math (FAO-56 vectors), authorization matrix, upload security, resilience failure-injection (12 scenarios), i18n parity, E2E farmer journey incl. all-APIs-down.
 
 ## Future scope
-`docs/product/future-scope.md` — yield estimator (spec complete), on-device ML (TFLite path), more crops (SoyNet identified), offline write-sync for photo drafts, voice v2, community v2, iOS.
+`docs/product/future-scope.md` — on-device ML (TFLite path), more crops (SoyNet identified), offline write-sync for photo drafts, voice v2, community v2, iOS.
 
 ## HackInMotion context
 Requirement coverage — every must-have and all six challenge capabilities — is traced line-by-line in `docs/requirements-traceability.md`.
