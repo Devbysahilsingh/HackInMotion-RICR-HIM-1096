@@ -394,21 +394,39 @@ export const AI_PROVIDERS = Object.freeze({
  * docs/ai/ai-architecture.md, docs/ai/gemini-integration.md,
  * docs/ml/inference-architecture.md); docs/architecture/resilience.md says 8s
  * for "weather/AI" generically. The specific contract wins over the generic
- * one, so a hop may take up to 10s — but see HEALTH_E2E_BUDGET_MS: no hop may
- * spend budget the whole request does not have.
+ * one — but see HEALTH_E2E_BUDGET_MS: no hop may spend budget the whole request
+ * does not have.
+ *
+ * **Raised from 10s to 15s on 2026-08-15, from measurement.** A live probe of
+ * both tiers through these same integration modules returned Gemini in 2.18s
+ * and OpenRouter in 9.82s. OpenRouter was landing 180ms inside the old 10s
+ * ceiling, so any variance cut the last tier off entirely — and with ml-service
+ * undeployed, the AI tiers are the only thing between a farmer and the local
+ * rules fallback. 15s buys that tier real margin instead of a coin flip.
  */
-export const AI_HOP_TIMEOUT_MS = 10_000;
+export const AI_HOP_TIMEOUT_MS = 15_000;
 
 /**
- * "Timing budget ≤15s E2E" (docs/api/crop-health.md).
+ * End-to-end budget for the whole crop-health chain.
  *
- * 10s + 10s of hops exceeds 15s, so a per-hop ceiling alone cannot honour the
- * budget. The conductor therefore carries a deadline: each hop gets
- * `min(AI_HOP_TIMEOUT_MS, remaining budget)` and a hop with no useful time left
- * is skipped rather than started. The rules tier is local and always runs, so
- * exhausting the budget degrades the answer's tier — never the response.
+ * A per-hop ceiling alone cannot honour a budget, so the conductor carries a
+ * deadline: each hop gets `min(AI_HOP_TIMEOUT_MS, remaining budget)` and a hop
+ * with no useful time left is skipped rather than started. The rules tier is
+ * local and always runs, so exhausting the budget degrades the answer's tier —
+ * never the response.
+ *
+ * **Raised from 15s to 35s on 2026-08-15.** The budget starts before the
+ * Cloudinary upload, so the 15s figure was being spent on storage before the
+ * first model was asked anything: upload (up to 8s) plus one dead ml-service
+ * hop left nothing for Gemini, and OpenRouter's measured 9.82s could not fit at
+ * all. With ml-service undeployed that is not a degraded tier, it is the
+ * difference between an AI answer and the rules fallback on every scan.
+ *
+ * The ceiling is the client's, not ours: both clients allow 45s on upload
+ * routes, so 35s leaves headroom for the response itself. Raise the client
+ * timeouts first if this ever needs to go higher.
  */
-export const HEALTH_E2E_BUDGET_MS = 15_000;
+export const HEALTH_E2E_BUDGET_MS = 35_000;
 
 /** "1 retry, exponential jitter" — one extra attempt per provider, not two. */
 export const AI_RETRIES = 1;
