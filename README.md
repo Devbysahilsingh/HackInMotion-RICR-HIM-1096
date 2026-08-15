@@ -1,4 +1,3 @@
-# 🌾 Khetri — Smart Farm Decision Support System
 
 > **HackInMotion 2026 · Team HIM-1096**
 
@@ -558,8 +557,7 @@ Secrets are managed through deployment configuration rather than committed to th
 
 ```text
 Email:    demo.farmer@khetri-demo.in
-Password: Khetri@Demo2026#nashik
-```
+Password: Khetri@Demo2026
 
 ### Recommended evaluation flow
 
