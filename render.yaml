@@ -41,8 +41,19 @@ services:
       # Exact origins, comma separated. No wildcards — required in production,
       # so a forgotten value fails the boot rather than shipping a broken
       # allowlist (docs/security/api-security.md).
+      #
+      # Valued here, unlike the secrets above, because an origin allowlist is
+      # public information — it is echoed verbatim in every preflight response.
+      # Keeping it in the blueprint makes the correct value reproducible instead
+      # of living only in one dashboard field.
+      #
+      # This MUST be the stable production alias, never a deployment-specific
+      # URL. Vercel mints a new `<project>-<hash>.vercel.app` host for every
+      # build and freezes the old one; an allowlist pinned to one of those keeps
+      # answering preflights for a dead deployment while the live site is
+      # blocked with no Access-Control-Allow-Origin at all.
       - key: CORS_ORIGINS
-        sync: false
+        value: https://hack-in-motion-ricr-him-1096.vercel.app
 
       # ── Optional even in production ───────────────────────────────────
       # Everything below is declared so Render prompts for it, but NONE of it
