@@ -175,7 +175,7 @@
       "droughtSensitivity": "HIGH",
       "market": {
         "commodityCode": "RICE",
-        "aliases": ["Paddy(Dhan)(Common)", "Rice"]
+        "aliases": ["Paddy(Dhan)(Common)", "Paddy(Common)", "Rice"]
       },
       "yield": {
         "apyCropName": "Rice"
@@ -227,12 +227,12 @@
           "note": "Published as 'High'; mapped to the HIGH enum member. Crop-level attribution 'P (TNAU CPG, FAO)'."
         },
         "market": {
-          "org": "Repo doc",
-          "title": "docs/market/data-source.md — Commodity mapping (registry-driven)",
+          "org": "Repo doc + observed provider listing",
+          "title": "docs/market/data-source.md — Commodity mapping (registry-driven); data.gov.in 'Variety-wise Daily Market Prices'",
           "url": null,
-          "accessed": "2026-08-13",
+          "accessed": "2026-08-15",
           "confidence": "S",
-          "note": "Aliases published verbatim as RICE→[\"Paddy(Dhan)(Common)\",\"Rice\"]. Underlying feed is data.gov.in 'Variety-wise Daily Market Prices' (Agmarknet-fed); the repo publishes no resource URL for it."
+          "note": "\"Paddy(Dhan)(Common)\" and \"Rice\" are published verbatim in docs/market/data-source.md. \"Paddy(Common)\" is NOT from a repo doc — it is the commodity string the live provider actually returns, observed 2026-08-15 by querying data.gov.in for states Maharashtra / Madhya Pradesh / Andhra Pradesh: 80 of 165 fetched rows came back as \"Paddy(Common)\" for the requested alias \"Paddy(Dhan)(Common)\", which alone put the batch drop rate at 52.7% and tripped the 30% MARKET_DROP_RATE_ABORT schema-drift guard, inserting nothing. This is the observed-listing fix that gap G14 requires (\"The real alias table must be built from an actual data.gov.in commodity listing before the first market job run; no alias was guessed\"). The string is transcribed from the provider response, not guessed, and the older spelling is retained because the portal may still emit it."
         },
         "confidence": {
           "org": "Repo doc",
@@ -1105,7 +1105,8 @@
       "problem": "Actual Agmarknet alias lists are published for RICE ([\"Paddy(Dhan)(Common)\",\"Rice\"]) and CHILLI ([\"Dry Chillies\",\"Green Chilli\"]) in docs/market/data-source.md, and for TOMATO ([\"Tomato\"]) inside the registry-shape example in docs/product/crop-support-matrix.md. For WHEAT, MAIZE, COTTON, SOYBEAN, POTATO and ONION the only written commodity strings are the plain names in the mapped-commodities list of docs/market/market-architecture.md §Scope ('Rice/Paddy, Wheat, Maize, Cotton, Tomato, Potato, Onion, Soybean, Dry Chillies').",
       "checked": "docs/market/data-source.md, docs/market/market-architecture.md, docs/market/data-normalization.md, docs/product/crop-support-matrix.md.",
       "impact": "docs/market/data-normalization.md drops any row whose commodity string misses the alias map, and aborts the batch above a 30% drop rate. Single-string alias lists for six crops make that drop rate a live risk on first run — Agmarknet's real strings (e.g. bracketed variety suffixes as seen in 'Paddy(Dhan)(Common)') are exactly the naming inconsistency the doc warns about.",
-      "resolution": "Only the written strings are transcribed. The real alias table must be built from an actual data.gov.in commodity listing before the first market job run; no alias was guessed."
+      "resolution": "Only the written strings are transcribed. The real alias table must be built from an actual data.gov.in commodity listing before the first market job run; no alias was guessed.",
+      "partiallyClosed": "2026-08-15 — the predicted failure happened on the first real run and was fixed for RICE only. Observed against the live provider for Maharashtra / Madhya Pradesh / Andhra Pradesh: 165 rows fetched, 87 dropped (52.7%), batch aborted by MARKET_DROP_RATE_ABORT. 80 of the 87 were \"Paddy(Common)\" — the portal's current spelling — so \"Paddy(Common)\" was added to RICE.market.aliases from the observed listing (see RICE.sourceRefs.market). The remaining 7 are the provider's own loose matching on the \"Green Chilli\" query returning \"Ginger(Green)\" (3) and \"Other green and fresh vegetables\" (4); those are genuinely out-of-scope commodities and SHOULD drop, so no CHILLI alias was added. STILL OPEN: WHEAT, MAIZE, COTTON, SOYBEAN, POTATO and ONION each still carry a single plain-name alias that has not been checked against a provider listing — they mapped cleanly in this one observation, but that is one sample of three states on one day, not a verified alias table."
     },
     {
       "id": "G15",
