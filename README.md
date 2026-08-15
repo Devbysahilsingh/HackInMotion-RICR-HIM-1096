@@ -265,6 +265,11 @@ The running app is the screenshot: **https://hack-in-motion-ricr-him-1096.vercel
 This repository has never presented a mockup as a screenshot of a working
 system, and does not start now.
 
+### Demo account
+
+    Email     demo.farmer@khetri-demo.in
+    Password  Khetri@Demo2026#nashik
+
 The design-reference exports that used to live in `Design-refrences/` and
 `assets/stitch_agriguide_advisor/` were removed on 2026-08-15: they were
 third-party prototyping-tool output, never imported by the web or mobile app,
