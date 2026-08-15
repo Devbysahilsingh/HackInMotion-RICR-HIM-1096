@@ -104,9 +104,7 @@ def test_malformed_crop_code_is_400(client, auth_headers, jpeg_bytes) -> None:
 
 
 def test_image_sent_as_a_plain_field_is_400(client, auth_headers) -> None:
-    response = client.post(
-        "/predict", data={"image": "not-a-file", "cropCode": "TOMATO"}, headers=auth_headers
-    )
+    response = client.post("/predict", data={"image": "not-a-file", "cropCode": "TOMATO"}, headers=auth_headers)
     assert response.status_code == 400
 
 
@@ -312,9 +310,7 @@ def test_uncovered_crop_takes_the_mismatch_branch(client, auth_headers, jpeg_byt
 
 def test_margin_guard_path_returns_uncertain_with_top3(make_app, auth_headers, manifest, jpeg_bytes) -> None:
     with TestClient(make_app()) as client:
-        client.app.state.predictor = FixedPredictor(
-            logits_tied(manifest, "TOMATO_EARLY_BLIGHT", "TOMATO_LATE_BLIGHT")
-        )
+        client.app.state.predictor = FixedPredictor(logits_tied(manifest, "TOMATO_EARLY_BLIGHT", "TOMATO_LATE_BLIGHT"))
         body = post(client, jpeg_bytes, "TOMATO", auth_headers).json()
     assert body["uncertain"] is True
     assert body["diseaseCode"] is None
@@ -323,9 +319,7 @@ def test_margin_guard_path_returns_uncertain_with_top3(make_app, auth_headers, m
 
 def test_confident_path_returns_a_disease_code(make_app, auth_headers, manifest, jpeg_bytes) -> None:
     with TestClient(make_app()) as client:
-        client.app.state.predictor = FixedPredictor(
-            logits_favouring(manifest, "TOMATO_LEAF_MOLD")
-        )
+        client.app.state.predictor = FixedPredictor(logits_favouring(manifest, "TOMATO_LEAF_MOLD"))
         body = post(client, jpeg_bytes, "TOMATO", auth_headers).json()
     assert body["diseaseCode"] == "TOMATO_LEAF_MOLD"
     assert body["uncertain"] is False
@@ -333,9 +327,7 @@ def test_confident_path_returns_a_disease_code(make_app, auth_headers, manifest,
 
 def test_mask_below_floor_path(make_app, auth_headers, manifest, jpeg_bytes) -> None:
     with TestClient(make_app()) as client:
-        client.app.state.predictor = FixedPredictor(
-            logits_favouring(manifest, "RICE_BLAST", peak=30.0, base=-30.0)
-        )
+        client.app.state.predictor = FixedPredictor(logits_favouring(manifest, "RICE_BLAST", peak=30.0, base=-30.0))
         body = post(client, jpeg_bytes, "POTATO", auth_headers).json()
     assert body["cropMismatch"] is True
     assert body["diseaseCode"] is None
@@ -380,7 +372,7 @@ def test_slow_inference_times_out_with_504(make_app, auth_headers, manifest, jpe
 
 def test_errors_never_include_a_traceback(client, auth_headers) -> None:
     body = post(client, b"nonsense payload that is not an image", "TOMATO", auth_headers).text
-    for marker in ("Traceback", "File \"", "app/preprocessing.py", "site-packages"):
+    for marker in ("Traceback", 'File "', "app/preprocessing.py", "site-packages"):
         assert marker not in body
 
 

@@ -22,6 +22,7 @@ import {
 } from '../engines/feedComposer/feedComposer.js';
 import { Crop, CropRegistry, Farm, IrrigationLog, Recommendation } from '../models/index.js';
 import { enforceFeedCap, persistFeedItems } from '../services/feedService.js';
+import { persistWaterBalance } from '../services/irrigationService.js';
 import { latestSnapshot } from '../services/weatherService.js';
 import { logger } from '../utils/logger.js';
 
@@ -43,7 +44,7 @@ export async function composeForUser(userId, { asOf = new Date() } = {}) {
     .select('cropCode farmId sowingDate status waterBalance')
     .lean();
 
-  if (crops.length === 0) return { candidates: [], crops: [] };
+  if (crops.length === 0) return { candidates: [], crops: [], waterBalances: [] };
 
   const [farms, registryDocs, logs] = await Promise.all([
     Farm.find({ _id: { $in: crops.map((crop) => crop.farmId) }, userId })
@@ -78,6 +79,14 @@ export async function composeForUser(userId, { asOf = new Date() } = {}) {
   }
 
   const candidates = [];
+  /**
+   * The engine advances the soil-water ledger on every run, and this job is the
+   * only place allowed to write it back (a GET must not mutate — see
+   * `persistWaterBalance`). Collected here and written by the caller so this
+   * function stays side-effect-free, which is what lets a suite assert the
+   * composition without a database.
+   */
+  const waterBalances = [];
 
   for (const crop of crops) {
     const farm = farmById.get(String(crop.farmId));
@@ -95,6 +104,8 @@ export async function composeForUser(userId, { asOf = new Date() } = {}) {
       logs: logsByCrop.get(String(crop._id)) ?? [],
       asOf,
     });
+
+    waterBalances.push({ cropId: crop._id, result: irrigation });
 
     const irrigationItem = irrigationCandidate({
       userId,
@@ -127,7 +138,7 @@ export async function composeForUser(userId, { asOf = new Date() } = {}) {
     }
   }
 
-  return { candidates, crops };
+  return { candidates, crops, waterBalances };
 }
 
 /**
@@ -185,13 +196,26 @@ export async function runFeedRefresh({ asOf = new Date(), userIds } = {}) {
     deduped: 0,
     capped: 0,
     evicted: 0,
+    waterBalancesPersisted: 0,
     failures: [],
     ok: true,
   };
 
   for (const userId of users) {
     try {
-      const { candidates, crops } = await composeForUser(userId, { asOf });
+      const { candidates, crops, waterBalances } = await composeForUser(userId, { asOf });
+
+      // Advance the stored ledger before composing the feed. The engine ran
+      // above; without this the depletion it computed is discarded and every
+      // subsequent run restarts from the same stored value, so the soil-water
+      // model never actually accumulates. Writes are per-crop and idempotent
+      // for a given `asOf`.
+      const persistedBalances = await Promise.all(
+        waterBalances.map(({ cropId, result }) =>
+          persistWaterBalance(Crop, cropId, userId, result, asOf),
+        ),
+      );
+      report.waterBalancesPersisted += persistedBalances.filter(Boolean).length;
 
       const market = await marketCandidatesFor(
         userId,

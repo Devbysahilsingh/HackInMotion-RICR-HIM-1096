@@ -328,9 +328,7 @@ def extract_nested(root: Path, result: DatasetResult, max_depth: int = 3) -> Non
         for archive, target in pending:
             try:
                 count, renamed = safe_extract(archive, target)
-                (target / ".extracted").write_text(
-                    datetime.now(UTC).isoformat(), encoding="utf-8"
-                )
+                (target / ".extracted").write_text(datetime.now(UTC).isoformat(), encoding="utf-8")
                 result.renamed_files += renamed
                 result.nested_extracted += 1
                 result.note(f"nested archive {archive.name} -> {count} entries")
@@ -434,14 +432,11 @@ def acquire(source: dict, session: requests.Session, verify_only: bool) -> Datas
             expected_hash = entry.get("expected_sha256")
             if expected_hash and digest != expected_hash:
                 raise ValueError(
-                    f"checksum mismatch for {entry['filename']}: "
-                    f"expected {expected_hash[:16]}… got {digest[:16]}…"
+                    f"checksum mismatch for {entry['filename']}: expected {expected_hash[:16]}… got {digest[:16]}…"
                 )
             expected_size = entry.get("size")
             if expected_size and size != expected_size:
-                result.note(
-                    f"WARNING size differs from published: expected {human(expected_size)}, got {human(size)}"
-                )
+                result.note(f"WARNING size differs from published: expected {human(expected_size)}, got {human(size)}")
             if expected_hash:
                 result.note("checksum matches published value")
 
@@ -552,9 +547,7 @@ def main() -> int:
     print(f"{'dataset':<22} {'status':<9} {'files':>8} {'images':>8} {'size':>10}")
     print("─" * 72)
     for r in results:
-        print(
-            f"{r.key:<22} {r.status:<9} {r.extracted_files:>8} {r.image_files:>8} {human(r.bytes_on_disk):>10}"
-        )
+        print(f"{r.key:<22} {r.status:<9} {r.extracted_files:>8} {r.image_files:>8} {human(r.bytes_on_disk):>10}")
     print("─" * 72)
     print(f"manifest → {MANIFEST_PATH.relative_to(REPO_ROOT)}")
 

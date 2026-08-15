@@ -15,6 +15,7 @@
  * attempted — one dead grid cell must not deprive every other farm of weather.
  */
 import { Farm } from '../models/index.js';
+import { drainPriorityRefresh } from '../services/farmWeatherService.js';
 import { activeLocations, refreshLocation } from '../services/weatherService.js';
 import { providerCircuit } from '../utils/circuitBreaker.js';
 import { logger } from '../utils/logger.js';
@@ -30,12 +31,32 @@ export const WEATHER_JOB_NAME = 'weatherRefresh';
  */
 export async function runWeatherRefresh({ asOf = new Date(), fetchImpl, locations } = {}) {
   const startedAt = Date.now();
-  const workList = locations ?? (await activeLocations(Farm));
+  const discovered = locations ?? (await activeLocations(Farm));
+
+  /**
+   * Cells a reader hit while they had no snapshot. `farmWeatherService` flags
+   * them and promises the farmer "the next scheduler tick fetches it ahead of
+   * the routine sweep"; draining here is what makes that true. The set is
+   * drained unconditionally — including on an injected `locations` run — so it
+   * cannot grow without bound if a flagged farm is later deleted.
+   *
+   * This reorders the work list; it never extends it. A flagged cell that is no
+   * longer any farm's location is dropped rather than fetched, because the
+   * work list is defined by `activeLocations`, not by who once asked.
+   */
+  const prioritized = new Set(drainPriorityRefresh());
+  const workList = prioritized.size
+    ? [
+        ...discovered.filter((entry) => prioritized.has(entry.locationKey)),
+        ...discovered.filter((entry) => !prioritized.has(entry.locationKey)),
+      ]
+    : discovered;
 
   const report = {
     job: WEATHER_JOB_NAME,
     startedAt: asOf.toISOString(),
     locations: workList.length,
+    prioritized: workList.filter((entry) => prioritized.has(entry.locationKey)).length,
     refreshed: 0,
     fallback: 0,
     stale: 0,

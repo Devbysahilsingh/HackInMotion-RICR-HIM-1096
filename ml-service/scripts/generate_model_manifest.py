@@ -127,8 +127,7 @@ def build_manifest(dataset: dict[str, Any], dataset_sha256: str) -> dict[str, An
                 "than tau', which is the sole property the docs actually pin down."
             ),
             "thresholds.marginGuard": (
-                "NOT a placeholder. 0.15 is specified verbatim in "
-                "docs/ml/confidence-strategy.md."
+                "NOT a placeholder. 0.15 is specified verbatim in docs/ml/confidence-strategy.md."
             ),
             "thresholds.cropMaskFloor": (
                 "PLACEHOLDER. The docs say 'a small floor' without a number. 0.01 is a "
@@ -209,9 +208,7 @@ def main() -> int:
             "knownLimitations",
             "confoundEvaluationGates",
         )
-        drifted = [
-            key for key in contract_keys if current.get(key) != fresh.get(key)
-        ]
+        drifted = [key for key in contract_keys if current.get(key) != fresh.get(key)]
         if drifted:
             print(
                 "error: model-manifest.json class contract is stale relative to "

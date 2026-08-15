@@ -319,9 +319,7 @@ def probe(path_str: str) -> dict:
                 pass
             img.load()
             rec["phash"] = phash(img)
-            thumb = img.convert("L").resize(
-                (THUMB_SIDE, THUMB_SIDE), Image.Resampling.LANCZOS
-            )
+            thumb = img.convert("L").resize((THUMB_SIDE, THUMB_SIDE), Image.Resampling.LANCZOS)
             rec["thumb_bytes"] = thumb.tobytes()
     except Exception as exc:  # noqa: BLE001 - any failure is a finding
         rec["error"] = f"{type(exc).__name__}: {exc}"
@@ -453,12 +451,10 @@ def probe_dataset(
     todo = [
         it
         for it in items
-        if "thumb_index" not in cache.get(it.relpath, {})
-        and "error" not in cache.get(it.relpath, {})
+        if "thumb_index" not in cache.get(it.relpath, {}) and "error" not in cache.get(it.relpath, {})
     ]
     print(
-        f"  {dataset}: {len(items)} images ({len(items) - len(todo)} cached, "
-        f"{len(todo)} to hash)",
+        f"  {dataset}: {len(items)} images ({len(items) - len(todo)} cached, {len(todo)} to hash)",
         flush=True,
     )
     if todo:
@@ -485,11 +481,7 @@ def probe_dataset(
         else:
             for p in paths:
                 absorb(probe(p))
-        stacked = (
-            np.vstack(new_rows)
-            if new_rows
-            else np.empty((0, THUMB_SIDE * THUMB_SIDE), dtype=np.uint8)
-        )
+        stacked = np.vstack(new_rows) if new_rows else np.empty((0, THUMB_SIDE * THUMB_SIDE), dtype=np.uint8)
         thumbs = stacked if thumbs is None else np.vstack([np.asarray(thumbs), stacked])
         save_cache(dataset, cache, thumbs)
 
@@ -515,11 +507,7 @@ def probe_dataset(
         it.fmt = rec.get("format") or "UNKNOWN"
         rows.append(np.asarray(thumbs[rec["thumb_index"]]))
         ok.append(it)
-    stack = (
-        np.vstack(rows)
-        if rows
-        else np.empty((0, THUMB_SIDE * THUMB_SIDE), dtype=np.uint8)
-    )
+    stack = np.vstack(rows) if rows else np.empty((0, THUMB_SIDE * THUMB_SIDE), dtype=np.uint8)
     return ok, failures, stack
 
 
@@ -652,9 +640,7 @@ def calibrate(items: list[Item], thumbs: np.ndarray, exact_groups: list[list[int
         "negative_control_mean_ncc": round(float(neg_scores.mean()), 4),
         "negative_control_p99_ncc": round(float(np.percentile(neg_scores, 99)), 4),
         "negative_control_max_ncc": round(float(neg_scores.max()), 4),
-        "negative_control_fraction_above_cut": round(
-            float((neg_scores >= DEFAULT_NCC_MIN).mean()), 6
-        ),
+        "negative_control_fraction_above_cut": round(float((neg_scores >= DEFAULT_NCC_MIN).mean()), 6),
         "negative_control_note": (
             "Random pairs are not guaranteed non-duplicates — these corpora contain "
             "genuine duplicates, so the maximum can legitimately reach 1.0. Read the "
@@ -773,9 +759,7 @@ def main() -> int:
                         "median_width": int(np.median(widths)),
                         "median_height": int(np.median(heights)),
                         "min_side": int(min(min(widths), min(heights))),
-                        "megabytes": round(
-                            sum(it.bytes for it in cls_items) / 1024**2, 1
-                        ),
+                        "megabytes": round(sum(it.bytes for it in cls_items) / 1024**2, 1),
                     }
                 )
             counts = [c["count"] for c in classes]
@@ -783,9 +767,7 @@ def main() -> int:
                 "images": len(g_items),
                 "classes": classes,
                 "class_count": len(classes),
-                "imbalance_ratio": (
-                    round(max(counts) / min(counts), 1) if counts else None
-                ),
+                "imbalance_ratio": (round(max(counts) / min(counts), 1) if counts else None),
             }
         census[ds] = {
             "crops": LAYOUTS[ds]["crops"],
@@ -812,13 +794,9 @@ def main() -> int:
             exact_by_ds[all_items[i].dataset] += 1
         codes = {all_items[i].code or all_items[i].raw_class for i in g}
         if len(codes) > 1 and len(exact_cross_class) < MAX_EXAMPLES:
-            exact_cross_class.append(
-                {"codes": sorted(codes), "paths": [all_items[i].relpath for i in g[:4]]}
-            )
+            exact_cross_class.append({"codes": sorted(codes), "paths": [all_items[i].relpath for i in g[:4]]})
     exact_cross_class_total = sum(
-        1
-        for g in exact_groups
-        if len({all_items[i].code or all_items[i].raw_class for i in g}) > 1
+        1 for g in exact_groups if len({all_items[i].code or all_items[i].raw_class for i in g}) > 1
     )
 
     # ---- near duplicates --------------------------------------------------
@@ -833,9 +811,7 @@ def main() -> int:
     cross_ds_examples: list[dict] = []
     pair_total = 0
     pair_zero = 0
-    for i, j, dist, ncc in verified_pairs(
-        all_items, args.threshold, args.ncc_min, pair_stats
-    ):
+    for i, j, dist, ncc in verified_pairs(all_items, args.threshold, args.ncc_min, pair_stats):
         pair_total += 1
         if dist == 0:
             pair_zero += 1
@@ -844,9 +820,7 @@ def main() -> int:
         key_ds = tuple(sorted((a.dataset, b.dataset)))
         pair_ds[key_ds] += 1
         if a.dataset != b.dataset and len(cross_ds_examples) < MAX_EXAMPLES:
-            cross_ds_examples.append(
-                {"a": a.relpath, "b": b.relpath, "distance": dist, "ncc": ncc}
-            )
+            cross_ds_examples.append({"a": a.relpath, "b": b.relpath, "distance": dist, "ncc": ncc})
         code_a = a.code or f"{a.dataset}:{a.raw_class}"
         code_b = b.code or f"{b.dataset}:{b.raw_class}"
         if code_a != code_b:
@@ -875,17 +849,7 @@ def main() -> int:
     size_hist = Counter()
     for c in multi:
         n = len(c)
-        bucket = (
-            "2"
-            if n == 2
-            else "3-5"
-            if n <= 5
-            else "6-20"
-            if n <= 20
-            else "21-100"
-            if n <= 100
-            else ">100"
-        )
+        bucket = "2" if n == 2 else "3-5" if n <= 5 else "6-20" if n <= 20 else "21-100" if n <= 100 else ">100"
         size_hist[bucket] += 1
     largest = sorted(multi, key=len, reverse=True)[:5]
     largest_desc = [
@@ -897,9 +861,7 @@ def main() -> int:
         }
         for c in largest
     ]
-    cross_ds_clusters = sum(
-        1 for c in multi if len({all_items[i].dataset for i in c}) > 1
-    )
+    cross_ds_clusters = sum(1 for c in multi if len({all_items[i].dataset for i in c}) > 1)
 
     # Per-dataset near-duplicate rate: images that would be lost if every
     # cluster collapsed to one representative.
@@ -928,35 +890,23 @@ def main() -> int:
         groups = list(LAYOUTS[ds]["groups"])
         if len(groups) < 2:
             continue
-        spanning = [
-            c
-            for c in multi
-            if len({all_items[i].group for i in c if all_items[i].dataset == ds}) > 1
-        ]
+        spanning = [c for c in multi if len({all_items[i].group for i in c if all_items[i].dataset == ds}) > 1]
         exact_spanning = [
-            g
-            for g in exact_groups
-            if len({all_items[i].group for i in g if all_items[i].dataset == ds}) > 1
+            g for g in exact_groups if len({all_items[i].group for i in g if all_items[i].dataset == ds}) > 1
         ]
         exact_conflicting = [
-            g
-            for g in exact_spanning
-            if len({all_items[i].raw_class for i in g if all_items[i].dataset == ds}) > 1
+            g for g in exact_spanning if len({all_items[i].raw_class for i in g if all_items[i].dataset == ds}) > 1
         ]
         split_leakage[ds] = {
             "groups": groups,
             "near_dup_clusters_spanning_groups": len(spanning),
-            "images_in_spanning_clusters": sum(
-                sum(1 for i in c if all_items[i].dataset == ds) for c in spanning
-            ),
+            "images_in_spanning_clusters": sum(sum(1 for i in c if all_items[i].dataset == ds) for c in spanning),
             "byte_identical_groups_spanning_groups": len(exact_spanning),
             "byte_identical_spanning_with_conflicting_labels": len(exact_conflicting),
             "conflicting_examples": [
                 {
                     "paths": [all_items[i].relpath for i in g[:3]],
-                    "classes": sorted(
-                        {all_items[i].raw_class for i in g if all_items[i].dataset == ds}
-                    ),
+                    "classes": sorted({all_items[i].raw_class for i in g if all_items[i].dataset == ds}),
                 }
                 for g in exact_conflicting[:MAX_EXAMPLES]
             ],
@@ -965,43 +915,22 @@ def main() -> int:
     # ---- cotton OD-1 gate -------------------------------------------------
     cotton = None
     if "cotton_sarcld2024" in selected:
-        orig = [
-            it
-            for it in all_items
-            if it.dataset == "cotton_sarcld2024" and it.group == "original"
-        ]
+        orig = [it for it in all_items if it.dataset == "cotton_sarcld2024" and it.group == "original"]
         raw_counts = Counter(it.raw_class for it in orig)
-        dedup_counts = {
-            k[2]: v for k, v in dedup_by_code.items() if k[0] == "cotton_sarcld2024" and k[1] == "original"
-        }
-        passing = [
-            c
-            for c, n in dedup_counts.items()
-            if n >= COTTON_GATE["min_images_per_class"]
-        ]
-        inflation = (
-            round(
-                100.0
-                * (sum(raw_counts.values()) - sum(dedup_counts.values()))
-                / max(1, sum(raw_counts.values())),
-                1,
-            )
+        dedup_counts = {k[2]: v for k, v in dedup_by_code.items() if k[0] == "cotton_sarcld2024" and k[1] == "original"}
+        passing = [c for c, n in dedup_counts.items() if n >= COTTON_GATE["min_images_per_class"]]
+        inflation = round(
+            100.0 * (sum(raw_counts.values()) - sum(dedup_counts.values())) / max(1, sum(raw_counts.values())),
+            1,
         )
         # Original-vs-augmented contamination: augmented images whose cluster
         # also contains an original image.
         aug_linked = 0
         for c in multi:
-            groups_in = {
-                all_items[i].group
-                for i in c
-                if all_items[i].dataset == "cotton_sarcld2024"
-            }
+            groups_in = {all_items[i].group for i in c if all_items[i].dataset == "cotton_sarcld2024"}
             if {"original", "augmented"} <= groups_in:
                 aug_linked += sum(
-                    1
-                    for i in c
-                    if all_items[i].dataset == "cotton_sarcld2024"
-                    and all_items[i].group == "augmented"
+                    1 for i in c if all_items[i].dataset == "cotton_sarcld2024" and all_items[i].group == "augmented"
                 )
         cotton = {
             "criteria": COTTON_GATE,
@@ -1072,13 +1001,7 @@ def main() -> int:
     }
     rice_missing = [c for c in planned["rice"] if c not in mapped_codes]
 
-    unmapped = sorted(
-        {
-            f"{it.dataset}:{it.raw_class}"
-            for it in all_items
-            if it.code is None
-        }
-    )
+    unmapped = sorted({f"{it.dataset}:{it.raw_class}" for it in all_items if it.code is None})
 
     report = {
         "schema_version": 1,
@@ -1131,9 +1054,7 @@ def main() -> int:
             "redundant_images_if_collapsed": sum(ds_redundant.values()),
             "per_dataset_redundant": dict(sorted(ds_redundant.items())),
             "cross_dataset_clusters": cross_ds_clusters,
-            "pairs_by_dataset_pair": {
-                f"{a}|{b}": n for (a, b), n in sorted(pair_ds.items())
-            },
+            "pairs_by_dataset_pair": {f"{a}|{b}": n for (a, b), n in sorted(pair_ds.items())},
             "cross_dataset_examples": cross_ds_examples,
         },
         "label_conflicts": {
@@ -1142,14 +1063,10 @@ def main() -> int:
                 "either a labelling error or a genuinely ambiguous case; both matter "
                 "for the split strategy."
             ),
-            "pairs_by_code_pair": {
-                f"{a}|{b}": n for (a, b), n in pair_class.most_common(40)
-            },
+            "pairs_by_code_pair": {f"{a}|{b}": n for (a, b), n in pair_class.most_common(40)},
             "examples": cross_class_examples,
         },
-        "dedup_counts_by_class": {
-            f"{ds}|{group}|{raw}": n for (ds, group, raw), n in sorted(dedup_by_code.items())
-        },
+        "dedup_counts_by_class": {f"{ds}|{group}|{raw}": n for (ds, group, raw), n in sorted(dedup_by_code.items())},
         "class_map_reconciliation": {
             "mapped_codes_dedup_counts": dict(sorted(mapped_codes.items())),
             "unmapped_raw_classes": unmapped,
@@ -1166,9 +1083,7 @@ def main() -> int:
         },
     }
 
-    REPORT_PATH.write_text(
-        json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
+    REPORT_PATH.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"\nreport written: {REPORT_PATH.relative_to(REPO_ROOT)}", flush=True)
     if args.only:
         print(

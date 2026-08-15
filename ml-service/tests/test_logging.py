@@ -90,9 +90,7 @@ def test_json_formatter_emits_parseable_lines() -> None:
     assert line["cropCode"] == "TOMATO"
 
 
-def test_startup_announces_provisional_configuration_iff_it_is_provisional(
-    make_app, caplog, manifest
-) -> None:
+def test_startup_announces_provisional_configuration_iff_it_is_provisional(make_app, caplog, manifest) -> None:
     """An operator must never have to guess whether answers are real.
 
     Tied to the manifest rather than asserted unconditionally: warning about a

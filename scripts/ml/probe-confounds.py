@@ -129,9 +129,7 @@ def main() -> int:
     keep = [
         i
         for i, it in enumerate(items)
-        if it.code
-        and it.code not in excluded_classes
-        and (it.dataset, it.group) not in excluded_groups
+        if it.code and it.code not in excluded_classes and (it.dataset, it.group) not in excluded_groups
     ]
     items = [items[i] for i in keep]
     thumbs = thumbs[keep]
@@ -148,10 +146,8 @@ def main() -> int:
         "schema_version": 1,
         "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "method": {
-            "feature": f"mean and std of the outer {BORDER}px ring of the 64x64 "
-            "grayscale thumbnail",
-            "classifier": "exhaustive single-threshold sweep — deterministic "
-            "measurement, no model is trained",
+            "feature": f"mean and std of the outer {BORDER}px ring of the 64x64 grayscale thumbnail",
+            "classifier": "exhaustive single-threshold sweep — deterministic measurement, no model is trained",
             "interpretation": "a LOWER BOUND on how easily a model can identify the "
             "source dataset; a learned model would do at least as well",
             "separable_at": SEPARABLE_AT,
@@ -172,9 +168,7 @@ def main() -> int:
         entry = {
             "images": len(idxs),
             "sources": {k: len(v) for k, v in sorted(sources.items())},
-            "class_source_composition": {
-                c: dict(sorted(class_counts[c].items())) for c in sorted(class_counts)
-            },
+            "class_source_composition": {c: dict(sorted(class_counts[c].items())) for c in sorted(class_counts)},
         }
 
         # How separable are the source datasets themselves?
@@ -207,9 +201,7 @@ def main() -> int:
                     }
                 )
         entry["source_disjoint_class_pairs"] = disjoint
-        entry["single_source_classes"] = sorted(
-            c for c, s in class_sources.items() if len(s) == 1
-        )
+        entry["single_source_classes"] = sorted(c for c, s in class_sources.items() if len(s) == 1)
         worst = max((p["best_accuracy"] or 0) for p in pairs.values()) if pairs else 0.0
         entry["confounded"] = bool(disjoint) and worst >= SEPARABLE_AT
         report["crops"][crop] = entry

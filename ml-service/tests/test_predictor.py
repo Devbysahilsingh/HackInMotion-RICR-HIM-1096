@@ -74,9 +74,7 @@ def test_build_predictor_never_falls_back_to_the_stub(tmp_path) -> None:
     a broken deploy indistinguishable from a working one.
     """
     with pytest.raises(ModelUnavailable):
-        build_predictor(
-            model_path=tmp_path / "missing.onnx", num_classes=35, model_version="v"
-        )
+        build_predictor(model_path=tmp_path / "missing.onnx", num_classes=35, model_version="v")
 
 
 # ── OnnxPredictor ───────────────────────────────────────────────────────

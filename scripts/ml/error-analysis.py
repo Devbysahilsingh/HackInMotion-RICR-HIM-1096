@@ -232,9 +232,7 @@ def _render_gradcam_grid(panels, path: Path, split: str, crop: str, mean_fractio
         axes[1, column].imshow(cam.numpy(), cmap="jet", alpha=0.45)
         axes[1, column].axis("off")
 
-    figure.suptitle(
-        f"Grad-CAM - {split} / {crop} - mean border-mass {mean_fraction:.3f}", fontsize=9
-    )
+    figure.suptitle(f"Grad-CAM - {split} / {crop} - mean border-mass {mean_fraction:.3f}", fontsize=9)
     figure.tight_layout()
     figure.savefig(path, dpi=130)
     plt.close(figure)
@@ -291,14 +289,14 @@ def main() -> int:
 
     # 1. Confusion clusters
     clusters = confusion_clusters(test["targets"], test_predictions, classes)
-    print(f"   top confused pair: {clusters[0]['true']} -> {clusters[0]['predicted']} "
-          f"({clusters[0]['count']} of {clusters[0]['rate_of_true_class']:.1%})")
+    print(
+        f"   top confused pair: {clusters[0]['true']} -> {clusters[0]['predicted']} "
+        f"({clusters[0]['count']} of {clusters[0]['rate_of_true_class']:.1%})"
+    )
 
     # 2. Per-crop volume correlation
     train_counts = defaultdict(int)
-    for line in (REPO / config["data"]["splits_dir"] / "train.tsv").read_text(
-        encoding="utf-8"
-    ).splitlines():
+    for line in (REPO / config["data"]["splits_dir"] / "train.tsv").read_text(encoding="utf-8").splitlines():
         if line.strip():
             train_counts[line.split("\t")[1]] += 1
 
@@ -309,9 +307,7 @@ def main() -> int:
     overfitting = {
         "final_train_acc": history[-1]["train_acc"] if history else None,
         "final_val_acc": history[-1]["val_acc"] if history else None,
-        "train_minus_val_acc": (
-            round(history[-1]["train_acc"] - history[-1]["val_acc"], 4) if history else None
-        ),
+        "train_minus_val_acc": (round(history[-1]["train_acc"] - history[-1]["val_acc"], 4) if history else None),
         "val_acc": round(float((val_probabilities == val["targets"]).float().mean()), 4),
         "test_acc": round(float((test_predictions == test["targets"]).float().mean()), 4),
         "note": (
@@ -330,9 +326,7 @@ def main() -> int:
         "threshold": HIGH_CONFIDENCE,
         "count": int(high_confidence_wrong.sum()),
         "rate_of_all_test": round(float(high_confidence_wrong.float().mean()), 4),
-        "rate_of_all_errors": round(
-            float(high_confidence_wrong.sum() / max(int(wrong.sum()), 1)), 4
-        ),
+        "rate_of_all_errors": round(float(high_confidence_wrong.sum() / max(int(wrong.sum()), 1)), 4),
         "samples": [
             {
                 "path": str(Path(test["paths"][index]).relative_to(REPO)).replace("\\", "/"),
@@ -343,8 +337,10 @@ def main() -> int:
             for index in high_confidence_wrong.nonzero().flatten().tolist()[:25]
         ],
     }
-    print(f"   high-confidence-wrong (p>={HIGH_CONFIDENCE}): {autopsy['count']} "
-          f"({autopsy['rate_of_all_errors']:.1%} of all errors)")
+    print(
+        f"   high-confidence-wrong (p>={HIGH_CONFIDENCE}): {autopsy['count']} "
+        f"({autopsy['rate_of_all_errors']:.1%} of all errors)"
+    )
 
     # 6. Field degradation per class
     def recall_by_class(targets, predictions):
@@ -374,18 +370,18 @@ def main() -> int:
     print(f"   Grad-CAM probe: {SAMPLES_PER_CROP} samples/crop over test + fieldtest")
     gradcam = run_gradcam_probe(checkpoint, config, device, classes)
     for finding in gradcam["findings"]:
-        print(f"     {finding['split']:10s} {finding['crop']:8s} "
-              f"border-mass {finding['mean_border_mass_fraction']:.3f} "
-              f"(uniform {finding['uniform_baseline']:.3f}, "
-              f"ratio {finding['ratio_to_uniform']:.2f})")
+        print(
+            f"     {finding['split']:10s} {finding['crop']:8s} "
+            f"border-mass {finding['mean_border_mass_fraction']:.3f} "
+            f"(uniform {finding['uniform_baseline']:.3f}, "
+            f"ratio {finding['ratio_to_uniform']:.2f})"
+        )
 
     # 7. Label-noise sweep
     label_noise = {"skipped": True, "reason": "--skip-label-noise"}
     if not args.skip_label_noise:
         train = compute_logits(checkpoint, "train", config=config, on_log=print)
-        losses = F.cross_entropy(
-            train["logits"] / temperature, train["targets"], reduction="none"
-        )
+        losses = F.cross_entropy(train["logits"] / temperature, train["targets"], reduction="none")
         worst = losses.topk(min(200, len(losses))).indices.tolist()
         by_class = defaultdict(int)
         for index in worst:
@@ -394,8 +390,7 @@ def main() -> int:
             "skipped": False,
             "inspected": len(worst),
             "threshold_note": (
-                "error-analysis.md: retrain decision if a class contributes >2% of its own "
-                "training images to this list"
+                "error-analysis.md: retrain decision if a class contributes >2% of its own training images to this list"
             ),
             "top_loss_by_class": dict(sorted(by_class.items(), key=lambda item: -item[1])[:12]),
             "samples": [

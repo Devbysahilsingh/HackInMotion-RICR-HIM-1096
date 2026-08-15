@@ -82,9 +82,7 @@ class StubPredictor(Predictor):
         # manifest began saying "model-v1.0", and a stub handed that string
         # would have reported a real model version while serving hash noise.
         # The marker has to be a property of the backend, not of the document.
-        self.model_version = (
-            model_version if model_version.startswith("stub-") else f"stub-{model_version}"
-        )
+        self.model_version = model_version if model_version.startswith("stub-") else f"stub-{model_version}"
         self.is_stub = True
         self._spread = spread
 
@@ -93,8 +91,7 @@ class StubPredictor(Predictor):
         # 16-bit draw per class, regardless of how many classes the manifest has.
         digest = hashlib.shake_256(tensor.tobytes()).digest(self.num_classes * 2)
         return [
-            (int.from_bytes(digest[i * 2 : i * 2 + 2], "big") / 65535.0) * self._spread
-            for i in range(self.num_classes)
+            (int.from_bytes(digest[i * 2 : i * 2 + 2], "big") / 65535.0) * self._spread for i in range(self.num_classes)
         ]
 
 
@@ -109,9 +106,7 @@ class OnnxPredictor(Predictor):
             import numpy  # noqa: F401  (imported for the side-effect check below)
             import onnxruntime
         except ImportError as exc:  # pragma: no cover - environment-dependent
-            raise ModelUnavailable(
-                "onnxruntime is not installed; set MODEL_PATH only where it is available"
-            ) from exc
+            raise ModelUnavailable("onnxruntime is not installed; set MODEL_PATH only where it is available") from exc
 
         if not model_path.is_file():
             raise ModelUnavailable(f"model artefact not found at {model_path}")
@@ -155,15 +150,12 @@ class OnnxPredictor(Predictor):
             # A silent mismatch here would mislabel every prediction while the
             # service looked perfectly healthy — the single worst failure mode.
             raise ModelUnavailable(
-                f"model emits {len(logits)} scores but the manifest declares "
-                f"{self.num_classes} classes"
+                f"model emits {len(logits)} scores but the manifest declares {self.num_classes} classes"
             )
         return [float(value) for value in logits]
 
 
-def build_predictor(
-    *, model_path: Path | None, num_classes: int, model_version: str
-) -> Predictor:
+def build_predictor(*, model_path: Path | None, num_classes: int, model_version: str) -> Predictor:
     """Pick the backend from configuration. MODEL_PATH set => real model, always.
 
     A missing or broken artefact raises rather than falling back to the stub:

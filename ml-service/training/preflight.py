@@ -198,9 +198,7 @@ def main() -> int:
     # -- 4. Decode + transforms -----------------------------------------------
     section("4. decode and transforms")
 
-    train_transform, eval_transform = build_transforms(
-        config["image"], config["augment"], config["image"]["size"]
-    )
+    train_transform, eval_transform = build_transforms(config["image"], config["augment"], config["image"]["size"])
 
     sample = counts["train"][0]
     with Image.open(sample.path) as image:
@@ -219,8 +217,7 @@ def main() -> int:
     record(
         PASS if tuple(evaluated.shape) == (3, size, size) else FAIL,
         "eval transform",
-        f"shape {tuple(evaluated.shape)} dtype {evaluated.dtype} "
-        f"mean {evaluated.mean():.3f} std {evaluated.std():.3f}",
+        f"shape {tuple(evaluated.shape)} dtype {evaluated.dtype} mean {evaluated.mean():.3f} std {evaluated.std():.3f}",
     )
 
     # The eval transform is contractually identical to ml-service preprocessing.

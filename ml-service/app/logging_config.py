@@ -16,9 +16,11 @@ from typing import Any
 
 # Attributes LogRecord always carries; anything else on the record is treated as
 # caller-supplied structured context.
-_RESERVED = frozenset(
-    logging.LogRecord("", 0, "", 0, "", None, None).__dict__.keys()
-) | {"message", "asctime", "taskName"}
+_RESERVED = frozenset(logging.LogRecord("", 0, "", 0, "", None, None).__dict__.keys()) | {
+    "message",
+    "asctime",
+    "taskName",
+}
 
 
 class JsonFormatter(logging.Formatter):

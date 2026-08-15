@@ -162,12 +162,8 @@ def derive_tau_healthy(
     the worst failure mode.
     """
     _, prediction = probabilities.max(dim=1)
-    predicted_healthy = torch.tensor(
-        [int(index) in healthy_indices for index in prediction], dtype=torch.bool
-    )
-    truly_diseased = torch.tensor(
-        [int(index) not in healthy_indices for index in targets], dtype=torch.bool
-    )
+    predicted_healthy = torch.tensor([int(index) in healthy_indices for index in prediction], dtype=torch.bool)
+    truly_diseased = torch.tensor([int(index) not in healthy_indices for index in targets], dtype=torch.bool)
     # Probability mass on the healthy classes, which is what the rule thresholds
     # — not the top-1 probability, since two healthy classes cannot both be it.
     healthy_mass = probabilities[:, sorted(healthy_indices)].sum(dim=1)
@@ -188,9 +184,7 @@ def derive_tau_healthy(
             }
         )
 
-    qualifying = [
-        point for point in curve if point["false_negative_disease_rate"] <= TAU_HEALTHY_MAX_FN_RATE
-    ]
+    qualifying = [point for point in curve if point["false_negative_disease_rate"] <= TAU_HEALTHY_MAX_FN_RATE]
     if not qualifying:
         return None, None, curve
     best = min(qualifying, key=lambda point: point["threshold"])
@@ -294,20 +288,16 @@ def production_policy_report(
     prediction = top2.indices[:, 0]
 
     healthy_mass = probabilities[:, sorted(healthy_indices)].sum(dim=1)
-    predicted_healthy = torch.tensor(
-        [int(index) in healthy_indices for index in prediction], dtype=torch.bool
-    )
+    predicted_healthy = torch.tensor([int(index) in healthy_indices for index in prediction], dtype=torch.bool)
 
     accepted = (confidence >= tau) & (margin >= MARGIN_GUARD)
     accepted = accepted & (~predicted_healthy | (healthy_mass >= tau_healthy))
 
     count = int(accepted.sum())
-    correct = (prediction == targets)
+    correct = prediction == targets
 
     accepted_healthy = accepted & predicted_healthy
-    truly_diseased = torch.tensor(
-        [int(index) not in healthy_indices for index in targets], dtype=torch.bool
-    )
+    truly_diseased = torch.tensor([int(index) not in healthy_indices for index in targets], dtype=torch.bool)
 
     return {
         "coverage": round(count / len(targets), 4),
@@ -316,9 +306,7 @@ def production_policy_report(
         "abstain_rate": round(1 - count / len(targets), 4),
         "accepted_healthy": int(accepted_healthy.sum()),
         "false_negative_disease_rate_among_accepted_healthy": (
-            round(float(truly_diseased[accepted_healthy].float().mean()), 4)
-            if int(accepted_healthy.sum())
-            else None
+            round(float(truly_diseased[accepted_healthy].float().mean()), 4) if int(accepted_healthy.sum()) else None
         ),
     }
 
@@ -350,13 +338,11 @@ def main() -> int:
     healthy_indices = {
         index for index, code in enumerate(classes) if code.endswith("_HEALTHY") or code == "RICE_NORMAL"
     }
-    print(f"   {len(targets):,} {args.split} samples | {len(classes)} classes | "
-          f"{len(healthy_indices)} healthy classes")
+    print(f"   {len(targets):,} {args.split} samples | {len(classes)} classes | {len(healthy_indices)} healthy classes")
 
     # ── Temperature ──────────────────────────────────────────────────────────
     temperature, nll = fit_temperature(logits, targets)
-    print(f"   temperature T = {temperature:.4f} "
-          f"(val NLL {nll['nll_before']:.4f} -> {nll['nll_after']:.4f})")
+    print(f"   temperature T = {temperature:.4f} (val NLL {nll['nll_before']:.4f} -> {nll['nll_after']:.4f})")
 
     probabilities_before = logits.softmax(dim=1)
     probabilities_after = (logits / temperature).softmax(dim=1)
@@ -371,29 +357,32 @@ def main() -> int:
     if tau is None:
         print(f"   tau: NO threshold reaches precision >= {TAU_MIN_PRECISION}", file=sys.stderr)
     else:
-        print(f"   tau = {tau:.2f} (precision {tau_point['precision']:.4f}, "
-              f"coverage {tau_point['coverage']:.4f})")
+        print(f"   tau = {tau:.2f} (precision {tau_point['precision']:.4f}, coverage {tau_point['coverage']:.4f})")
         if tau == 0:
-            print(f"   *** tau criterion is NON-BINDING: precision at threshold 0 is already "
-                  f"{tau_point['precision']:.4f} >= {TAU_MIN_PRECISION}, so confidence-based "
-                  f"abstention is INACTIVE. Needs a product decision.")
+            print(
+                f"   *** tau criterion is NON-BINDING: precision at threshold 0 is already "
+                f"{tau_point['precision']:.4f} >= {TAU_MIN_PRECISION}, so confidence-based "
+                f"abstention is INACTIVE. Needs a product decision."
+            )
 
-    tau_healthy, healthy_point, healthy_curve = derive_tau_healthy(
-        probabilities_after, targets, healthy_indices
-    )
+    tau_healthy, healthy_point, healthy_curve = derive_tau_healthy(probabilities_after, targets, healthy_indices)
     if tau_healthy is None:
         print(
             f"   tau_healthy: NO threshold reaches FN-disease rate <= {TAU_HEALTHY_MAX_FN_RATE}",
             file=sys.stderr,
         )
     else:
-        print(f"   tau_healthy = {tau_healthy:.2f} "
-              f"(FN-disease rate {healthy_point['false_negative_disease_rate']:.4f}, "
-              f"{healthy_point['accepted_healthy']} accepted)")
+        print(
+            f"   tau_healthy = {tau_healthy:.2f} "
+            f"(FN-disease rate {healthy_point['false_negative_disease_rate']:.4f}, "
+            f"{healthy_point['accepted_healthy']} accepted)"
+        )
         if tau_healthy == 0:
-            print(f"   *** tau_healthy criterion is NON-BINDING: FN-disease rate at threshold 0 "
-                  f"is already {healthy_point['false_negative_disease_rate']:.4f} <= "
-                  f"{TAU_HEALTHY_MAX_FN_RATE}. Needs a product decision.")
+            print(
+                f"   *** tau_healthy criterion is NON-BINDING: FN-disease rate at threshold 0 "
+                f"is already {healthy_point['false_negative_disease_rate']:.4f} <= "
+                f"{TAU_HEALTHY_MAX_FN_RATE}. Needs a product decision."
+            )
 
     # ── Policy override ──────────────────────────────────────────────────────
     derived = {"tau": tau, "tauHealthy": tau_healthy}
@@ -404,12 +393,13 @@ def main() -> int:
         ok, checks = validate_override(
             override_cfg, curve, healthy_curve, probabilities_after, targets, healthy_indices
         )
-        print(f"   policy override (approved {override_cfg.get('approved')}): "
-              f"tau {tau} -> {override_cfg['tau']}, tau_healthy {tau_healthy} -> "
-              f"{override_cfg['tau_healthy']}")
+        print(
+            f"   policy override (approved {override_cfg.get('approved')}): "
+            f"tau {tau} -> {override_cfg['tau']}, tau_healthy {tau_healthy} -> "
+            f"{override_cfg['tau_healthy']}"
+        )
         for check in checks:
-            print(f"     [{'PASS' if check['passed'] else 'FAIL'}] {check['criterion']} "
-                  f"-> {check['measured']}")
+            print(f"     [{'PASS' if check['passed'] else 'FAIL'}] {check['criterion']} -> {check['measured']}")
 
         if not ok:
             # Fatal: an override that fails a documented criterion is not a
@@ -438,13 +428,13 @@ def main() -> int:
                 f"   NOTE: derived tau_healthy ({tau_healthy}) is below tau ({tau}); "
                 "the doc describes tau_healthy as stricter. Reported as derived.",
             )
-        policy = production_policy_report(
-            probabilities_after, targets, healthy_indices, tau, tau_healthy
+        policy = production_policy_report(probabilities_after, targets, healthy_indices, tau, tau_healthy)
+        print(
+            f"   production policy (tau + margin {MARGIN_GUARD} + tau_healthy): "
+            f"coverage {policy['coverage']:.4f}, "
+            f"precision {policy['precision_of_accepted']:.4f}, "
+            f"abstain {policy['abstain_rate']:.4f}"
         )
-        print(f"   production policy (tau + margin {MARGIN_GUARD} + tau_healthy): "
-              f"coverage {policy['coverage']:.4f}, "
-              f"precision {policy['precision_of_accepted']:.4f}, "
-              f"abstain {policy['abstain_rate']:.4f}")
 
     # ── Persist ──────────────────────────────────────────────────────────────
     result = {
@@ -491,15 +481,12 @@ def main() -> int:
         },
         # What the doc's expected neighbourhood would cost, so the team can
         # choose an override against real numbers instead of intuition.
-        "referencePoints": [
-            point for point in curve if point["threshold"] in (0.70, 0.75, 0.80, 0.90)
-        ],
+        "referencePoints": [point for point in curve if point["threshold"] in (0.70, 0.75, 0.80, 0.90)],
         "derivation": {
             "tauCriterion": f"lowest threshold with precision-of-accepted >= {TAU_MIN_PRECISION}",
             "tauPoint": tau_point,
             "tauHealthyCriterion": (
-                f"lowest threshold with false-negative-disease rate among accepted-healthy "
-                f"<= {TAU_HEALTHY_MAX_FN_RATE}"
+                f"lowest threshold with false-negative-disease rate among accepted-healthy <= {TAU_HEALTHY_MAX_FN_RATE}"
             ),
             "tauHealthyPoint": healthy_point,
             "marginGuardSource": "published in docs/ml/confidence-strategy.md, not derived",

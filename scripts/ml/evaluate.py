@@ -144,9 +144,7 @@ def evaluate_split(bundle: dict, temperature: float, classes: list[str], label: 
     # quoting THAT alone would understate the gap, since it silently narrows the
     # label space. Both are published; the README quotes both.
     def present_macro(values) -> float:
-        return float(
-            f1_score(targets.numpy(), values.numpy(), average="macro", labels=present, zero_division=0)
-        )
+        return float(f1_score(targets.numpy(), values.numpy(), average="macro", labels=present, zero_division=0))
 
     return {
         "split": label,
@@ -299,9 +297,7 @@ def render_reliability(calibration: dict, path: Path) -> None:
     axes.plot(confidences, accuracies, "o-", label="post-temperature")
     axes.set_xlabel("confidence")
     axes.set_ylabel("accuracy")
-    axes.set_title(
-        f"Reliability (val) - ECE {calibration['ece']['before']:.4f} -> {calibration['ece']['after']:.4f}"
-    )
+    axes.set_title(f"Reliability (val) - ECE {calibration['ece']['before']:.4f} -> {calibration['ece']['after']:.4f}")
     axes.legend()
     axes.grid(alpha=0.3)
     figure.tight_layout()
@@ -360,9 +356,7 @@ def main() -> int:
     classes = splits["val"]["classes"]
 
     # ── 1/2/4. Per-split metrics, unmasked and crop-masked ───────────────────
-    results = {
-        name: evaluate_split(bundle, temperature, classes, name) for name, bundle in splits.items()
-    }
+    results = {name: evaluate_split(bundle, temperature, classes, name) for name, bundle in splits.items()}
 
     for name, result in results.items():
         print(
@@ -380,23 +374,15 @@ def main() -> int:
     val = results["val"]
 
     per_crop_test = per_crop_slice(test["_targets"], test["_predictions"], classes)
-    per_crop_field = per_crop_slice(
-        results["fieldtest"]["_targets"], results["fieldtest"]["_predictions"], classes
-    )
-    healthy_val = healthy_recall_slice(
-        val["_calibrated"], val["_targets"], val["_predictions"], classes, tau_healthy
-    )
+    per_crop_field = per_crop_slice(results["fieldtest"]["_targets"], results["fieldtest"]["_predictions"], classes)
+    healthy_val = healthy_recall_slice(val["_calibrated"], val["_targets"], val["_predictions"], classes, tau_healthy)
     healthy_test = healthy_recall_slice(
         test["_calibrated"], test["_targets"], test["_predictions"], classes, tau_healthy
     )
 
     # ── Mandatory confound disclosures ───────────────────────────────────────
-    rice_cell_test = confusion_cell(
-        test["_targets"], test["_predictions"], classes, "RICE_NORMAL", "RICE_BROWN_SPOT"
-    )
-    rice_cell_val = confusion_cell(
-        val["_targets"], val["_predictions"], classes, "RICE_NORMAL", "RICE_BROWN_SPOT"
-    )
+    rice_cell_test = confusion_cell(test["_targets"], test["_predictions"], classes, "RICE_NORMAL", "RICE_BROWN_SPOT")
+    rice_cell_val = confusion_cell(val["_targets"], val["_predictions"], classes, "RICE_NORMAL", "RICE_BROWN_SPOT")
 
     chilli_affected = [
         "CHILLI_ANTHRACNOSE",
@@ -408,9 +394,7 @@ def main() -> int:
 
     # ── Ship gates ───────────────────────────────────────────────────────────
     per_crop_failures = [
-        row
-        for row in per_crop_test
-        if row["macro_f1"] is not None and row["macro_f1"] < GATE_PER_CROP_MACRO_F1
+        row for row in per_crop_test if row["macro_f1"] is not None and row["macro_f1"] < GATE_PER_CROP_MACRO_F1
     ]
 
     gates = [
@@ -424,8 +408,7 @@ def main() -> int:
             "gate": "healthy-class recall >= 0.90 @tau_healthy (val)",
             "measured": healthy_val["min_recall"],
             "threshold": GATE_HEALTHY_RECALL,
-            "passed": healthy_val["min_recall"] is not None
-            and healthy_val["min_recall"] >= GATE_HEALTHY_RECALL,
+            "passed": healthy_val["min_recall"] is not None and healthy_val["min_recall"] >= GATE_HEALTHY_RECALL,
             "note": "min across healthy classes - the weakest class is the gate, not the average",
         },
         {
@@ -469,16 +452,24 @@ def main() -> int:
 
     # ── Figures ──────────────────────────────────────────────────────────────
     render_confusion(
-        test["_targets"].numpy(), test["_predictions"].numpy(), classes,
-        RESULTS / "confusion-test.png", "Test confusion (row-normalised)",
+        test["_targets"].numpy(),
+        test["_predictions"].numpy(),
+        classes,
+        RESULTS / "confusion-test.png",
+        "Test confusion (row-normalised)",
     )
     render_confusion(
-        results["fieldtest"]["_targets"].numpy(), results["fieldtest"]["_predictions"].numpy(), classes,
-        RESULTS / "confusion-fieldtest.png", "Field-test (PlantDoc) confusion (row-normalised)",
+        results["fieldtest"]["_targets"].numpy(),
+        results["fieldtest"]["_predictions"].numpy(),
+        classes,
+        RESULTS / "confusion-fieldtest.png",
+        "Field-test (PlantDoc) confusion (row-normalised)",
     )
     render_reliability(calibration, RESULTS / "reliability-val.png")
     render_confidence_histograms(
-        test["_calibrated"], test["_targets"], test["_predictions"],
+        test["_calibrated"],
+        test["_targets"],
+        test["_predictions"],
         RESULTS / "confidence-histogram-test.png",
     )
 

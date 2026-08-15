@@ -93,13 +93,9 @@ def apply_curation(items, rules, audit) -> tuple[list, list[dict], dict]:
     """Split items into (kept, excluded-with-reason, stats)."""
     kept, excluded = [], []
     roles = rules["dataset_roles"]
-    excluded_groups = {
-        (r["dataset"], r["group"]): r for r in rules["excluded_groups"]
-    }
+    excluded_groups = {(r["dataset"], r["group"]): r for r in rules["excluded_groups"]}
     excluded_classes = {r["code"]: r for r in rules["excluded_classes"]}
-    stock_patterns = [
-        p.lower() for p in rules["quarantine"]["stock_provenance_filename_patterns"]
-    ]
+    stock_patterns = [p.lower() for p in rules["quarantine"]["stock_provenance_filename_patterns"]]
     manual_path = REPO_ROOT / rules["manual_quarantine_file"]
     manual, coverage = {}, None
     if manual_path.is_file():
@@ -196,11 +192,7 @@ def assign_clusters(clusters: list[list], targets: dict[str, float], rng) -> dic
     counts = {s: 0 for s in SPLITS}
     total = sum(len(c) for c in clusters)
     for cluster in order:
-        deficits = {
-            s: targets[s] * total - counts[s]
-            for s in SPLITS
-            if targets[s] > 0
-        }
+        deficits = {s: targets[s] * total - counts[s] for s in SPLITS if targets[s] > 0}
         pick = max(deficits, key=lambda s: (deficits[s], -SPLITS.index(s)))
         assigned[pick].extend(cluster)
         counts[pick] += len(cluster)
@@ -241,9 +233,7 @@ def main() -> int:
     print(f"  {len(items)} images", flush=True)
 
     print("== apply curation rules ==", flush=True)
-    kept, excluded, exclusion_stats, manual_review_coverage = apply_curation(
-        items, rules, audit
-    )
+    kept, excluded, exclusion_stats, manual_review_coverage = apply_curation(items, rules, audit)
     print(f"  kept {len(kept)}, excluded {len(excluded)}", flush=True)
     for rule, n in sorted(exclusion_stats.items(), key=lambda kv: -kv[1]):
         print(f"    {n:6d}  {rule}", flush=True)
@@ -258,9 +248,7 @@ def main() -> int:
         "ncc_hist": Counter(),
         "thumbs": thumbs[[item_pos[it.relpath] for it in kept]],
     }
-    for i, j, _d, _n in audit.verified_pairs(
-        kept, audit.DEFAULT_THRESHOLD, audit.DEFAULT_NCC_MIN, stats
-    ):
+    for i, j, _d, _n in audit.verified_pairs(kept, audit.DEFAULT_THRESHOLD, audit.DEFAULT_NCC_MIN, stats):
         uf.union(i, j)
     cluster_of = {}
     for idx in range(len(kept)):
@@ -293,8 +281,7 @@ def main() -> int:
     dropped = len(kept) - len(representatives)
     exclusion_stats["duplicate_collapse"] = dropped
     print(
-        f"  collapsed {len(kept)} images → {len(representatives)} unique "
-        f"({dropped} duplicate copies excluded)",
+        f"  collapsed {len(kept)} images → {len(representatives)} unique ({dropped} duplicate copies excluded)",
         flush=True,
     )
     kept = representatives
@@ -352,9 +339,7 @@ def main() -> int:
             "single_source": len(sources_here) == 1,
             "test_fraction": round(t_frac, 4),
             "test_fraction_raised": t_frac > rules["split_fractions"]["test"],
-            "source_split_balance": {
-                s: dict(Counter(it.dataset for it in got[s])) for s in SPLITS
-            },
+            "source_split_balance": {s: dict(Counter(it.dataset for it in got[s])) for s in SPLITS},
             **{s: len(got[s]) for s in SPLITS},
         }
         if len(got["test"]) < rules["min_test_images_per_class"]:
@@ -404,16 +389,9 @@ def main() -> int:
     print("  ✔ field test set is disjoint from every split")
 
     # ---- write -----------------------------------------------------------
-    split_lists = {
-        s: sorted(f"{it.relpath}\t{it.code}\t{it.dataset}" for it in assignment[s])
-        for s in SPLITS
-    }
-    split_lists["fieldtest"] = sorted(
-        f"{it.relpath}\t{it.code}\t{it.dataset}" for it in fieldtest
-    )
-    quarantine_lines = sorted(
-        f"{e['path']}\t{e['rule']}" for e in excluded if e["rule"].startswith("quarantine")
-    )
+    split_lists = {s: sorted(f"{it.relpath}\t{it.code}\t{it.dataset}" for it in assignment[s]) for s in SPLITS}
+    split_lists["fieldtest"] = sorted(f"{it.relpath}\t{it.code}\t{it.dataset}" for it in fieldtest)
+    quarantine_lines = sorted(f"{e['path']}\t{e['rule']}" for e in excluded if e["rule"].startswith("quarantine"))
 
     manifest = {
         "schema_version": 1,
@@ -434,9 +412,7 @@ def main() -> int:
             ),
             "audit_report": {
                 "path": "datasets/audit-report.json",
-                "sha256": hashlib.sha256(AUDIT_REPORT.read_bytes()).hexdigest()
-                if AUDIT_REPORT.is_file()
-                else None,
+                "sha256": hashlib.sha256(AUDIT_REPORT.read_bytes()).hexdigest() if AUDIT_REPORT.is_file() else None,
             },
         },
         "totals": {
@@ -449,8 +425,7 @@ def main() -> int:
         },
         "exclusions_by_rule": exclusion_stats,
         "splits": {
-            name: {"images": len(lines), "sha256": sha256_of_lines(lines)}
-            for name, lines in split_lists.items()
+            name: {"images": len(lines), "sha256": sha256_of_lines(lines)} for name, lines in split_lists.items()
         },
         "classes": class_report,
         "acceptance_gates": {
@@ -462,9 +437,7 @@ def main() -> int:
         "known_confounds": rules["known_confounds"],
         "source_stratified_splits": rules["source_stratified_splits"],
         "field_test_review": {
-            "quarantined_after_visual_review": sum(
-                1 for e in excluded if e["rule"] == "quarantine.manual_review"
-            ),
+            "quarantined_after_visual_review": sum(1 for e in excluded if e["rule"] == "quarantine.manual_review"),
             "coverage": manual_review_coverage,
             "outstanding": (
                 "Images not yet reviewed may still contain pixel-burned watermarks, "
@@ -496,15 +469,9 @@ def main() -> int:
     SPLIT_DIR.mkdir(parents=True, exist_ok=True)
     for name, lines in split_lists.items():
         (SPLIT_DIR / f"{name}.tsv").write_text("\n".join(lines) + "\n", encoding="utf-8")
-    (SPLIT_DIR / "quarantine.tsv").write_text(
-        "\n".join(quarantine_lines) + "\n", encoding="utf-8"
-    )
-    (SPLIT_DIR / "exclusions.json").write_text(
-        json.dumps(excluded, indent=1, ensure_ascii=False), encoding="utf-8"
-    )
-    MANIFEST_PATH.write_text(
-        json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
+    (SPLIT_DIR / "quarantine.tsv").write_text("\n".join(quarantine_lines) + "\n", encoding="utf-8")
+    (SPLIT_DIR / "exclusions.json").write_text(json.dumps(excluded, indent=1, ensure_ascii=False), encoding="utf-8")
+    MANIFEST_PATH.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
 
     print(f"\nmanifest → {MANIFEST_PATH.relative_to(REPO_ROOT)}")
     print(f"split lists → {SPLIT_DIR.relative_to(REPO_ROOT)}/ (gitignored, derived)")

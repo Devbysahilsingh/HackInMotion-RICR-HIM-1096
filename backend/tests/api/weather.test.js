@@ -21,6 +21,7 @@ import assert from 'node:assert/strict';
 import { API_PREFIX, createApp } from '../../src/app.js';
 import { env } from '../../src/config/env.js';
 import { runWeatherRefresh } from '../../src/jobs/weatherRefresh.js';
+import { requestPriorityRefresh } from '../../src/services/farmWeatherService.js';
 import { WeatherSnapshot } from '../../src/models/index.js';
 import { providerCircuit } from '../../src/utils/circuitBreaker.js';
 import { farmInput, registerUser } from '../factories/index.js';
@@ -570,6 +571,67 @@ describe('Weather ingestion and read route', () => {
       }
 
       assert.equal(fetchImpl.hits(OPEN_METEO_HOST), 1, 'one cell cost more than one fetch');
+    });
+  });
+
+  // ── priority refresh ───────────────────────────────────────────────────────
+
+  /**
+   * `farmWeatherService` answers a farm whose cell has never been fetched with
+   * `status:'pending'` and flags the cell, promising the farmer that "the next
+   * scheduler tick fetches it ahead of the routine sweep". Until 2026-08-15
+   * `drainPriorityRefresh` was called by nothing, so the set filled and never
+   * drained and that promise was never kept.
+   */
+  describe('priority refresh', () => {
+    const asOf = new Date('2026-08-13T06:00:00.000Z');
+    const OTHER = { locationKey: '19.1,72.9', lat: 19.076, lon: 72.877 };
+
+    it('fetches a reader-flagged cell before the routine sweep, and drains it', async () => {
+      const fetched = [];
+      const fetchImpl = providerStub({
+        openMeteo: serves(openMeteoBody(asOf)),
+        openWeatherMap: serves(owmBody(asOf)),
+      });
+      // Record order by wrapping the stub — the report alone cannot show it.
+      const ordered = async (url) => {
+        fetched.push(new URL(url).searchParams.get('latitude'));
+        return fetchImpl(url);
+      };
+
+      requestPriorityRefresh(OTHER.locationKey);
+      const report = await runWeatherRefresh({
+        locations: [LOCATION, OTHER],
+        fetchImpl: ordered,
+        asOf,
+      });
+
+      assert.equal(report.locations, 2, 'the work list changed size');
+      assert.equal(report.prioritized, 1);
+      assert.equal(fetched[0], String(OTHER.lat), 'the flagged cell was not fetched first');
+
+      // Drained: a second run has nothing prioritised and keeps its own order.
+      const second = await runWeatherRefresh({
+        locations: [LOCATION, OTHER],
+        fetchImpl,
+        asOf,
+      });
+      assert.equal(second.prioritized, 0, 'the priority set was not drained');
+    });
+
+    it('drops a flagged cell that is no longer any farm’s location', async () => {
+      requestPriorityRefresh('1.1,1.1');
+      const fetchImpl = providerStub({
+        openMeteo: serves(openMeteoBody(asOf)),
+        openWeatherMap: serves(owmBody(asOf)),
+      });
+
+      const report = await runWeatherRefresh({ locations: [LOCATION], fetchImpl, asOf });
+
+      // The work list is defined by activeLocations, never extended by who asked.
+      assert.equal(report.locations, 1);
+      assert.equal(report.prioritized, 0);
+      assert.equal(fetchImpl.hits(OPEN_METEO_HOST), 1);
     });
   });
 });

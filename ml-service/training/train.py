@@ -105,9 +105,7 @@ def build_everything(config: dict, run: dict, batch_size: int, image_size: int, 
     classes = load_class_order(manifest_path)
     class_to_index = {code: index for index, code in enumerate(classes)}
 
-    train_transform, eval_transform = build_transforms(
-        config["image"], config["augment"], image_size
-    )
+    train_transform, eval_transform = build_transforms(config["image"], config["augment"], image_size)
 
     train_samples = read_split(splits_dir, raw_dir, "train", class_to_index)
     val_samples = read_split(splits_dir, raw_dir, "val", class_to_index)
@@ -118,11 +116,7 @@ def build_everything(config: dict, run: dict, batch_size: int, image_size: int, 
     optim_cfg = config["optim"]
     power = optim_cfg["class_weight_power"]
 
-    sampler = (
-        sampler_for(train_samples, len(classes), power)
-        if optim_cfg["weighted_sampler"]
-        else None
-    )
+    sampler = sampler_for(train_samples, len(classes), power) if optim_cfg["weighted_sampler"] else None
 
     train_loader = build_loader(
         train_set,
@@ -134,24 +128,14 @@ def build_everything(config: dict, run: dict, batch_size: int, image_size: int, 
     val_loader = build_loader(val_set, batch_size, config["loader"])
 
     model = build_model(run["arch"], len(classes)).to(device)
-    freeze_summary = apply_freeze(
-        model, run["arch"], run["freeze"], run.get("unfreeze_last_blocks", 0)
-    )
+    freeze_summary = apply_freeze(model, run["arch"], run["freeze"], run.get("unfreeze_last_blocks", 0))
 
     counts = Counter(sample.label for sample in train_samples)
-    class_counts = torch.tensor(
-        [counts.get(index, 0) for index in range(len(classes))], dtype=torch.float32
-    )
+    class_counts = torch.tensor([counts.get(index, 0) for index in range(len(classes))], dtype=torch.float32)
     head_bias_init(model, run["arch"], class_counts)
 
-    weight = (
-        class_weights(train_samples, len(classes), power).to(device)
-        if optim_cfg["class_weighted_loss"]
-        else None
-    )
-    criterion = nn.CrossEntropyLoss(
-        weight=weight, label_smoothing=optim_cfg["label_smoothing"]
-    )
+    weight = class_weights(train_samples, len(classes), power).to(device) if optim_cfg["class_weighted_loss"] else None
+    criterion = nn.CrossEntropyLoss(weight=weight, label_smoothing=optim_cfg["label_smoothing"])
 
     optimizer = torch.optim.AdamW(
         trainable_parameters(model),
@@ -252,9 +236,7 @@ def main() -> int:
                 fallbacks_taken.append(attempt)
                 torch.cuda.empty_cache()
 
-            bundle = build_everything(
-                config, run, attempt["batch_size"], attempt["image_size"], device
-            )
+            bundle = build_everything(config, run, attempt["batch_size"], attempt["image_size"], device)
             # Building the model does not touch the GPU hard enough to prove the
             # setting fits. One real forward+backward does, and failing here is
             # far cheaper than failing forty minutes into epoch one.
@@ -332,8 +314,7 @@ def main() -> int:
                 # prevent — and the only symptom would be a worse final number
                 # nobody could explain.
                 print(
-                    f"   {args.run} is configured to initialise from '{source}', but "
-                    f"{source_path} does not exist.",
+                    f"   {args.run} is configured to initialise from '{source}', but {source_path} does not exist.",
                     file=sys.stderr,
                 )
                 print(
@@ -442,9 +423,7 @@ def _probe_step(bundle, device, attempt, amp: bool) -> None:
     """One real forward+backward, to find an OOM now rather than mid-epoch."""
     model, criterion = bundle["model"], bundle["criterion"]
     model.train()
-    images = torch.zeros(
-        attempt["batch_size"], 3, attempt["image_size"], attempt["image_size"], device=device
-    )
+    images = torch.zeros(attempt["batch_size"], 3, attempt["image_size"], attempt["image_size"], device=device)
     targets = torch.zeros(attempt["batch_size"], dtype=torch.long, device=device)
 
     with torch.amp.autocast("cuda", enabled=amp and device.type == "cuda"):
@@ -511,10 +490,7 @@ def _initialise_from(path: Path, bundle, device, expected_arch: str) -> str:
     state = torch.load(path, map_location=device, weights_only=False)
 
     if state.get("arch") != expected_arch:
-        raise ValueError(
-            f"{path} was trained with arch {state.get('arch')!r}, "
-            f"but this run uses {expected_arch!r}"
-        )
+        raise ValueError(f"{path} was trained with arch {state.get('arch')!r}, but this run uses {expected_arch!r}")
     if state.get("classes") != bundle["classes"]:
         raise ValueError(
             f"{path} carries a different class order than the current dataset manifest; "

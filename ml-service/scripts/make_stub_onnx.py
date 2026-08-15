@@ -114,10 +114,7 @@ def build_stub_onnx(num_classes: int, *, seed: str = "him-1096-stub") -> bytes:
     # Deterministic weights from a hash: reproducible on every machine, and
     # obviously not learned to anybody who opens the file.
     raw = hashlib.shake_256(seed.encode()).digest(3 * num_classes * 2)
-    weights = [
-        (int.from_bytes(raw[i * 2 : i * 2 + 2], "big") / 65535.0) * 4.0 - 2.0
-        for i in range(3 * num_classes)
-    ]
+    weights = [(int.from_bytes(raw[i * 2 : i * 2 + 2], "big") / 65535.0) * 4.0 - 2.0 for i in range(3 * num_classes)]
 
     nodes = (
         _bytes_field(1, _node("GlobalAveragePool", ["input"], ["pooled"], "gap"))

@@ -149,8 +149,7 @@ def main() -> int:
     from PIL import Image
 
     samples = golden_samples(config, classes, GOLDEN_IMAGES)
-    print(f"   golden set: {len(samples)} images spanning "
-          f"{len({sample.label for sample in samples})} classes")
+    print(f"   golden set: {len(samples)} images spanning {len({sample.label for sample in samples})} classes")
 
     model.eval()
     deltas: list[float] = []
@@ -173,8 +172,10 @@ def main() -> int:
     mean_delta = sum(deltas) / len(deltas)
     parity_passed = max_delta < PARITY_TOLERANCE and argmax_mismatches == 0
 
-    print(f"   parity: max|dprob| {max_delta:.3e} (tolerance {PARITY_TOLERANCE:.0e}), "
-          f"mean {mean_delta:.3e}, argmax mismatches {argmax_mismatches}")
+    print(
+        f"   parity: max|dprob| {max_delta:.3e} (tolerance {PARITY_TOLERANCE:.0e}), "
+        f"mean {mean_delta:.3e}, argmax mismatches {argmax_mismatches}"
+    )
     print(f"   parity gate: {'PASS' if parity_passed else 'FAIL'}")
 
     parity_record = {
@@ -193,9 +194,7 @@ def main() -> int:
         "runtime": f"onnxruntime {onnxruntime.__version__} CPUExecutionProvider",
     }
     RESULTS.mkdir(parents=True, exist_ok=True)
-    (RESULTS / "onnx-parity.json").write_text(
-        json.dumps(parity_record, indent=2) + "\n", encoding="utf-8"
-    )
+    (RESULTS / "onnx-parity.json").write_text(json.dumps(parity_record, indent=2) + "\n", encoding="utf-8")
 
     if not parity_passed:
         # No manifest, and the artifact is left in place for inspection but is
@@ -216,9 +215,7 @@ def main() -> int:
         return 1
 
     config_hash = hashlib.sha256((HERE / "config.yaml").read_bytes()).hexdigest()
-    dataset_hash = hashlib.sha256(
-        (REPO / config["data"]["manifest"]).read_bytes()
-    ).hexdigest()
+    dataset_hash = hashlib.sha256((REPO / config["data"]["manifest"]).read_bytes()).hexdigest()
 
     val = evaluation["splits"]["val"]
     test = evaluation["splits"]["test"]

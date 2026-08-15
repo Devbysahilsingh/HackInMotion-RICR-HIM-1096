@@ -78,9 +78,7 @@ def _top_k(probs: list[float], classes: tuple[str, ...], indices: tuple[int, ...
 def apply_policy(logits: list[float], crop_code: str, manifest: ModelManifest) -> PolicyOutcome:
     """Turn raw logits + a declared crop into the response decision."""
     if len(logits) != manifest.num_classes:
-        raise ValueError(
-            f"expected {manifest.num_classes} logits, got {len(logits)}"
-        )
+        raise ValueError(f"expected {manifest.num_classes} logits, got {len(logits)}")
 
     thresholds = manifest.thresholds
     probs = softmax(logits, thresholds.temperature)

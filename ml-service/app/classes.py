@@ -94,9 +94,7 @@ def load_manifest(path: Path, *, model_version_override: str | None = None) -> M
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError as exc:
-        raise ManifestError(
-            f"model manifest not found at {path} — run scripts/generate_model_manifest.py"
-        ) from exc
+        raise ManifestError(f"model manifest not found at {path} — run scripts/generate_model_manifest.py") from exc
     except json.JSONDecodeError as exc:
         raise ManifestError(f"model manifest at {path} is not valid JSON: {exc}") from exc
 

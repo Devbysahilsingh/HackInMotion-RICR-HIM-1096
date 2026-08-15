@@ -94,9 +94,7 @@ def compute_logits(
     model, classes, _ = load_candidate(checkpoint, device)
     class_to_index = {code: index for index, code in enumerate(classes)}
 
-    _, eval_transform = build_transforms(
-        config["image"], config["augment"], config["image"]["size"]
-    )
+    _, eval_transform = build_transforms(config["image"], config["augment"], config["image"]["size"])
     samples = read_split(
         REPO / config["data"]["splits_dir"],
         REPO / config["data"]["raw_dir"],

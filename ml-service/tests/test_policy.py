@@ -83,9 +83,7 @@ def test_only_declared_crop_classes_can_be_returned(manifest) -> None:
     max_peak = temperature * math.log(1.0 / floor - others)
     peak = max_peak / 2  # comfortably inside, so the test is not knife-edge
 
-    outcome = apply_policy(
-        logits_favouring(manifest, "RICE_BLAST", peak=peak), "MAIZE", manifest
-    )
+    outcome = apply_policy(logits_favouring(manifest, "RICE_BLAST", peak=peak), "MAIZE", manifest)
     assert outcome.crop_mismatch is False, (
         f"peak={peak:.3f} at T={temperature} should leave MAIZE above the {floor} floor"
     )
@@ -227,9 +225,7 @@ def test_a_prediction_is_never_forced(manifest) -> None:
         members = manifest.crops.get(crop) or manifest.classes
         for code in members:
             for peak in (0.0, 0.5, 1.0, 2.0, 4.0, 8.0, 30.0):
-                outcome = apply_policy(
-                    logits_favouring(manifest, code, peak=peak), crop, manifest
-                )
+                outcome = apply_policy(logits_favouring(manifest, code, peak=peak), crop, manifest)
                 if outcome.uncertain:
                     assert outcome.disease_code is None
                 else:

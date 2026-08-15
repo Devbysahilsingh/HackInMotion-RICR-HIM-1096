@@ -11,6 +11,7 @@
  * from the cached snapshot the weather job wrote.
  */
 import { computeIrrigation } from '../engines/irrigation/computeIrrigation.js';
+import { IRRIGATION_TRACE_STEPS } from '../engines/irrigation/constants.js';
 import { CropRegistry, IrrigationLog } from '../models/index.js';
 import { validationError } from '../utils/errors.js';
 import { freshnessOf, latestSnapshot } from './weatherService.js';
@@ -68,9 +69,25 @@ export async function irrigationAdvice(crop, farm, { asOf = new Date() } = {}) {
  * Kept separate from `irrigationAdvice` and called only by the feed job, not by
  * the read endpoint: a GET must not mutate, and two concurrent dashboard loads
  * must not race to write the same ledger.
+ *
+ * **`initialized` is taken from the engine, never assumed.** R5 defines it as
+ * "a farmer log or a rain run anchored this ledger to reality", and the engine
+ * derives it as `already-initialized || a log exists in the window`
+ * (`replayLedger`). Writing a flat `true` here would mark a cold-start crop —
+ * one whose depletion is the *assumed* "sown at field capacity" — as anchored,
+ * and the next run's trace would stop reporting `coldStart`. That is fabricated
+ * certainty on a farmer-visible why-trace (rule 9), so the engine's own value is
+ * carried through instead. It lives on the LEDGER trace step rather than the
+ * result root because the root is the API response shape and `initialized`
+ * describes the stored crop, not the advice.
  */
 export async function persistWaterBalance(Crop, cropId, userId, result, asOf) {
   if (!result?.hasVerdict || typeof result.depletionMm !== 'number') return null;
+
+  const ledger = result.trace?.find((step) => step.step === IRRIGATION_TRACE_STEPS.LEDGER);
+  // No LEDGER step means no replay ran, so nothing anchored anything; fall back
+  // to the flag already stored rather than inventing one.
+  const initialized = ledger ? Boolean(ledger.initialized) : undefined;
 
   return Crop.updateOne(
     { _id: cropId, userId },
@@ -78,7 +95,7 @@ export async function persistWaterBalance(Crop, cropId, userId, result, asOf) {
       $set: {
         'waterBalance.depletionMm': result.depletionMm,
         'waterBalance.lastComputedAt': asOf,
-        'waterBalance.initialized': true,
+        ...(initialized === undefined ? {} : { 'waterBalance.initialized': initialized }),
       },
     },
   );

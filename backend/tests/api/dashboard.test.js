@@ -823,6 +823,114 @@ describe('Dashboard, recommendations and the feed jobs', () => {
       assert.ok((await Recommendation.countDocuments({ userId: alice.user.id })) > 0);
       assert.equal(await Recommendation.countDocuments({ userId: bob.user.id }), 0);
     });
+
+    /**
+     * The soil-water ledger is stateful: the engine advances it every run and
+     * this job is the only writer (a GET must not mutate). Until 2026-08-15
+     * `persistWaterBalance` existed but was called by nothing, so the depletion
+     * the engine computed was discarded and every run restarted from the same
+     * stored number — the model never accumulated. These cover the round trip.
+     */
+    describe('water-balance persistence', () => {
+      it('computes a depletion and writes it back to the crop', async () => {
+        const { crop } = await seedJobScenario();
+        assert.equal(crop.waterBalance.depletionMm, 100, 'fixture precondition');
+
+        const report = await runFeedRefresh({ asOf: JOB_ASOF, userIds: [alice.user.id] });
+
+        assert.equal(report.ok, true, JSON.stringify(report.failures));
+        assert.equal(report.waterBalancesPersisted, 1);
+
+        const stored = await Crop.findById(crop._id).lean();
+        // Seven dry observed days at ETc 5.75 mm/day over a 100 mm standing
+        // deficit — the arithmetic this fixture was built around.
+        assert.equal(stored.waterBalance.depletionMm, 140.25);
+        assert.ok(stored.waterBalance.lastComputedAt, 'lastComputedAt was not stamped');
+        assert.equal(stored.waterBalance.lastComputedAt.getTime(), JOB_ASOF.getTime());
+      });
+
+      it('feeds the persisted value into the next run rather than the seeded one', async () => {
+        const { crop } = await seedJobScenario();
+
+        await runFeedRefresh({ asOf: JOB_ASOF, userIds: [alice.user.id] });
+        const afterFirst = await Crop.findById(crop._id).lean();
+
+        // A day later, against the same cached snapshot. The second run must
+        // read 140.25 back — if it re-read the seeded 100 the ledger would be
+        // stuck and the farmer would be under-watered indefinitely.
+        const nextDay = new Date(JOB_ASOF.getTime() + MS_PER_DAY);
+        await runFeedRefresh({ asOf: nextDay, userIds: [alice.user.id] });
+        const afterSecond = await Crop.findById(crop._id).lean();
+
+        assert.ok(
+          afterSecond.waterBalance.depletionMm >= afterFirst.waterBalance.depletionMm,
+          `the ledger went backwards: ${afterFirst.waterBalance.depletionMm} -> ${afterSecond.waterBalance.depletionMm}`,
+        );
+        assert.equal(afterSecond.waterBalance.lastComputedAt.getTime(), nextDay.getTime());
+      });
+
+      it('carries the engine’s own `initialized` rather than asserting an anchor', async () => {
+        // A crop with no logs and no prior anchor is a cold start: its depletion
+        // is the *assumed* "sown at field capacity". Persisting `initialized:
+        // true` here would make the next run's trace stop reporting coldStart —
+        // fabricated certainty on a farmer-visible why-trace.
+        await CropRegistry.create(registryDoc());
+        await WeatherSnapshot.create(snapshotDoc({ daily: dailySeries(JOB_ASOF) }));
+        const farm = await createFarm(alice.accessToken);
+        const coldCrop = await Crop.create({
+          userId: alice.user.id,
+          farmId: farm.id,
+          cropCode: 'WHEAT',
+          sowingDate: new Date(JOB_ASOF.getTime() - 80 * MS_PER_DAY),
+          status: 'active',
+          waterBalance: { depletionMm: 0, initialized: false },
+        });
+
+        await runFeedRefresh({ asOf: JOB_ASOF, userIds: [alice.user.id] });
+
+        const stored = await Crop.findById(coldCrop._id).lean();
+        assert.equal(
+          stored.waterBalance.initialized,
+          false,
+          'a cold-start ledger was marked anchored without a farmer log',
+        );
+      });
+
+      it('leaves the stored balance untouched when the engine reaches no verdict', async () => {
+        // No registry document and no snapshot: the engine cannot stage the crop
+        // and returns hasVerdict:false. A failed computation must not overwrite
+        // a real stored ledger with a guess.
+        const farm = await createFarm(alice.accessToken);
+        const crop = await Crop.create({
+          userId: alice.user.id,
+          farmId: farm.id,
+          cropCode: 'WHEAT',
+          sowingDate: new Date(JOB_ASOF.getTime() - 80 * MS_PER_DAY),
+          status: 'active',
+          waterBalance: { depletionMm: 77, initialized: true },
+        });
+
+        const report = await runFeedRefresh({ asOf: JOB_ASOF, userIds: [alice.user.id] });
+
+        assert.equal(report.ok, true, JSON.stringify(report.failures));
+        assert.equal(report.waterBalancesPersisted, 0);
+
+        const stored = await Crop.findById(crop._id).lean();
+        assert.equal(stored.waterBalance.depletionMm, 77, 'a no-verdict run corrupted the ledger');
+        assert.equal(stored.waterBalance.initialized, true);
+      });
+
+      it('never writes one user’s balance onto another user’s crop', async () => {
+        const { crop } = await seedJobScenario();
+
+        // Bob runs; Alice's crop must be untouched, because the update filters
+        // on userId as well as _id.
+        await runFeedRefresh({ asOf: JOB_ASOF, userIds: [bob.user.id] });
+
+        const stored = await Crop.findById(crop._id).lean();
+        assert.equal(stored.waterBalance.depletionMm, 100, 'another user’s run moved this ledger');
+      });
+    });
   });
 
   // ── expiry job ─────────────────────────────────────────────────────────────

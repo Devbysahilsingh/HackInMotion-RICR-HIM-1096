@@ -107,14 +107,10 @@ class BodySizeLimitMiddleware:
         if declared is not None:
             try:
                 if int(declared) > self.max_bytes:
-                    await _error(413, "IMAGE_TOO_LARGE", "request body exceeds the size limit")(
-                        scope, receive, send
-                    )
+                    await _error(413, "IMAGE_TOO_LARGE", "request body exceeds the size limit")(scope, receive, send)
                     return
             except ValueError:
-                await _error(400, "REQUEST_INVALID", "malformed Content-Length header")(
-                    scope, receive, send
-                )
+                await _error(400, "REQUEST_INVALID", "malformed Content-Length header")(scope, receive, send)
                 return
 
         received = 0
@@ -142,9 +138,7 @@ class BodySizeLimitMiddleware:
                 # Headers are already on the wire; there is no valid way to
                 # replace the response. Let it surface as a transport error.
                 raise
-            await _error(413, "IMAGE_TOO_LARGE", "request body exceeds the size limit")(
-                scope, receive, send
-            )
+            await _error(413, "IMAGE_TOO_LARGE", "request body exceeds the size limit")(scope, receive, send)
 
 
 def _header_value(scope: Any, name: bytes) -> str | None:
@@ -204,9 +198,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "modelVersion": manifest.model_version,
                 "env": resolved.env,
                 "classes": manifest.num_classes,
-                "predictor": type(application.state.predictor).__name__
-                if application.state.predictor
-                else None,
+                "predictor": type(application.state.predictor).__name__ if application.state.predictor else None,
                 # Surfaced on every boot on purpose: an operator reading the
                 # logs must never have to wonder whether the answers are real.
                 "modelTrained": manifest.trained,
@@ -301,9 +293,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
         # 2. Parse the multipart body.
         try:
-            form = await request.form(
-                max_files=4, max_fields=8, max_part_size=MAX_REQUEST_BYTES
-            )
+            form = await request.form(max_files=4, max_fields=8, max_part_size=MAX_REQUEST_BYTES)
         except RequestBodyTooLarge:
             # Not a parse failure: the body outgrew the cap mid-stream. Let it
             # reach BodySizeLimitMiddleware, which answers 413. Collapsing it

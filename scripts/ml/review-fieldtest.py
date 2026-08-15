@@ -50,9 +50,7 @@ def render(paths: list[str], out: Path, per_sheet: int) -> list[dict]:
     for start in range(0, len(paths), per_sheet):
         chunk = paths[start : start + per_sheet]
         rows = (len(chunk) + COLS - 1) // COLS
-        sheet = Image.new(
-            "RGB", (COLS * THUMB, rows * (THUMB + LABEL_H)), "black"
-        )
+        sheet = Image.new("RGB", (COLS * THUMB, rows * (THUMB + LABEL_H)), "black")
         draw = ImageDraw.Draw(sheet)
         for k, rel in enumerate(chunk):
             cell = start + k
@@ -86,9 +84,7 @@ def main() -> int:
         pass
 
     if not FIELDTEST_TSV.is_file():
-        raise SystemExit(
-            f"FATAL: {FIELDTEST_TSV} not found — run prepare-datasets.py first."
-        )
+        raise SystemExit(f"FATAL: {FIELDTEST_TSV} not found — run prepare-datasets.py first.")
 
     by_class: dict[str, list[str]] = defaultdict(list)
     for line in FIELDTEST_TSV.read_text(encoding="utf-8").splitlines():
@@ -105,9 +101,7 @@ def main() -> int:
         total += len(paths)
         print(f"  {code:32s} {len(paths):5d} images", flush=True)
 
-    (OUT_DIR / "index.json").write_text(
-        json.dumps(index, indent=1, ensure_ascii=False), encoding="utf-8"
-    )
+    (OUT_DIR / "index.json").write_text(json.dumps(index, indent=1, ensure_ascii=False), encoding="utf-8")
     print(f"\n{total} images across {len(by_class)} classes → {OUT_DIR}")
     print("index.json maps every numbered cell to its path.")
     return 0
